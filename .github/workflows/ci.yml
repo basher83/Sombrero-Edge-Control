@@ -1,0 +1,304 @@
+name: CI
+
+"on":
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run security scans weekly on Monday at 9 AM UTC
+    - cron: "0 9 * * 1"
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+  pull-requests: write  # For KICS comments
+
+jobs:
+  terraform-format:
+    name: Terraform Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.13.0"
+
+      - name: Check Terraform formatting
+        run: |
+          echo "### Terraform Format Check" >> $GITHUB_STEP_SUMMARY
+          if terraform fmt -recursive -check -diff; then
+            echo "✅ All Terraform files are properly formatted" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Terraform formatting issues found" >> $GITHUB_STEP_SUMMARY
+            echo "Run 'terraform fmt -recursive' locally to fix" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.13.0"
+
+      - name: Terraform Init (without backend)
+        run: |
+          cd infrastructure/environments/production
+          terraform init -backend=false -input=false
+
+      - name: Validate Terraform configuration
+        run: |
+          cd infrastructure/environments/production
+          echo "### Terraform Validation" >> $GITHUB_STEP_SUMMARY
+          if terraform validate -no-color; then
+            echo "✅ Terraform configuration is valid" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Terraform validation failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  tflint:
+    name: Terraform Lint (TFLint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.58.1
+
+      - name: Show TFLint version
+        run: tflint --version
+
+      - name: Init TFLint
+        run: |
+          cd infrastructure/environments/production
+          tflint --init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run TFLint
+        run: |
+          cd infrastructure/environments/production
+          echo "### TFLint Results" >> $GITHUB_STEP_SUMMARY
+          if tflint --format compact; then
+            echo "✅ No linting issues found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ TFLint found issues" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+  terraform-docs:
+    name: Terraform Documentation Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
+
+      - name: Check terraform-docs
+        uses: terraform-docs/gh-actions@v1.4.1
+        with:
+          working-dir: infrastructure/
+          config-file: .terraform-docs.yml
+          output-file: README.md
+          output-method: inject
+          recursive: true
+          recursive-path: .
+          fail-on-diff: true
+
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install yamllint
+        run: pip install yamllint==1.37.1
+
+      - name: Run yamllint
+        run: |
+          echo "### YAMLLint Results" >> $GITHUB_STEP_SUMMARY
+          if yamllint . 2>&1 | tee yamllint.log; then
+            echo "✅ YAMLLint passed" >> $GITHUB_STEP_SUMMARY
+          else
+            cat yamllint.log >> $GITHUB_STEP_SUMMARY
+            if grep -q "error" yamllint.log; then
+              echo "❌ YAMLLint found errors" >> $GITHUB_STEP_SUMMARY
+              exit 1
+            else
+              echo "⚠️ YAMLLint found warnings" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+  shellcheck:
+    name: Shell Script Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: './scripts'
+          severity: warning
+          format: gcc
+          check_together: 'yes'
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Run markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v20
+        with:
+          globs: "**/*.md"
+        continue-on-error: true # Don't fail CI on markdown issues
+
+  secret-scan:
+    name: Secret Scanning (Infisical)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Full history for scanning
+
+      - name: Install Infisical CLI
+        run: |
+          curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.deb.sh' | sudo -E bash
+          sudo apt-get update && sudo apt-get install -y infisical
+
+      - name: Run Infisical scan
+        run: |
+          # Check if baseline exists and use it
+          if [ -f ".infisical-baseline.json" ]; then
+            echo "Using baseline for scan"
+            infisical scan \
+              --baseline-path=.infisical-baseline.json \
+              --report-format sarif \
+              --report-path infisical-results.sarif \
+              --no-color \
+              --verbose
+          else
+            echo "No baseline found, running full scan"
+            infisical scan \
+              --report-format sarif \
+              --report-path infisical-results.sarif \
+              --no-color \
+              --verbose
+          fi
+
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: infisical-results.sarif
+          category: secret-scanning
+
+      - name: Upload scan results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: infisical-scan-results
+          path: infisical-results.sarif
+          retention-days: 30
+
+  kics-scan:
+    name: Infrastructure Security (KICS)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Run KICS scan
+        uses: checkmarx/kics-github-action@v2.1.13
+        with:
+          path: "."
+          config_path: "./kics.config"
+          output_path: kics-results
+          output_formats: "json,sarif"
+          fail_on: high
+          enable_comments: true
+          exclude_paths: ".terraform/,*.tfstate,*.tfstate.backup,.terraform.lock.hcl,kics-results/"
+          platform_type: "terraform,dockerfile"
+          disable_secrets: false
+
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: kics-results/results.sarif
+          category: infrastructure-security
+
+      - name: Upload KICS results as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kics-scan-results
+          path: kics-results/
+          retention-days: 30
+
+  # Only run on non-scheduled events (push/PR)
+  test-summary:
+    name: CI Summary
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    needs:
+      - terraform-format
+      - terraform-validate
+      - tflint
+      - terraform-docs
+      - yaml-lint
+      - shellcheck
+      - markdown-lint
+    steps:
+      - name: Summary
+        run: |
+          echo "### CI Summary" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All quality checks passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform Format | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform Validate | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| TFLint | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform Docs | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| YAML Lint | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| ShellCheck | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Markdown Lint | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Security scans run independently and report to GitHub Security tab_" >> $GITHUB_STEP_SUMMARY
