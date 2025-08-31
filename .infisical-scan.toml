@@ -1,0 +1,118 @@
+# Infisical Secret Scanning Configuration for Sombrero Edge Control
+title = "Sombrero Edge Control - Jump Host Infrastructure Secret Scanning"
+
+# Extend the default Infisical configuration for comprehensive coverage
+[extend]
+useDefault = true
+
+# Custom rules specific to our infrastructure patterns
+[[rules]]
+id = "proxmox-api-token"
+description = "Proxmox API Token Detection"
+regex = '''(terraform@pve|proxmox).*?[!=:]\s*["']?([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})["']?'''
+tags = ["proxmox", "api", "token", "infrastructure"]
+secretGroup = 2
+entropy = 3.5
+keywords = ["proxmox", "pve", "api_token", "terraform@pve"]
+allowlist = {
+    description = "Allow example Proxmox tokens in documentation",
+    paths = [
+        '''terraform\.tfvars\.example''',
+        '''docs/.*'''
+    ],
+    regexes = [
+        '''xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'''
+    ]
+}
+
+[[rules]]
+id = "ssh-private-key"
+description = "SSH Private Key Detection"
+regex = '''-----BEGIN\s+(RSA|DSA|EC|OPENSSH|SSH2|ENCRYPTED)?\s*PRIVATE KEY-----'''
+tags = ["ssh", "private-key", "credentials"]
+keywords = ["BEGIN", "PRIVATE KEY"]
+
+[[rules]]
+id = "terraform-sensitive-var"
+description = "Terraform Sensitive Variable Values"
+regex = '''(TF_VAR_[a-z_]+(?:token|key|password|secret))\s*=\s*["']([^"']+)["']'''
+tags = ["terraform", "environment", "sensitive"]
+secretGroup = 2
+entropy = 2.5
+keywords = ["TF_VAR", "token", "key", "password", "secret"]
+allowlist = {
+    description = "Allow example environment variables in documentation",
+    paths = [
+        '''README\.md''',
+        '''docs/.*''',
+        '''.*\.example'''
+    ]
+}
+
+# Global allowlist for known safe patterns and files
+[allowlist]
+description = "Global allowlist for Sombrero Edge Control repository"
+
+# Commits to ignore (example commits with rotated secrets)
+commits = []
+
+# Files and paths to ignore
+paths = [
+    # Documentation and examples
+    '''README\.md''',
+    '''.*\.example''',
+    '''.*\.tfvars\.example''',
+    '''docs/.*\.md''',
+
+    # Terraform lock files (dependency hashes, not secrets)
+    '''\.terraform\.lock\.hcl''',
+
+    # Generated documentation
+    '''.*terraform-docs.*''',
+
+    # Test files
+    '''.*_test\..*''',
+    '''test/.*''',
+
+    # GitHub Actions (may contain workflow tokens that are GitHub-managed)
+    '''\.github/workflows/.*''',
+
+    # This config file itself
+    '''infisical-scan\.toml''',
+]
+
+# Regex patterns to ignore (match against the secret value)
+regexTarget = "match"
+regexes = [
+    # SSH public keys are safe
+    '''ssh-(rsa|ed25519|ecdsa)\s+AAAA[A-Za-z0-9+/]+''',
+
+    # Example/placeholder values
+    '''(your|example|placeholder|changeme|xxxxxxxx|your-.*-here|AAAA\.\.\.)''',
+
+    # Terraform variable references (not actual values)
+    '''\$\{.*\}''',
+    '''var\..*''',
+
+    # Local development IPs
+    '''192\.168\.\d+\.\d+''',
+    '''127\.0\.0\.1''',
+    '''localhost''',
+
+    # Common non-secret identifiers
+    '''terraform@pve''',    # Username part of Proxmox token
+    '''user@pam''',
+    '''ansible@jump-man''',
+]
+
+# Stop words - if the secret matches these exactly, skip it
+stopwords = [
+    "example",
+    "changeme",
+    "placeholder",
+    "your-token-here",
+    "your-api-token",
+    "xxx",
+    "todo",
+    "fixme",
+]
