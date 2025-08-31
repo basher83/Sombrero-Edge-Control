@@ -14,18 +14,6 @@ repos:
       - id: check-ast
       - id: check-json
       - id: check-merge-conflict
-  # - repo: https://github.com/antonbabenko/pre-commit-terraform
-  #   rev: v1.99.0
-  #   hooks:
-  #     - id: terraform_fmt
-  #     - id: terraform_validate
-  #     # - id: terraform_tflint
-
-  # - repo: https://github.com/adrienverge/yamllint
-  #   rev: v1.37.1
-  #   hooks:
-  #     - id: yamllint
-
   # - repo: https://github.com/koalaman/shellcheck-precommit
   #   rev: v0.10.0
   #   hooks:
@@ -42,6 +30,18 @@ repos:
   #   hooks:
   #     - id: actionlint
   - repo: local
+    # - repo: https://github.com/antonbabenko/pre-commit-terraform
+    #   rev: v1.99.0
+    #   hooks:
+    #     - id: terraform_fmt
+    #     - id: terraform_validate
+    #     # - id: terraform_tflint
+
+    # - repo: https://github.com/adrienverge/yamllint
+    #   rev: v1.37.1
+    #   hooks:
+    #     - id: yamllint
+
     hooks:
       - id: mise-terraform-fmt
         name: terraform fmt via mise

@@ -48,8 +48,8 @@ What we're doing and how we're doing it.
 Key steps to implement this decision:
 
 1. Step one
-2. Step two
-3. Step three
+1. Step two
+1. Step three
 
 ## References
 

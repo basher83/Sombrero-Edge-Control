@@ -10,7 +10,9 @@ Accepted
 
 ## Context
 
-Currently, configuration files (nftables rules, README documentation) are embedded directly within cloud-init YAML files using heredoc syntax (cat > file << EOF). This approach mixes different file types and syntaxes within a single YAML file, making them difficult to maintain, validate, and version control effectively.
+Currently, configuration files (nftables rules, README documentation) are embedded directly within cloud-init YAML
+files using heredoc syntax (cat > file << EOF). This approach mixes different file types and syntaxes within a
+single YAML file, making them difficult to maintain, validate, and version control effectively.
 
 As the infrastructure grows and more complex configurations are needed, this embedded approach becomes increasingly problematic:
 
@@ -22,11 +24,13 @@ As the infrastructure grows and more complex configurations are needed, this emb
 
 ## Decision
 
-We will extract configuration files from cloud-init YAML and maintain them as separate files in the repository, then inject them into Terraform using the `templatefile()` function. This creates a clean separation of concerns and improves maintainability.
+We will extract configuration files from cloud-init YAML and maintain them as separate files in the repository,
+then inject them into Terraform using the `templatefile()` function. This creates a clean separation of concerns
+and improves maintainability.
 
 Directory structure:
 
-```
+```text
 infrastructure/environments/production/
 ├── files/
 │   ├── nftables/
@@ -86,19 +90,21 @@ The cloud-init will reference these files through Terraform's `write_files` sect
 Key steps to implement this decision:
 
 1. Create directory structure under `infrastructure/environments/production/files/`
-2. Extract embedded configurations from `cloud-init.jump-man.yaml` into separate files:
+1. Extract embedded configurations from `cloud-init.jump-man.yaml` into separate files:
    - `files/nftables/jump-host.nft` - nftables rules
    - `files/docs/jump-host-readme.md` - README for jump host
-3. Update VM module to support template file injection:
+1. Update VM module to support template file injection:
+
    ```hcl
    vendor_data_content = templatefile("${path.module}/cloud-init.jump-man.yaml", {
      nftables_config = file("${path.module}/files/nftables/jump-host.nft")
      readme_content  = file("${path.module}/files/docs/jump-host-readme.md")
    })
    ```
-4. Modify cloud-init.yaml to use injected variables in `write_files` section
-5. Add validation steps to CI/CD pipeline for configuration files
-6. Document the new pattern in infrastructure README
+
+1. Modify cloud-init.yaml to use injected variables in `write_files` section
+1. Add validation steps to CI/CD pipeline for configuration files
+1. Document the new pattern in infrastructure README
 
 ## References
 
