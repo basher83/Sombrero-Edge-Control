@@ -1,0 +1,30 @@
+name: Generate terraform docs
+'on':
+  - pull_request
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: terraform-docs-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  docs:
+    if: ${{ !startsWith(github.actor, 'renovate') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - name: Render terraform docs for infrastructure and modules
+        uses: terraform-docs/gh-actions@v1.4.1
+        with:
+          working-dir: infrastructure/
+          config-file: .terraform-docs.yml
+          recursive: true
+          recursive-path: .
+          git-push: >-
+            ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          git-commit-message: "docs: Update Terraform module documentation"
+          git-push-user-name: "terraform-docs-bot"
+          git-push-user-email: "terraform-docs-bot@users.noreply.github.com"
