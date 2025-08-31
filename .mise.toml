@@ -24,24 +24,24 @@ truncate = true
 
 [tools]
 # Core tools
-terraform = "1.13.0"        # Pin to Terraform >=1.10 for Ephemeral Resources support
-terraform-docs = "0.20.0"   # Documentation generation
-tflint = "0.58.1"          # Terraform linting
+terraform = "1.13.0"      # Pin to Terraform >=1.10 for Ephemeral Resources support
+terraform-docs = "0.20.0" # Documentation generation
+tflint = "0.58.1"         # Terraform linting
 
 # File search and manipulation
-rg = "14.1.1"              # ripgrep - fast search
-fd = "10.2.0"              # Modern find alternative
-eza = "0.23.0"             # Modern ls alternative
+rg = "14.1.1"  # ripgrep - fast search
+fd = "10.2.0"  # Modern find alternative
+eza = "0.23.0" # Modern ls alternative
 
 # Security and verification
-cosign = "2.5.3"           # Container signing and verification
-pre-commit = "4.3.0"       # Git hook framework
+cosign = "2.5.3"     # Container signing and verification
+pre-commit = "4.3.0" # Git hook framework
 
 # Linting and formatting tools
-yamllint = "1.37.1"        # YAML linting
-yamlfmt = "0.17.2"         # YAML formatting
-shellcheck = "0.11.0"      # Shell script linting
-markdownlint-cli2 = "0.18.1"  # Markdown linting
+yamllint = "1.37.1"          # YAML linting
+yamlfmt = "0.17.2"           # YAML formatting
+shellcheck = "0.11.0"        # Shell script linting
+markdownlint-cli2 = "0.18.1" # Markdown linting
 
 # ============================================================================
 # SETUP & INITIALIZATION TASKS
@@ -346,6 +346,62 @@ echo "✅ Cleaned Terraform cache and temporary files"
 [tasks.help]
 description = "Show all available mise tasks"
 run = "mise tasks"
+
+# ============================================================================
+# DEPLOYMENT PROCESS TASKS
+# ============================================================================
+
+# Start a new deployment with timestamped checklist
+[tasks.deployment-start]
+description = "Initialize a new deployment checklist with timestamp"
+run = """
+TIMESTAMP=$(date +%Y-%m-%d-%H-%M)
+CHECKLIST="deployments/checklists/${TIMESTAMP}-deployment.md"
+FILENAME="${TIMESTAMP}-deployment.md"
+
+# Copy the template
+cp docs/deployment-checklist.md "$CHECKLIST"
+
+# Create a temp file with the badge and metadata at the top
+TEMP_FILE=$(mktemp)
+{
+  echo "![Last Commit](https://img.shields.io/github/last-commit/basher83/Sombrero-Edge-Control?path=deployments/checklists/${FILENAME}&display_timestamp=author&style=plastic&logo=github)"
+  echo "![Deployment Date](https://img.shields.io/badge/Deployed-$(date +%Y---%m---%d)-brightgreen?style=plastic&logo=terraform)"
+  echo "![Ubuntu](https://img.shields.io/badge/Ubuntu_22.04-E95420?style=plastic&logo=ubuntu&logoColor=)"
+  echo "![Proxmox](https://img.shields.io/badge/Proxmox-000000?style=plastic&logo=proxmox&logoColor=)"
+  echo "![Terraform](https://img.shields.io/badge/Terraform-000000?style=plastic&logo=terraform&logoColor=)"
+  echo "![Operator](https://img.shields.io/badge/Operator-${USER}-blue?style=plastic&logo=github)"
+  echo ""
+  echo "## Deployment Metadata"
+  echo "- **Date**: $(date '+%Y-%m-%d %H:%M:%S')"
+  echo "- **Operator**: ${USER}"
+  echo "- **Environment**: production"
+  echo "- **Target**: jump-man (192.168.10.250)"
+  echo ""
+  echo "---"
+  echo ""
+  cat "$CHECKLIST"
+} > "$TEMP_FILE"
+
+# Replace the original with the new version
+mv "$TEMP_FILE" "$CHECKLIST"
+
+echo "📋 Deployment checklist created: $CHECKLIST"
+echo "🏷️  Auto-added freshness badge and metadata!"
+echo ""
+echo "✏️  Edit as you go: $CHECKLIST"
+echo "📝 Don't forget to add notes at the end!"
+echo "💾 Commit when complete: git add $CHECKLIST && git commit"
+"""
+
+# Show recent deployments
+[tasks.deployment-history]
+description = "Show recent deployment records"
+run = """
+echo "📚 Recent Deployments:"
+echo ""
+ls -la deployments/checklists/*.md 2>/dev/null | tail -10 || echo "No deployment records found"
+"""
 
 # ============================================================================
 # SMOKE TESTING TASKS
