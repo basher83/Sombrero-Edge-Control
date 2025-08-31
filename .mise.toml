@@ -159,6 +159,42 @@ echo "⚠️  Review the baseline file to ensure no real secrets were added!"
 """
 
 # ============================================================================
+# INFRASTRUCTURE SECURITY SCANNING (KICS)
+# ============================================================================
+
+# Run KICS security scan for Infrastructure as Code
+[tasks.security-kics]
+description = "Run KICS infrastructure security scan"
+run = """
+echo "🔍 Running KICS security scan..."
+mkdir -p kics-results
+docker run -t -v "$(pwd)":/path checkmarx/kics:latest scan \
+  -p /path \
+  --config /path/kics.config \
+  -o /path/kics-results \
+  --exclude-paths .terraform,kics-results
+echo "✅ KICS scan complete"
+echo "📊 Results saved to kics-results/"
+"""
+
+# Run KICS scan with JSON output for CI/CD integration
+[tasks.security-kics-ci]
+description = "Run KICS scan with JSON output for CI integration"
+run = """
+echo "🔍 Running KICS security scan (CI mode)..."
+mkdir -p kics-results
+docker run -t -v "$(pwd)":/path checkmarx/kics:latest scan \
+  -p /path \
+  --config /path/kics.config \
+  -o /path/kics-results \
+  --report-formats json \
+  --exclude-paths .terraform,kics-results \
+  --no-progress
+echo "✅ KICS scan complete"
+echo "📊 JSON results saved to kics-results/"
+"""
+
+# ============================================================================
 # FORMATTING TASKS
 # ============================================================================
 
@@ -274,6 +310,7 @@ depends = [
   "lint-all",
   "docs-check",
   "infisical-scan",
+  "security-kics",
 ]
 env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
 
@@ -286,6 +323,7 @@ depends = [
   "lint-all",
   "docs-check",
   "infisical-scan",
+  "security-kics-ci",
 ]
 env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
 

@@ -28,6 +28,9 @@ terraform.tfvars
 # Infisical scan cache
 .infisical-scan-cache/
 
+# KICS security scan results
+kics-results/
+
 # Ansible
 .ansible/
 inventory.ini
