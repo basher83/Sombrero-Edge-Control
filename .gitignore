@@ -1,37 +1,59 @@
-# Local .terraform directories
-.terraform/
-
-# .tfstate files
+# Local Terraform state
 *.tfstate
+*.tfstate.backup
 *.tfstate.*
 
-# Crash log files
+# Crash logs
 crash.log
 crash.*.log
 
-# Exclude all .tfvars files, which are likely to contain sensitive data, such as
-# password, private keys, and other secrets. These should not be part of version 
-# control as they are data points which are potentially sensitive and subject 
-# to change depending on the environment.
-*.tfvars
-*.tfvars.json
+# Ignore all files in the configuration vars directory
+configuration/vars/*
 
-# Ignore override files as they are usually used to override resources locally and so
-# are not checked in
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
+# Terraform CLI dirs
+.terraform/
+**/.terraform/*
 
-# Ignore transient lock info files created by terraform apply
-.terraform.tfstate.lock.info
+# Terraform lock files (managed by Scalr)
+.terraform.lock.hcl
 
-# Include override files you do wish to add to version control using negated pattern
-# !example_override.tf
+# Python virtual environments
+.venv/
+venv/
 
-# Include tfplan files to ignore the plan output of command: terraform plan -out=tfplan
-# example: *tfplan*
+# Sensitive override files
+terraform.tfvars
+*.auto.tfvars
 
-# Ignore CLI configuration files
-.terraformrc
-terraform.rc
+# Infisical scan cache
+.infisical-scan-cache/
+
+# Ansible
+.ansible/
+inventory.ini
+hosts
+#group_vars/
+#host_vars/
+*.retry
+*.log
+.vault_pass.txt
+#ansible.cfg
+
+# IDE/editor noise
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+*.code-workspace
+
+# OS junk
+Thumbs.db
+
+
+.mcp.json
+
+
+.envrc
+infrastructure/environments/production/terraform.tfvars.local
+.mise.local.toml

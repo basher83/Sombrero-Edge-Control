@@ -1,0 +1,27 @@
+# Set default text file line endings to LF (Linux style)
+* text=auto eol=lf
+
+# Prevent Windows line endings for all files commonly used in this repo
+*.sh text eol=lf
+*.tf text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.hcl text eol=lf
+*.j2 text eol=lf
+*.hcl.j2 text eol=lf
+
+# Mark binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.zip binary
+*.tar binary
+*.gz binary
+
+# Treat Terraform state files as binary
+*.tfstate binary
+
+# Ignore lock files for line endings
+*.lock -text
