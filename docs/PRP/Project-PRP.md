@@ -13,10 +13,10 @@ host VM used for DevOps tasks, decoupled from developer laptops.
 ## Core Principles
 
 1. Context is King: Include all Terraform and Proxmox details needed
-2. Validation Loops: Use fmt/validate/plan/apply + runtime checks
-3. Information Dense: Reference repo paths and current module contracts
-4. Progressive Success: Start minimal, verify SSH reachability, then extend
-5. Global rules: Be sure to follow all rules in CLAUDE.md
+1. Validation Loops: Use fmt/validate/plan/apply + runtime checks
+1. Information Dense: Reference repo paths and current module contracts
+1. Progressive Success: Start minimal, verify SSH reachability, then extend
+1. Global rules: Be sure to follow all rules in CLAUDE.md
 
 ---
 
@@ -27,6 +27,7 @@ existing Terraform module, with a static IP and essential tooling installed via
 cloud-init.
 
 Requested packages (cloud-init):
+
 - qemu-guest-agent
 - wget
 - gpg
@@ -111,7 +112,8 @@ infrastructure/
 - Template baseline: this repo contains Terraform from a previous deployment; treat it as a template.
   Prefer modifying module parameters/implementation over ad-hoc overrides, since this will be a standalone repo for jump-man.
 - Vendor data snippet: the VM module currently embeds a Vault-specific cloud-init vendor_data in `modules/vm/main.tf`.
-  Rework to injected snippet (not embedded) to keep it DRY and role-agnostic. The jump-man cloud-init should be provided via module input and uploaded as a Proxmox snippet.
+  Rework to injected snippet (not embedded) to keep it DRY and role-agnostic. The jump-man cloud-init should be
+  provided via module input and uploaded as a Proxmox snippet.
 - Proxmox IP reporting depends on qemu-guest-agent; ensure it starts early in cloud-init.
 - Template VM ID and template source node must match actual Proxmox inventory.
 - VM IDs must be unique per environment to avoid collisions with existing VMs.
@@ -124,26 +126,32 @@ infrastructure/
 ### CRITICAL CONTEXT FOR AI ASSISTANTS
 
 **⚠️ TEMPLATE REUSE NOTICE:**
-This repository was cloned from a previous Vault cluster deployment and contains leftover code that should be IGNORED or REMOVED. The Vault VMs and related configurations are NOT part of this deployment - they are just template artifacts.
+This repository was cloned from a previous Vault cluster deployment and contains leftover code that should be
+IGNORED or REMOVED. The Vault VMs and related configurations are NOT part of this deployment - they are just
+template artifacts.
 
 **What you're ACTUALLY deploying:**
+
 - ONE VM only: jump-man (the jump host)
 - Expected Terraform resources to create: 2 total
   - 1x jump-man VM resource
   - 1x jump-man vendor_data cloud-init file
 
 **What to IGNORE/REMOVE:**
+
 - Any existing VM definitions in main.tf (vault-master, vault-prod-1/2/3, etc.)
 - Any Vault-specific configurations that aren't being parameterized
 - The existing cloud-init.yaml file (Vault-oriented) - create a new one for jump-man
 
 **Understanding the Tasks:**
+
 - Task 1 (parameterize vendor_data): This makes the module REUSABLE for different VM types, not for deploying Vault
 - Task 3 (wire module): REPLACE the existing VM definitions with ONLY the jump_man module (remove or comment out vault VMs)
 - When you see "existing Vault code" - this is template code to be refactored/removed, NOT deployed
 
 **Validation Checkpoint:**
 After implementation, `terraform plan` should show:
+
 - ✅ Creating 2 resources (jump_man VM + vendor_data)
 - ❌ NOT creating any Vault VMs
 - ❌ NOT creating 10+ resources
@@ -310,7 +318,8 @@ Task 6: Runtime validation
     - Optional vars set:
       - `TF_VAR_proxmox_insecure` → Terraform var `proxmox_insecure` (bool as string ok)
       - `PROXMOX_API_TOKEN`       → convenience mirror of the token (optional; may be omitted)
-    - Validation: `printenv | grep -E "TF_VAR_pve_api_(url|token)|TF_VAR_ci_ssh_key|TF_VAR_proxmox_insecure|PROXMOX_API_TOKEN"` prints non-empty values for the TF_VAR entries; `PROXMOX_API_TOKEN` may be absent
+    - Validation: `printenv | grep -E "TF_VAR_pve_api_(url|token)|TF_VAR_ci_ssh_key|TF_VAR_proxmox_insecure|PROXMOX_API_TOKEN"`
+      prints non-empty values for the TF_VAR entries; `PROXMOX_API_TOKEN` may be absent
 
 - Variables (production):
   - `variables.tf` already includes: `template_id` (default 8000), `template_node` (default lloyd),

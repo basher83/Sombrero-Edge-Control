@@ -93,6 +93,26 @@ Configure two network interfaces:
 - Configure `vm_ip_secondary` and `vm_bridge_2`
 - Useful for management/application network separation
 
+### DHCP vs Static IP Configuration
+
+This module currently uses static IP configuration by default. To enable DHCP support:
+
+**Required Changes:**
+1. Add a `use_dhcp` boolean variable to control the network mode
+2. Modify the `initialization` block in `main.tf` to use dynamic blocks:
+   ```hcl
+   dynamic "ip_config" {
+     for_each = var.use_dhcp ? [1] : []
+     content {
+       ipv4 { dhcp = true }
+     }
+   }
+   ```
+3. Make IP-related variables optional when DHCP is enabled
+4. Consider adding a `dhcp_hostname` variable for DHCP hostname requests
+
+**Note:** Static IPs are recommended for infrastructure VMs like jump hosts to ensure predictable access.
+
 <!-- BEGIN_TF_DOCS -->
 
 ## Requirements

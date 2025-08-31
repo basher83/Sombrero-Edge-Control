@@ -1,6 +1,7 @@
 # Infisical Secret Scanning Setup Guide
 
-This guide walks through setting up Infisical secret scanning for the Sombrero Edge Control repository from initial setup to integration with pre-commit hooks and CI/CD pipelines.
+This guide walks through setting up Infisical secret scanning for the Sombrero Edge Control repository from
+initial setup to integration with pre-commit hooks and CI/CD pipelines.
 
 ## Prerequisites
 
@@ -12,7 +13,8 @@ This guide walks through setting up Infisical secret scanning for the Sombrero E
 
 ### 1. Initialize Infisical Project (Optional)
 
-While not required for secret scanning, initializing an Infisical project enables advanced features like secret management and environment synchronization:
+While not required for secret scanning, initializing an Infisical project enables advanced features like
+secret management and environment synchronization:
 
 ```bash
 infisical init
@@ -28,7 +30,8 @@ For standalone secret scanning, this step can be skipped.
 
 #### Configuring Default Environment
 
-If you're using Infisical for secret management (beyond just scanning), you can configure a default environment to avoid specifying `--env` with every command:
+If you're using Infisical for secret management (beyond just scanning), you can configure a default environment
+to avoid specifying `--env` with every command:
 
 ```json
 // .infisical.json
@@ -60,9 +63,9 @@ For teams working across multiple environments, you can automatically map Git br
 **How environment selection works:**
 
 1. If `gitBranchToEnvironmentMapping` matches current branch → uses mapped environment
-2. Else if `defaultEnvironment` is set → uses default environment
-3. Else → requires explicit `--env` flag
-4. Can always override with explicit `--env` flag
+1. Else if `defaultEnvironment` is set → uses default environment
+1. Else → requires explicit `--env` flag
+1. Can always override with explicit `--env` flag
 
 **Example usage:**
 
@@ -121,9 +124,11 @@ Key features of our configuration:
 
 #### Important: Rule-Specific Allowlist Structure
 
-When defining allowlists for specific rules in `.infisical-scan.toml`, the allowlist must be an inline object property of the rule, NOT a separate array element:
+When defining allowlists for specific rules in `.infisical-scan.toml`, the allowlist must be an inline object
+property of the rule, NOT a separate array element:
 
 **✅ Correct Structure:**
+
 ```toml
 [[rules]]
 id = "proxmox-api-token"
@@ -143,6 +148,7 @@ allowlist = {
 ```
 
 **❌ Incorrect Structure (will cause errors):**
+
 ```toml
 [[rules]]
 id = "proxmox-api-token"
@@ -156,11 +162,14 @@ description = "Allow example Proxmox tokens in documentation"
 paths = [...]
 ```
 
-The key difference is that each rule's allowlist must be defined as an inline nested object (`allowlist = { ... }`), not as a separate `[[rules.allowlist]]` section. This is a common configuration error that will prevent Infisical from parsing the configuration correctly.
+The key difference is that each rule's allowlist must be defined as an inline nested object (`allowlist = { ... }`),
+not as a separate `[[rules.allowlist]]` section. This is a common configuration error that will prevent Infisical
+from parsing the configuration correctly.
 
 #### Editor Configuration for TOML Files
 
-To prevent IDEs and editors from improperly auto-formatting `.infisical-scan.toml` (which can break the specific TOML structure required by Infisical), add the following to your `.editorconfig` file:
+To prevent IDEs and editors from improperly auto-formatting `.infisical-scan.toml` (which can break the specific
+TOML structure required by Infisical), add the following to your `.editorconfig` file:
 
 ```ini
 # Infisical config - preserve structure
@@ -174,12 +183,14 @@ insert_final_newline = true
 ```
 
 This configuration ensures:
+
 - Consistent 2-space indentation (matching Infisical examples)
 - No automatic line wrapping that might break regex patterns
 - Preservation of the TOML structure that Infisical expects
 - Clean file endings without trailing whitespace
 
-Without this configuration, aggressive auto-formatters in VSCode, IntelliJ, or other editors might restructure the TOML in ways that break Infisical's parser, particularly around multi-line strings and nested objects.
+Without this configuration, aggressive auto-formatters in VSCode, IntelliJ, or other editors might restructure
+the TOML in ways that break Infisical's parser, particularly around multi-line strings and nested objects.
 
 ### 3. Create a Baseline
 
@@ -245,11 +256,12 @@ Now Infisical will automatically scan staged changes before each commit.
 
 ### Why mise + Infisical?
 
-Our infrastructure uses mise for managing environment variables, particularly Terraform variables (`TF_VAR_*`). This creates a security consideration:
+Our infrastructure uses mise for managing environment variables, particularly Terraform variables (`TF_VAR_*`).
+This creates a security consideration:
 
 1. **Sensitive Variables**: Variables like `TF_VAR_pve_api_token` contain secrets
-2. **Local Configuration**: These are stored in `.mise.local.toml` (git-ignored)
-3. **Secret Detection**: Infisical scans help ensure these patterns don't leak into committed files
+1. **Local Configuration**: These are stored in `.mise.local.toml` (git-ignored)
+1. **Secret Detection**: Infisical scans help ensure these patterns don't leak into committed files
 
 ### mise Configuration Structure
 
@@ -264,9 +276,9 @@ TF_VAR_ci_ssh_key = "ssh-ed25519 AAAAC3... ansible@jump-man"
 ### Security Best Practices
 
 1. **Never commit `.mise.local.toml`** - Already in `.gitignore`
-2. **Use variable references in code** - Reference `var.pve_api_token`, never hardcode values
-3. **Document variable requirements** - Use `terraform.tfvars.example` for documentation
-4. **Scan for patterns** - Our `.infisical-scan.toml` includes rules for `TF_VAR_*` patterns
+1. **Use variable references in code** - Reference `var.pve_api_token`, never hardcode values
+1. **Document variable requirements** - Use `terraform.tfvars.example` for documentation
+1. **Scan for patterns** - Our `.infisical-scan.toml` includes rules for `TF_VAR_*` patterns
 
 ## Running Secret Scans
 
@@ -324,7 +336,7 @@ If Infisical flags example or documentation files:
    ]
    ```
 
-2. **Add regex patterns** for placeholder values:
+1. **Add regex patterns** for placeholder values:
 
    ```toml
    regexes = [
@@ -333,7 +345,8 @@ If Infisical flags example or documentation files:
    ]
    ```
 
-3. **Use baseline** for accepted risks:
+1. **Use baseline** for accepted risks:
+
    ```bash
    infisical scan --baseline-path=.infisical-baseline.json
    ```
@@ -385,8 +398,8 @@ infisical scan --max-target-megabytes=10
 **Solution**: Refine configuration
 
 1. Review and update `.infisical-scan.toml`
-2. Add specific paths to allowlist
-3. Create baseline for accepted findings
+1. Add specific paths to allowlist
+1. Create baseline for accepted findings
 
 ### Issue: Pre-commit hook blocks valid commits
 
@@ -414,12 +427,12 @@ infisical scan --config=./.infisical-scan.toml
 ## Best Practices Summary
 
 1. **Layer Security**: Combine secret scanning with other security measures
-2. **Scan Early**: Use pre-commit hooks to catch secrets before they enter history
-3. **Automate**: Integrate scanning into CI/CD pipelines
-4. **Educate**: Ensure team understands what patterns trigger detection
-5. **Review Regularly**: Periodically review scan configuration and baselines
-6. **Respond Quickly**: If a secret is detected, rotate it immediately
-7. **Use mise**: Leverage mise for local environment management, keeping secrets out of code
+1. **Scan Early**: Use pre-commit hooks to catch secrets before they enter history
+1. **Automate**: Integrate scanning into CI/CD pipelines
+1. **Educate**: Ensure team understands what patterns trigger detection
+1. **Review Regularly**: Periodically review scan configuration and baselines
+1. **Respond Quickly**: If a secret is detected, rotate it immediately
+1. **Use mise**: Leverage mise for local environment management, keeping secrets out of code
 
 ## Additional Resources
 

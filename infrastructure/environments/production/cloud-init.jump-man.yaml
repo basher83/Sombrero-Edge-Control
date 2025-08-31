@@ -1,8 +1,8 @@
 # cloud-config
-
 # Update system packages
 package_update: true
 package_upgrade: true
+
 # Install base packages
 packages:
   - qemu-guest-agent
@@ -16,101 +16,54 @@ packages:
   - gnupg
   - lsb-release
   - software-properties-common
-  - nftables
+  - iptables
   - git
   - tmux
   - python3
+
+# Write configuration files
+write_files:
+  - path: /opt/docker-install.sh
+    content: |
+      ${indent(6, docker_install_script)}
+    owner: root:root
+    permissions: '0755'
+
+  - path: /opt/firewall-setup.sh
+    content: |
+      ${indent(6, firewall_setup_script)}
+    owner: root:root
+    permissions: '0755'
+
+  - path: /home/ansible/README.md
+    content: |
+      ${indent(6, readme_content)}
+    owner: ansible:ansible
+    permissions: '0644'
+    defer: true
+
+  - path: /home/ansible/docker-firewall-notes.md
+    content: |
+      ${indent(6, docker_firewall_docs)}
+    owner: ansible:ansible
+    permissions: '0644'
+    defer: true
+
+# Run commands
 runcmd:
   # Enable and start QEMU guest agent first (for IP reporting)
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
-  # Install Docker from official repository
-  - |
-    # Add Docker's official GPG key
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
-      gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    # Add Docker repository
-    echo "deb [arch=$(dpkg --print-architecture) \
-      signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
-      https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | \
-      tee /etc/apt/sources.list.d/docker.list > /dev/null
-    # Update package index and install Docker
-    apt-get update -y
-    apt-get install -y docker-ce docker-ce-cli containerd.io \
-      docker-buildx-plugin docker-compose-plugin
-    # Add ansible user to docker group
-    usermod -aG docker ansible || true
-    # Enable Docker service
-    systemctl enable docker
-    systemctl start docker
-  # Configure nftables (basic permissive rules - hardening via Ansible later)
-  - |
-    cat > /etc/nftables.conf << 'NFTEOF'
-    #!/usr/sbin/nft -f
 
-    flush ruleset
+  # Install Docker using the official method
+  - /opt/docker-install.sh
 
-    table inet filter {
-      chain input {
-        type filter hook input priority 0; policy accept;
-        # Accept localhost
-        iif lo accept
-        # Accept established connections
-        ct state established,related accept
-        # Accept SSH (port 22)
-        tcp dport 22 accept
-        # Log and accept everything else for now (permissive)
-        log prefix "nftables-input: " accept
-      }
+  # Setup firewall with Docker compatibility
+  - /opt/firewall-setup.sh
 
-      chain forward {
-        type filter hook forward priority 0; policy accept;
-      }
-
-      chain output {
-        type filter hook output priority 0; policy accept;
-      }
-    }
-    NFTEOF
-  # Apply nftables configuration
-  - systemctl enable nftables
-  - systemctl restart nftables
-  # Create helpful documentation
-  - |
-    cat > /home/ansible/README.md << 'EOF'
-    # Jump Host (jump-man) - DevOps Management Server
-
-    This Ubuntu 22.04 jump host is configured for DevOps operations.
-
-    ## Installed Tools:
-    - Docker CE with Compose plugin
-    - Git, tmux, curl, wget, jq
-    - Python3
-    - nftables (basic permissive configuration)
-
-    ## Network Configuration:
-    - IP: 192.168.10.250/24
-    - Gateway: 192.168.10.1
-    - DNS: 8.8.8.8, 8.8.4.4
-
-    ## Post-Provisioning:
-    - Additional hardening will be applied via Ansible
-    - Node.js, npm, mise, and uv will be installed via Ansible
-
-    ## Docker Commands:
-    - docker ps                     # List running containers
-    - docker compose up -d          # Start services
-    - docker system prune -a        # Clean up unused resources
-
-    ## SSH Access:
-    User: ansible
-    Key: ED25519 key configured via cloud-init
-    EOF
-  - chown ansible:ansible /home/ansible/README.md
-  - chmod 644 /home/ansible/README.md
 # Set timezone
 timezone: UTC
+
 # Configure users (ansible user with sudo)
 users:
   - default
@@ -119,4 +72,4 @@ users:
     shell: /bin/bash
     ssh_authorized_keys:
       - >-
-        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP27rvlC7YSFHzPxMQFWjlb/Rfzls+B6oQh9+Tgi+/aP ansible@jump-man
+        ${ci_ssh_key}

@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a Terraform-based Infrastructure-as-Code repository for deploying a centralized jump host VM ("jump-man") to Proxmox using cloud-init automation. The VM serves as a secure DevOps management point with Docker, development tools, and SSH key-only authentication.
+This is a Terraform-based Infrastructure-as-Code repository for deploying a centralized jump host VM ("jump-man")
+to Proxmox using cloud-init automation. The VM serves as a secure DevOps management point with Docker, development
+tools, and SSH key-only authentication.
 
 ## Common Commands
 
@@ -125,17 +127,18 @@ The infrastructure uses a modular Terraform design:
    - `TF_VAR_ci_ssh_key`: SSH public key for cloud-init
    - `TF_VAR_proxmox_insecure`: TLS verification setting
 
-2. **VM Specifications**:
+1. **VM Specifications**:
    - Static IP: 192.168.10.250/24
    - Node: lloyd (Proxmox host)
    - Template: Ubuntu 22.04 LTS (ID: 8000)
    - Resources: 2 vCPUs, 2GB RAM + 1GB floating, 32GB disk
 
-3. **Cloud-init Provisioning**: Automated installation of Docker CE, development tools, and basic security configuration
+1. **Cloud-init Provisioning**: Automated installation of Docker CE, development tools, and basic security configuration
 
 ## Tool Requirements
 
 Managed by mise (see `.mise.toml`):
+
 - Terraform 1.13.0
 - terraform-docs 0.20.0
 - tflint 0.58.1

@@ -35,6 +35,12 @@ module "jump_man" {
   vm_tags = ["terraform", "jump", "production"]
 
   # Vendor-data for jump-man cloud-init
-  enable_vendor_data  = true
-  vendor_data_content = file("${path.module}/cloud-init.jump-man.yaml")
+  enable_vendor_data = true
+  vendor_data_content = templatefile("${path.module}/cloud-init.jump-man.yaml", {
+    docker_install_script = file("${path.module}/files/scripts/docker-install.sh")
+    firewall_setup_script = file("${path.module}/files/scripts/firewall-setup.sh")
+    readme_content        = file("${path.module}/files/docs/jump-host-readme.md")
+    docker_firewall_docs  = file("${path.module}/files/docs/docker-firewall-compatibility.md")
+    ci_ssh_key            = var.ci_ssh_key
+  })
 }

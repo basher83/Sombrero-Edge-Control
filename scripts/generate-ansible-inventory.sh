@@ -18,7 +18,9 @@ mkdir -p "$INVENTORY_DIR"
 if [[ ! -f "$TERRAFORM_DIR/main.tf" && ! -f "$TERRAFORM_DIR/providers.tf" ]]; then
     echo "Error: Terraform environment '$ENVIRONMENT' not found at $TERRAFORM_DIR"
     echo "Available environments:"
-    ls -1 "$PROJECT_ROOT/infrastructure/environments/" | grep -v README.md || true
+    for dir in "$PROJECT_ROOT/infrastructure/environments/"*/; do
+        [ -d "$dir" ] && basename "$dir"
+    done
     exit 1
 fi
 
@@ -64,7 +66,7 @@ EOF
 # Get production nodes and add them
 terraform output -json vault_production_nodes | jq -r 'to_entries[] | "\(.value.name) \(.value.ip) \(.value.node)"' | while read -r name ip node; do
     # Clean IP address (remove CIDR notation)
-    clean_ip=$(echo "$ip" | sed 's|/24||g')
+    clean_ip="${ip//\/24/}"
     vault_node_id=$(echo "$name" | sed 's|-[^-]*$//')
 
     cat >> "$INVENTORY_DIR/$ENVIRONMENT.yml" << EOF

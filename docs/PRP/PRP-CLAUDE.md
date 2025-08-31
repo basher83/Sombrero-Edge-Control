@@ -1,10 +1,13 @@
 # CLAUDE.md
 
-Guidance for AI coding assistants working in this repository. This project is an IaC repo (Terraform + cloud-init) targeting Proxmox for a jump host VM (“jump-man”). Older Vault-cluster guidance exists; use this file and docs/PRP.md as the current source of truth.
+Guidance for AI coding assistants working in this repository. This project is an IaC repo (Terraform + cloud-init)
+targeting Proxmox for a jump host VM ("jump-man"). Older Vault-cluster guidance exists; use this file and
+docs/PRP.md as the current source of truth.
 
-### 🔄 Project Awareness & Context
+## 🔄 Project Awareness & Context
 
-- Always read docs/PRP.md at the start of a new conversation for goals, parameters, and validation steps. If PLANNING.md exists, read it too.
+- Always read docs/PRP.md at the start of a new conversation for goals, parameters, and validation steps.
+  If PLANNING.md exists, read it too.
 - Check TASK.md before starting new work. If missing, create it and log tasks with dates and brief descriptions.
 - Keep naming, file structure, and patterns consistent with infrastructure/modules and infrastructure/environments.
 - Activate mise env before running Terraform or scripts so TF*VAR*\* env vars are present. Example: eval "$(mise env -s bash)".
@@ -14,8 +17,9 @@ Guidance for AI coding assistants working in this repository. This project is an
 - Keep files under 500 lines; split into smaller modules/files when needed.
 - Organize Terraform by responsibility:
   - infrastructure/modules/vm: reusable VM provisioning module
-  - infrastructure/environments/<env>: environment-specific wiring and values
-- Prefer parameterization over copy-paste. Avoid embedding role-specific cloud-init; inject vendor_data via module inputs (see docs/PRP.md tasks).
+  - infrastructure/environments/{env}: environment-specific wiring and values
+- Prefer parameterization over copy-paste. Avoid embedding role-specific cloud-init; inject vendor_data via
+  module inputs (see docs/PRP.md tasks).
 - For memory ballooning, prefer provider-native attributes (memory.floating) implemented as module inputs.
 - Use clear variable/outputs naming (snake_case), and keep tags consistent across resources.
 
@@ -91,7 +95,7 @@ terraform apply
 
 Set in .mise.local.toml (no secrets committed):
 
-- TF_VAR_pve_api_url → var.pve_api_url (e.g., https://pve:8006/api2/json)
+- TF_VAR_pve_api_url → var.pve_api_url (e.g., `https://pve:8006/api2/json`)
 - TF_VAR_pve_api_token → var.pve_api_token (sensitive)
 - TF_VAR_ci_ssh_key → var.ci_ssh_key (public key)
 - TF_VAR_proxmox_insecure → var.proxmox_insecure (optional)

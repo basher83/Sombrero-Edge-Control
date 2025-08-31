@@ -346,3 +346,54 @@ echo "✅ Cleaned Terraform cache and temporary files"
 [tasks.help]
 description = "Show all available mise tasks"
 run = "mise tasks"
+
+# ============================================================================
+# SMOKE TESTING TASKS
+# ============================================================================
+
+# Run full smoke test suite
+[tasks.smoke-test]
+description = "Run infrastructure smoke tests for jump-man VM"
+run = "./scripts/smoke-test.sh"
+env = { JUMP_HOST_IP = "192.168.10.250", JUMP_HOST_USER = "ansible" }
+
+# Quick connectivity test
+[tasks.smoke-test-quick]
+description = "Quick SSH connectivity test to jump host"
+run = """
+echo "🔍 Testing SSH connectivity to jump-man..."
+ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new ansible@192.168.10.250 'hostname && uptime' && \
+echo "✅ SSH connection successful" || \
+echo "❌ SSH connection failed"
+"""
+
+# Test Docker functionality specifically
+[tasks.smoke-test-docker]
+description = "Test Docker installation and functionality"
+run = """
+echo "🐳 Testing Docker on jump-man..."
+ssh -o ConnectTimeout=10 ansible@192.168.10.250 << 'EOF'
+  echo "Docker version:"
+  docker --version
+  echo ""
+  echo "Docker Compose version:"
+  docker compose version
+  echo ""
+  echo "Running hello-world test:"
+  docker run --rm hello-world 2>&1 | grep "Hello from Docker!" && echo "✅ Docker test passed"
+  echo ""
+  echo "Docker system info:"
+  docker system info --format "Server Version: {{.ServerVersion}}"
+  docker system info --format "Storage Driver: {{.Driver}}"
+EOF
+"""
+
+# Run smoke tests after apply
+[tasks.prod-deploy-and-test]
+description = "Deploy production infrastructure and run smoke tests"
+depends = ["prod-apply"]
+run = """
+echo "⏳ Waiting for VM to be fully ready..."
+sleep 30
+./scripts/smoke-test.sh
+"""

@@ -12,7 +12,8 @@ Infrastructure as Code (IaC) for deploying a centralized jump host VM to Proxmox
 
 ## 🎯 Purpose
 
-This repository deploys a dedicated Ubuntu 22.04 LTS jump host ("jump-man") for DevOps operations, providing a secure, centralized management point decoupled from developer laptops.
+This repository deploys a dedicated Ubuntu 22.04 LTS jump host ("jump-man") for DevOps operations, providing a
+secure, centralized management point decoupled from developer laptops.
 
 ## ✨ Features
 
@@ -45,7 +46,7 @@ TF_VAR_ci_ssh_key = "ssh-ed25519 YOUR-PUBLIC-KEY ansible@jump-man"
 TF_VAR_proxmox_insecure = "true"  # Only for self-signed certs
 ```
 
-2. Load environment:
+1. Load environment:
 
 ```bash
 eval "$(mise env -s bash)"
@@ -68,7 +69,7 @@ ssh ansible@192.168.10.250
 
 ## 📁 Repository Structure
 
-```
+```text
 ├── infrastructure/
 │   ├── environments/
 │   │   └── production/     # Production jump host configuration
@@ -124,8 +125,8 @@ Additional configuration will be applied via Ansible:
 This is a production infrastructure repository. Changes should be:
 
 1. Tested in a non-production environment first
-2. Reviewed before merging
-3. Documented in CHANGELOG.md
+1. Reviewed before merging
+1. Documented in CHANGELOG.md
 
 ## 📄 License
 
