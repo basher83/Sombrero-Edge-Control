@@ -4,7 +4,7 @@ terraform {
     organization = "env-v0o8ts5tr6gr8hg"
 
     workspaces {
-      name = "production-microk8s"
+      name = "production-jump-man"
     }
   }
 }

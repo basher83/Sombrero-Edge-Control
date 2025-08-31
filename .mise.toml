@@ -277,13 +277,13 @@ run = "terraform init -backend=false -input=false >/dev/null && terraform valida
 [tasks.prod-plan]
 description = "Run terraform plan for production environment"
 dir = "infrastructure/environments/production"
-run = "terraform plan"
+run = "terraform init -input=false >/dev/null 2>&1 && terraform plan"
 
 # Apply Terraform changes to production (use with caution)
 [tasks.prod-apply]
 description = "Apply Terraform changes to production environment"
 dir = "infrastructure/environments/production"
-run = "terraform apply"
+run = "terraform init -input=false >/dev/null 2>&1 && terraform apply"
 
 # Initialize Terraform in production environment
 [tasks.prod-init]
