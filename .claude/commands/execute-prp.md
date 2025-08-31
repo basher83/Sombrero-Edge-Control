@@ -1,16 +1,21 @@
+---
+description: Execute the PRP file for a given feature
+argument-hint: [PRP file]
+---
+
 # Execute BASE PRP
 
 Implement a feature using using the PRP file.
 
 ## PRP File:
 
-- @docs/PRP/Project-PRP.md
+- @$ARGUMENTS
 
 ## Execution Process
 
 1. **Load PRP**
 
-   - Read the specified PRP file
+   - Read the specified PRP file @$ARGUMENTS
    - Understand all context and requirements
    - Follow all instructions in the PRP and extend the research if needed
    - Ensure you have all needed context to implement the PRP fully
@@ -25,7 +30,7 @@ Implement a feature using using the PRP file.
 
 3. **Execute the plan**
 
-   - Execute the PRP
+   - Execute the PRP @$ARGUMENTS
    - Implement all the code
 
 4. **Validate**
