@@ -1,0 +1,310 @@
+# Mise configuration for Sombrero Edge Control - Jump Host Infrastructure
+# This file manages tool versions and task automation for the project
+
+# ============================================================================
+# MISE SETTINGS
+# ============================================================================
+
+[settings]
+# Automatically install tools when needed
+auto_install = true
+not_found_auto_install = true
+jobs = 4
+task_run_auto_install = true
+
+[settings.status]
+# Configure what's shown in mise status output
+show_tools = true
+show_env = false
+truncate = true
+
+# ============================================================================
+# TOOL VERSIONS
+# ============================================================================
+
+[tools]
+# Core tools
+terraform = "1.13.0"        # Pin to Terraform >=1.10 for Ephemeral Resources support
+terraform-docs = "0.20.0"   # Documentation generation
+tflint = "0.58.1"          # Terraform linting
+
+# File search and manipulation
+rg = "14.1.1"              # ripgrep - fast search
+fd = "10.2.0"              # Modern find alternative
+eza = "0.23.0"             # Modern ls alternative
+
+# Security and verification
+cosign = "2.5.3"           # Container signing and verification
+pre-commit = "4.3.0"       # Git hook framework
+
+# Linting and formatting tools
+yamllint = "1.37.1"        # YAML linting
+yamlfmt = "0.17.2"         # YAML formatting
+shellcheck = "0.11.0"      # Shell script linting
+markdownlint-cli2 = "0.18.1"  # Markdown linting
+
+# ============================================================================
+# SETUP & INITIALIZATION TASKS
+# ============================================================================
+
+# Initial project setup - run this first on a new clone
+[tasks.setup]
+description = "Initial project setup - install hooks, initialize Infisical, and generate docs"
+depends = ["infisical-init", "hooks-install", "docs"]
+
+# ============================================================================
+# PRE-COMMIT HOOK TASKS
+# ============================================================================
+
+# Install git pre-commit hooks for automated checks
+[tasks.hooks-install]
+description = "Install pre-commit hooks for automated validation"
+run = "pre-commit install"
+
+# Manually run all pre-commit hooks against all files
+[tasks.hooks-run]
+description = "Run pre-commit hooks on all files (manual check)"
+run = "pre-commit run --all-files"
+
+# ============================================================================
+# INFISICAL SECRET SCANNING TASKS
+# ============================================================================
+
+# Initialize Infisical for secret scanning and management
+# Creates .infisical.json, baseline scan, and installs pre-commit hook
+[tasks.infisical-init]
+description = "Initialize Infisical configuration, create baseline, and install pre-commit hook"
+run = """
+# Check if .infisical.json already exists
+if [ -f .infisical.json ]; then
+  echo "⚠️  .infisical.json already exists!"
+  echo "Current configuration:"
+  cat .infisical.json | head -5
+  echo "..."
+  read -p "Do you want to overwrite it? (y/N): " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "❌ Skipping .infisical.json creation"
+  else
+    echo "📝 Overwriting .infisical.json with project configuration..."
+    cat > .infisical.json << 'EOF'
+{
+  "workspaceId": "7b832220-24c0-45bc-a5f1-ce9794a31259",
+  "defaultEnvironment": "production",
+  "gitBranchToEnvironmentMapping": {
+    "main": "production",
+    "develop": "development",
+    "staging": "staging",
+    "feature/*": "development"
+  }
+}
+EOF
+    echo "✅ Updated .infisical.json"
+  fi
+else
+  echo "📝 Creating .infisical.json with project configuration..."
+  cat > .infisical.json << 'EOF'
+{
+  "workspaceId": "7b832220-24c0-45bc-a5f1-ce9794a31259",
+  "defaultEnvironment": "production",
+  "gitBranchToEnvironmentMapping": {
+    "main": "production",
+    "develop": "development",
+    "staging": "staging",
+    "feature/*": "development"
+  }
+}
+EOF
+  echo "✅ Created .infisical.json"
+fi
+
+# Check if baseline exists
+if [ -f .infisical-baseline.json ]; then
+  echo "⚠️  .infisical-baseline.json already exists!"
+  read -p "Do you want to regenerate the baseline? (y/N): " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "🔍 Regenerating baseline scan..."
+    infisical scan --report-path=.infisical-baseline.json
+    echo "✅ Regenerated .infisical-baseline.json"
+  else
+    echo "✔️  Using existing baseline"
+  fi
+else
+  echo "🔍 Creating baseline scan..."
+  infisical scan --report-path=.infisical-baseline.json
+  echo "✅ Created .infisical-baseline.json"
+fi
+
+echo "🪝 Installing/updating pre-commit hook..."
+infisical scan install --pre-commit-hook
+echo "✅ Installed Infisical pre-commit hook"
+
+echo "🎉 Infisical setup complete!"
+"""
+
+# Run secret scanning with baseline to reduce false positives
+[tasks.infisical-scan]
+description = "Scan repository for secrets using baseline for known false positives"
+run = "infisical scan --baseline-path=.infisical-baseline.json"
+
+# Update the baseline with current scan results (use when adding new false positives)
+[tasks.infisical-baseline-update]
+description = "Update the Infisical baseline with current scan results"
+run = """
+echo "🔍 Updating baseline scan..."
+infisical scan --report-path=.infisical-baseline.json
+echo "✅ Updated .infisical-baseline.json"
+echo "⚠️  Review the baseline file to ensure no real secrets were added!"
+"""
+
+# ============================================================================
+# FORMATTING TASKS
+# ============================================================================
+
+# Format Terraform files recursively
+[tasks.fmt]
+description = "Format all Terraform files recursively"
+run = "terraform fmt -recursive"
+
+# Format YAML files
+[tasks.yaml-fmt]
+description = "Format all YAML files in the repository"
+run = "yamlfmt ."
+
+# Check Terraform formatting without making changes (CI-friendly)
+[tasks.fmt-check]
+description = "Check Terraform formatting (non-mutating, shows diff)"
+run = "terraform fmt -recursive -check -diff"
+
+# Format all supported file types
+[tasks.fmt-all]
+description = "Format all files (Terraform and YAML)"
+depends = ["fmt", "yaml-fmt"]
+
+# ============================================================================
+# DOCUMENTATION TASKS
+# ============================================================================
+
+# Generate documentation for all Terraform modules and environments
+[tasks.docs]
+description = "Generate Terraform documentation for all modules and environments"
+run = "./scripts/generate-docs.sh"
+
+# Verify documentation is up-to-date (CI-friendly)
+[tasks.docs-check]
+description = "Check if Terraform documentation is up-to-date"
+dir = "infrastructure"
+run = "terraform-docs --config .terraform-docs.yml --output-check ."
+
+# ============================================================================
+# LINTING TASKS
+# ============================================================================
+
+# Lint shell scripts for common issues
+[tasks.shellcheck]
+description = "Lint all shell scripts for common issues"
+run = "find scripts -name '*.sh' -exec shellcheck {} +"
+
+# Lint YAML files for syntax and style
+[tasks.yaml-lint]
+description = "Lint all YAML files for syntax and style issues"
+run = "yamllint ."
+
+# Lint Markdown files for style consistency
+[tasks.markdown-lint]
+description = "Lint all Markdown files for style consistency"
+run = "markdownlint-cli2 '**/*.md'"
+
+# Run TFLint on production Terraform code
+[tasks.lint-prod]
+description = "Run TFLint on production environment Terraform code"
+dir = "infrastructure/environments/production"
+run = "tflint --init && tflint"
+
+# Run all linting tasks
+[tasks.lint-all]
+description = "Run all linting tasks (shell, YAML, Markdown, Terraform)"
+depends = ["shellcheck", "yaml-lint", "markdown-lint", "lint-prod"]
+
+# ============================================================================
+# TERRAFORM VALIDATION & OPERATIONS
+# ============================================================================
+
+# Validate Terraform configuration in production
+[tasks.prod-validate]
+description = "Validate Terraform configuration in production environment"
+dir = "infrastructure/environments/production"
+run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
+
+# Plan Terraform changes for production
+[tasks.prod-plan]
+description = "Run terraform plan for production environment"
+dir = "infrastructure/environments/production"
+run = "terraform plan"
+
+# Apply Terraform changes to production (use with caution)
+[tasks.prod-apply]
+description = "Apply Terraform changes to production environment"
+dir = "infrastructure/environments/production"
+run = "terraform apply"
+
+# Initialize Terraform in production environment
+[tasks.prod-init]
+description = "Initialize Terraform in production environment"
+dir = "infrastructure/environments/production"
+run = "terraform init"
+
+# ============================================================================
+# COMPOSITE VALIDATION TASKS
+# ============================================================================
+
+# Quick check for production environment
+[tasks.check]
+description = "Quick validation: format, lint, and validate production"
+depends = ["fmt", "lint-prod", "prod-validate"]
+env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
+
+# Comprehensive validation including all checks
+[tasks.full-check]
+description = "Complete validation: formatting, linting, docs, and security"
+depends = [
+  "fmt-all",
+  "prod-validate",
+  "lint-all",
+  "docs-check",
+  "infisical-scan",
+]
+env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
+
+# CI/CD pipeline validation (all non-mutating checks)
+[tasks.ci-check]
+description = "CI pipeline checks: all validations without modifications"
+depends = [
+  "fmt-check",
+  "prod-validate",
+  "lint-all",
+  "docs-check",
+  "infisical-scan",
+]
+env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
+
+# ============================================================================
+# UTILITY TASKS
+# ============================================================================
+
+# Clean Terraform cache and temporary files
+[tasks.clean]
+description = "Clean Terraform cache and temporary files"
+run = """
+echo "🧹 Cleaning Terraform cache..."
+find . -type d -name ".terraform" -exec rm -rf {} + 2>/dev/null || true
+find . -type f -name ".terraform.lock.hcl" -exec rm -f {} + 2>/dev/null || true
+find . -type f -name "*.tfplan" -exec rm -f {} + 2>/dev/null || true
+echo "✅ Cleaned Terraform cache and temporary files"
+"""
+
+# Show all available tasks with descriptions
+[tasks.help]
+description = "Show all available mise tasks"
+run = "mise tasks"
