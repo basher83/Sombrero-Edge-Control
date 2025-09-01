@@ -1,0 +1,18 @@
+[env]
+# Infisical configuration
+INFISICAL_UNIVERSAL_AUTH_CLIENT_ID = "your_client_id"
+INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET = "your_secret_id"
+
+# Proxmox configuration
+TF_VAR_proxmox_ssh_private_key = """your_private_key_content_here"""
+
+# Terraform variables
+TF_VAR_pve_api_token = "terraform@pve!terraform=..."
+TF_VAR_pve_api_url = "https://your_proxmox_host:8006/api2/json"
+TF_VAR_ci_ssh_key = "ssh-ed25519 your_public_key"
+TF_VAR_proxmox_insecure = "true" # Only for self-signed certs
+TF_VAR_proxmox_ssh_username = "your_ssh_username"
+
+# Terraform CLI optimization
+TF_CLI_ARGS_apply = "-parallelism=20"
+TF_CLI_ARGS_plan = "-parallelism=20"
