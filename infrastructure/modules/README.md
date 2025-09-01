@@ -9,6 +9,7 @@ Reusable Terraform modules for infrastructure provisioning.
 A flexible Proxmox VM provisioning module with cloud-init support.
 
 **Features:**
+
 - Dynamic VM creation with customizable resources
 - Optional dual-network configuration
 - Cloud-init integration (user_data and vendor_data)
@@ -36,7 +37,7 @@ module "my_vm" {
   vm_disk_size    = 32
 
   # Cloud-init
-  cloud_init_username = "admin"
+  cloud_init_username = "ansible"
   ci_ssh_key         = "ssh-ed25519 AAAA..."
   enable_vendor_data = true
   vendor_data_content = file("cloud-init.yaml")
@@ -51,6 +52,7 @@ module "my_vm" {
 ```
 
 **Key Variables:**
+
 - `enable_vendor_data`: Makes vendor_data optional (default: false)
 - `memory_floating`: Enables memory ballooning when > 0
 - `enable_dual_network`: Configures second network interface
@@ -62,19 +64,25 @@ For complete documentation, see [VM Module README](vm/README.md).
 ## Requirements
 
 No requirements.
+
 ## Providers
 
 No providers.
+
 ## Modules
 
 No modules.
+
 ## Resources
 
 No resources.
+
 ## Inputs
 
 No inputs.
+
 ## Outputs
 
 No outputs.
+
 <!-- END_TF_DOCS -->

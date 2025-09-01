@@ -4,7 +4,7 @@ This directory contains historical deployment records for audit and learning pur
 
 ## Structure
 
-```
+```text
 deployments/
 ├── checklists/          # Timestamped deployment checklists with notes
 │   └── YYYY-MM-DD-HH-MM-deployment.md
@@ -20,6 +20,7 @@ deployments/
 ## What's Captured
 
 Each deployment record includes:
+
 - Pre-flight, take-off, and post-flight checklists
 - What went well
 - Issues encountered

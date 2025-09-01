@@ -7,7 +7,7 @@ set -euo pipefail
 # Configuration
 JUMP_HOST_IP="${JUMP_HOST_IP:-192.168.10.250}"
 JUMP_HOST_USER="${JUMP_HOST_USER:-ansible}"
-SSH_OPTS="-o ConnectTimeout=10 -o StrictHostKeyChecking=accept-new"
+SSH_OPTS="-o ConnectTimeout=10"
 
 # Colors for output
 RED='\033[0;31m'
