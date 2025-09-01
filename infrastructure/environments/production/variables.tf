@@ -49,8 +49,27 @@ variable "proxmox_insecure" {
   default     = false
 }
 
+variable "proxmox_ssh_username" {
+  description = "SSH username for Proxmox host (for file uploads)"
+  type        = string
+  default     = "root"
+}
+
+variable "proxmox_ssh_private_key" {
+  description = "SSH private key for Proxmox host authentication"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "dns_servers" {
   description = "List of DNS servers for VMs"
   type        = list(string)
   default     = ["8.8.8.8", "8.8.4.4"]
+}
+
+variable "cloud_init_username" {
+  description = "Username for cloud-init SSH access"
+  type        = string
+  default     = "ansible"
 }

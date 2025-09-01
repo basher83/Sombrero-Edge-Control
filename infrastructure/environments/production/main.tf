@@ -26,7 +26,7 @@ module "jump_man" {
   vm_disk_size    = 32
 
   # Cloud-init
-  cloud_init_username = "ansible"
+  cloud_init_username = var.cloud_init_username
   ci_ssh_key          = var.ci_ssh_key
   template_id         = var.template_id
   template_node       = var.template_node
@@ -34,13 +34,19 @@ module "jump_man" {
   # Tags
   vm_tags = ["terraform", "jump", "production"]
 
-  # Vendor-data for jump-man cloud-init
+  # User-data for essential packages and basic configuration
+  enable_user_data = true
+  user_data_content = templatefile("${path.module}/cloud-init.jump-man-user-data.yaml", {
+    cloud_init_username = var.cloud_init_username
+    ci_ssh_key          = var.ci_ssh_key
+  })
+
+  # Vendor-data for advanced configuration (Docker, scripts, etc.)
   enable_vendor_data = true
   vendor_data_content = templatefile("${path.module}/cloud-init.jump-man.yaml", {
     docker_install_script = file("${path.module}/files/scripts/docker-install.sh")
     firewall_setup_script = file("${path.module}/files/scripts/firewall-setup.sh")
     readme_content        = file("${path.module}/files/docs/jump-host-readme.md")
     docker_firewall_docs  = file("${path.module}/files/docs/docker-firewall-compatibility.md")
-    ci_ssh_key            = var.ci_ssh_key
   })
 }

@@ -1,25 +1,7 @@
 # cloud-config
-# Update system packages
-package_update: true
-package_upgrade: true
-
-# Install base packages
-packages:
-  - qemu-guest-agent
-  - wget
-  - gpg
-  - curl
-  - unzip
-  - jq
-  - net-tools
-  - ca-certificates
-  - gnupg
-  - lsb-release
-  - software-properties-common
-  - iptables
-  - git
-  - tmux
-  - python3
+# Vendor-data for jump-man VM
+# This handles advanced configuration, scripts, and Docker installation
+# NOTE: Essential packages are handled in user-data for reliability
 
 # Write configuration files
 write_files:
@@ -49,27 +31,13 @@ write_files:
     permissions: '0644'
     defer: true
 
-# Run commands
+# Run commands for advanced setup
 runcmd:
-  # Enable and start QEMU guest agent first (for IP reporting)
-  - systemctl enable qemu-guest-agent
-  - systemctl start qemu-guest-agent
+  # Wait a bit for user-data to complete package installation
+  - sleep 30
 
   # Install Docker using the official method
   - /opt/docker-install.sh
 
   # Setup firewall with Docker compatibility
   - /opt/firewall-setup.sh
-
-# Set timezone
-timezone: UTC
-
-# Configure users (ansible user with sudo)
-users:
-  - default
-  - name: ansible
-    sudo: ALL=(ALL) NOPASSWD:ALL
-    shell: /bin/bash
-    ssh_authorized_keys:
-      - >-
-        ${ci_ssh_key}

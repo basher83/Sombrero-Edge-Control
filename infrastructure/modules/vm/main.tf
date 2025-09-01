@@ -7,6 +7,20 @@ terraform {
   }
 }
 
+# Create user data snippet on the target Proxmox node (only if enabled)
+resource "proxmox_virtual_environment_file" "user_data" {
+  count = var.enable_user_data ? 1 : 0
+
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = var.vm_node_name
+
+  source_raw {
+    file_name = "${var.vm_name}-user.yaml"
+    data      = var.user_data_content
+  }
+}
+
 # Create vendor data snippet on the target Proxmox node (only if enabled)
 resource "proxmox_virtual_environment_file" "vendor_data" {
   count = var.enable_vendor_data ? 1 : 0
@@ -82,11 +96,16 @@ resource "proxmox_virtual_environment_vm" "vm" {
     interface = "ide2"
     type      = "nocloud"
 
+    user_data_file_id   = var.enable_user_data ? proxmox_virtual_environment_file.user_data[0].id : null
     vendor_data_file_id = var.enable_vendor_data ? proxmox_virtual_environment_file.vendor_data[0].id : null
 
-    user_account {
-      username = var.cloud_init_username
-      keys     = [var.ci_ssh_key]
+    # Only use user_account when user_data is not enabled (they conflict)
+    dynamic "user_account" {
+      for_each = var.enable_user_data ? [] : [1]
+      content {
+        username = var.cloud_init_username
+        keys     = [var.ci_ssh_key]
+      }
     }
 
     ip_config {

@@ -96,7 +96,7 @@ variable "enable_dual_network" {
 variable "cloud_init_username" {
   description = "Username for cloud-init"
   type        = string
-  default     = "ubuntu"
+  default     = "ansible"
 }
 
 variable "ci_ssh_key" {
@@ -126,4 +126,16 @@ variable "memory_floating" {
   description = "Amount of floating memory in MB for ballooning (0 disables ballooning)"
   type        = number
   default     = 0
+}
+
+variable "enable_user_data" {
+  description = "Enable user data for cloud-init (for packages and basic config)"
+  type        = bool
+  default     = false
+}
+
+variable "user_data_content" {
+  description = "Content for cloud-init user data (YAML format)"
+  type        = string
+  default     = ""
 }
