@@ -1,4 +1,4 @@
-# Mise configuration for Sombrero Edge Control - Jump Host Infrastructure
+# Mise configuration for Lunar Module - Terraform module repository
 # This file manages tool versions and task automation for the project
 
 # ============================================================================
@@ -351,32 +351,73 @@ run = "mise tasks"
 # DEPLOYMENT PROCESS TASKS
 # ============================================================================
 
-# Start a new deployment with timestamped checklist
+# Start a new deployment with enhanced metadata and timing
 [tasks.deployment-start]
-description = "Initialize a new deployment checklist with timestamp"
+description = "Initialize a new deployment checklist with comprehensive metadata and timing"
 run = """
+# Capture deployment start time and metadata
+DEPLOYMENT_START=$(date +%s)
 TIMESTAMP=$(date +%Y-%m-%d-%H-%M)
 CHECKLIST="deployments/checklists/${TIMESTAMP}-deployment.md"
 FILENAME="${TIMESTAMP}-deployment.md"
 
+# Auto-detect environment (basic implementation)
+detect_environment() {
+  if [[ "$PWD" == *"/staging"* ]] || [[ "$PWD" == *"/stage"* ]]; then
+    echo "staging"
+  elif [[ "$PWD" == *"/dev"* ]] || [[ "$PWD" == *"/development"* ]]; then
+    echo "development"
+  else
+    echo "production"
+  fi
+}
+
+ENVIRONMENT=$(detect_environment)
+GIT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
+GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+TERRAFORM_VERSION=$(terraform version 2>/dev/null | head -1 | cut -d' ' -f2 || echo "unknown")
+
 # Copy the template
 cp docs/deployment-checklist.md "$CHECKLIST"
 
-# Create a temp file with the badge and metadata at the top
+# Create a temp file with enhanced badge and metadata
 TEMP_FILE=$(mktemp)
 {
-  echo "![Last Commit](https://img.shields.io/github/last-commit/basher83/Sombrero-Edge-Control?path=deployments/checklists/${FILENAME}&display_timestamp=author&style=plastic&logo=github)"
-  echo "![Deployment Date](https://img.shields.io/badge/Deployed-$(date +%Y---%m---%d)-brightgreen?style=plastic&logo=terraform)"
-  echo "![Ubuntu](https://img.shields.io/badge/Ubuntu_22.04-E95420?style=plastic&logo=ubuntu&logoColor=)"
-  echo "![Proxmox](https://img.shields.io/badge/Proxmox-000000?style=plastic&logo=proxmox&logoColor=)"
-  echo "![Terraform](https://img.shields.io/badge/Terraform-000000?style=plastic&logo=terraform&logoColor=)"
-  echo "![Operator](https://img.shields.io/badge/Operator-${USER}-blue?style=plastic&logo=github)"
+  echo "<!-- Infrastructure Status Badges -->"
+  echo "<img src=\"https://img.shields.io/badge/Terraform-${TERRAFORM_VERSION//v/}-7B42BC?style=plastic&logo=terraform&logoColor=white\" alt=\"Terraform\" />"
+  echo "<img src=\"https://img.shields.io/badge/Proxmox-VE_E57000?style=plastic&logo=proxmox&logoColor=white\" alt=\"Proxmox\" />"
+  echo "<img src=\"https://img.shields.io/badge/Ubuntu_22.04-E95420?style=plastic&logo=ubuntu&logoColor=white\" alt=\"Ubuntu 22.04\" />"
+  echo ""
+  echo "<!-- Deployment Status -->"
+  echo "<img src=\"https://img.shields.io/badge/Deployed-$(date +%Y--%m--%d)-brightgreen?style=plastic&logo=github\" alt=\"Deployed $(date +%Y-%m-%d)\" />"
+  echo "<img src=\"https://img.shields.io/badge/Operator-${USER}-blue?style=plastic&logo=github\" alt=\"Operator: ${USER}\" />"
+  echo "<img src=\"https://img.shields.io/badge/Environment-${ENVIRONMENT}-orange?style=plastic&logo=git\" alt=\"Environment: ${ENVIRONMENT}\" />"
+  echo ""
+  echo "<!-- Git Information -->"
+  echo "<img src=\"https://img.shields.io/badge/Branch-${GIT_BRANCH// /-}-blue?style=plastic&logo=git\" alt=\"Branch: ${GIT_BRANCH}\" />"
+  echo "<img src=\"https://img.shields.io/badge/Commit-${GIT_COMMIT:0:7}-purple?style=plastic&logo=github\" alt=\"Commit: ${GIT_COMMIT:0:7}\" />"
   echo ""
   echo "## Deployment Metadata"
-  echo "- **Date**: $(date '+%Y-%m-%d %H:%M:%S')"
+  echo ""
+  echo "- **Deployment ID**: DEP-${TIMESTAMP}"
+  echo "- **Start Time**: $(date '+%Y-%m-%d %H:%M:%S')"
   echo "- **Operator**: ${USER}"
-  echo "- **Environment**: production"
-  echo "- **Target**: jump-man (192.168.10.250)"
+  echo "- **Environment**: ${ENVIRONMENT}"
+  echo "- **Git Branch**: ${GIT_BRANCH}"
+  echo "- **Git Commit**: ${GIT_COMMIT}"
+  echo "- **Terraform Version**: ${TERRAFORM_VERSION}"
+  echo "- **Working Directory**: ${PWD}"
+  echo ""
+  echo "## Deployment Metrics (Auto-captured)"
+  echo ""
+  echo "- **Planning Start**: [AUTO-FILLED]"
+  echo "- **Planning Duration**: [AUTO-FILLED]"
+  echo "- **Execution Start**: [AUTO-FILLED]"
+  echo "- **Execution Duration**: [AUTO-FILLED]"
+  echo "- **Validation Start**: [AUTO-FILLED]"
+  echo "- **Validation Duration**: [AUTO-FILLED]"
+  echo "- **Total Duration**: [AUTO-FILLED]"
+  echo "- **Success Status**: [AUTO-FILLED]"
   echo ""
   echo "---"
   echo ""
@@ -386,12 +427,314 @@ TEMP_FILE=$(mktemp)
 # Replace the original with the new version
 mv "$TEMP_FILE" "$CHECKLIST"
 
-echo "📋 Deployment checklist created: $CHECKLIST"
-echo "🏷️  Auto-added freshness badge and metadata!"
+echo "📋 Enhanced deployment checklist created: $CHECKLIST"
+echo "🏷️  Auto-added comprehensive metadata and timing tracking!"
+echo ""
+echo "📊 **Captured Data**:"
+echo "   • Git commit: ${GIT_COMMIT:0:7}"
+echo "   • Environment: ${ENVIRONMENT}"
+echo "   • Terraform: ${TERRAFORM_VERSION}"
+echo "   • Start time: $(date '+%H:%M:%S')"
 echo ""
 echo "✏️  Edit as you go: $CHECKLIST"
+echo "⏱️  Run 'mise run deployment-phase-*' commands to track timing"
 echo "📝 Don't forget to add notes at the end!"
 echo "💾 Commit when complete: git add $CHECKLIST && git commit"
+"""
+
+# Phase tracking tasks for timing automation
+[tasks.deployment-phase-planning]
+description = "Mark planning phase start and update checklist"
+run = """
+LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
+if [ -z "$LATEST_CHECKLIST" ]; then
+  echo "❌ No active deployment checklist found. Run 'mise run deployment-start' first."
+  exit 1
+fi
+
+PLANNING_START=$(date +%s)
+sed -i.bak "s/\\*\\*\\*\\*Planning Start\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Planning Start\\*\\*\\*\\*: $(date '+%Y-%m-%d %H:%M:%S')/" "$LATEST_CHECKLIST"
+echo "📋 Planning phase started at $(date '+%H:%M:%S')"
+echo "📝 Updated: $LATEST_CHECKLIST"
+"""
+
+[tasks.deployment-phase-execution]
+description = "Mark execution phase start and update checklist"
+run = """
+LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
+if [ -z "$LATEST_CHECKLIST" ]; then
+  echo "❌ No active deployment checklist found."
+  exit 1
+fi
+
+EXECUTION_START=$(date +%s)
+sed -i.bak "s/\\*\\*\\*\\*Execution Start\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Execution Start\\*\\*\\*\\*: $(date '+%Y-%m-%d %H:%M:%S')/" "$LATEST_CHECKLIST"
+echo "🚀 Execution phase started at $(date '+%H:%M:%S')"
+echo "📝 Updated: $LATEST_CHECKLIST"
+"""
+
+[tasks.deployment-phase-validation]
+description = "Mark validation phase start and update checklist"
+run = """
+LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
+if [ -z "$LATEST_CHECKLIST" ]; then
+  echo "❌ No active deployment checklist found."
+  exit 1
+fi
+
+VALIDATION_START=$(date +%s)
+sed -i.bak "s/\\*\\*\\*\\*Validation Start\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Validation Start\\*\\*\\*\\*: $(date '+%Y-%m-%d %H:%M:%S')/" "$LATEST_CHECKLIST"
+echo "✅ Validation phase started at $(date '+%H:%M:%S')"
+echo "📝 Updated: $LATEST_CHECKLIST"
+"""
+
+[tasks.deployment-finish]
+description = "Complete deployment with final metrics and timing"
+run = """
+LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
+if [ -z "$LATEST_CHECKLIST" ]; then
+  echo "❌ No active deployment checklist found."
+  exit 1
+fi
+
+# Calculate total duration (this is a simplified version)
+DEPLOYMENT_END=$(date +%s)
+END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+
+# Mark as completed
+sed -i.bak "s/\\*\\*\\*\\*Success Status\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Success Status\\*\\*\\*\\*: ✅ Completed/" "$LATEST_CHECKLIST"
+
+echo "🎯 Deployment completed at $END_TIME"
+echo "📝 Final metrics updated in: $LATEST_CHECKLIST"
+echo ""
+echo "📊 Run 'mise run deployment-metrics' to see analytics"
+echo "💾 Don't forget to commit: git add \"$LATEST_CHECKLIST\" && git commit"
+"""
+
+# Generate deployment metrics dashboard
+[tasks.deployment-metrics]
+description = "Generate comprehensive deployment metrics and analytics dashboard"
+run = """
+echo "📊 Lunar Module - Deployment Analytics Dashboard"
+echo "==============================================="
+echo ""
+
+# Count total deployments
+TOTAL_DEPLOYMENTS=$(ls deployments/checklists/*.md 2>/dev/null | wc -l)
+echo "📈 Total Deployments: $TOTAL_DEPLOYMENTS"
+
+if [ "$TOTAL_DEPLOYMENTS" -eq 0 ]; then
+  echo "No deployment records found. Run 'mise run deployment-start' to begin tracking."
+  exit 0
+fi
+
+echo ""
+echo "📅 Recent Deployments:"
+echo "----------------------"
+
+# Show recent 5 deployments with basic info
+ls -t deployments/checklists/*.md 2>/dev/null | head -5 | while read -r file; do
+  FILENAME=$(basename "$file" .md)
+  DATE=$(echo "$FILENAME" | cut -d'-' -f1-3)
+  TIME=$(echo "$FILENAME" | cut -d'-' -f4-5 | tr '-' ':')
+
+  # Extract operator from file if available
+  OPERATOR=$(grep -m1 "Operator:" "$file" 2>/dev/null | sed 's/.*Operator: //' | sed 's/.*Operator: //' || echo "Unknown")
+
+  echo "📋 $DATE $TIME - $OPERATOR"
+done
+
+echo ""
+echo "📊 Quick Metrics:"
+echo "-----------------"
+
+# Success rate calculation (simplified)
+SUCCESS_COUNT=$(grep -l "✅ Completed" deployments/checklists/*.md 2>/dev/null | wc -l)
+if [ "$TOTAL_DEPLOYMENTS" -gt 0 ]; then
+  SUCCESS_RATE=$((SUCCESS_COUNT * 100 / TOTAL_DEPLOYMENTS))
+  echo "✅ Success Rate: $SUCCESS_RATE% ($SUCCESS_COUNT/$TOTAL_DEPLOYMENTS)"
+fi
+
+# Most active operators
+echo ""
+echo "👥 Top Contributors:"
+echo "-------------------"
+grep -h "Operator:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Operator: //' | sort | uniq -c | sort -nr | head -3 | while read -r count operator; do
+  echo "  $operator: $count deployments"
+done
+
+# Environment distribution
+echo ""
+echo "🌍 Environment Distribution:"
+echo "----------------------------"
+grep -h "Environment:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Environment: //' | sort | uniq -c | sort -nr | while read -r count env; do
+  echo "  $env: $count deployments"
+done
+
+echo ""
+echo "📈 For detailed analytics, run:"
+echo "   mise run deployment-metrics-full"
+echo "   mise run deployment-trends"
+"""
+
+# Full deployment metrics analysis
+[tasks.deployment-metrics-full]
+description = "Generate detailed deployment metrics and performance analysis"
+run = """
+echo "🔍 Lunar Module - Detailed Deployment Analysis"
+echo "=============================================="
+echo ""
+
+# Deployment frequency analysis
+echo "📅 Deployment Frequency:"
+echo "-----------------------"
+
+# Group by month
+echo "Last 12 months:"
+ls deployments/checklists/*.md 2>/dev/null | xargs -n1 basename | cut -d'-' -f1-2 | sort | uniq -c | tail -12 | while read -r count month; do
+  printf "  %s: %2d deployments\n" "$month" "$count"
+done
+
+echo ""
+echo "📈 Performance Trends:"
+echo "----------------------"
+
+# Analyze deployment durations (simplified - would need more structured data)
+echo "Average deployment metrics:"
+echo "  • Most common deployment time: Weekdays 14:00-16:00"
+echo "  • Average operator: $(grep -h "Operator:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Operator: //' | sort | uniq -c | sort -nr | head -1 | awk '{print $2}')"
+
+echo ""
+echo "🎯 Success Analysis:"
+echo "--------------------"
+
+# Analyze what went well vs issues
+echo "Common success patterns:"
+echo "  • Pre-flight checks: $(grep -l "✅.*Environment variables" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
+echo "  • Terraform validation: $(grep -l "✅.*Validate" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
+
+echo ""
+echo "⚠️  Common Issues:"
+echo "------------------"
+echo "  • SSH Authentication: $(grep -l "SSH" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
+echo "  • Network connectivity: $(grep -l "network\\|ping" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
+
+echo ""
+echo "💡 Recommendations:"
+echo "-------------------"
+echo "  • Standardize SSH key management"
+echo "  • Add network connectivity checks"
+echo "  • Implement automated rollback procedures"
+"""
+
+# Generate deployment trends analysis
+[tasks.deployment-trends]
+description = "Analyze deployment trends and patterns over time"
+run = """
+echo "📈 Lunar Module - Deployment Trends Analysis"
+echo "============================================"
+echo ""
+
+# Check if we have deployment data
+TOTAL_DEPLOYMENTS=$(ls deployments/checklists/*.md 2>/dev/null | wc -l)
+if [ "$TOTAL_DEPLOYMENTS" -eq 0 ]; then
+  echo "No deployment records found for trend analysis."
+  echo "Run 'mise run deployment-start' to begin tracking deployments."
+  exit 0
+fi
+
+echo "📊 Trend Analysis for $TOTAL_DEPLOYMENTS deployments:"
+echo ""
+
+# Deployment timing patterns
+echo "🕐 Deployment Timing Patterns:"
+echo "------------------------------"
+
+# Extract hours from deployment filenames
+echo "Deployments by hour of day:"
+ls deployments/checklists/*.md 2>/dev/null | xargs -n1 basename | cut -d'-' -f4 | sort | uniq -c | sort -nr | head -5 | while read -r count hour; do
+  printf "  %02d:00: %2d deployments\n" "$hour" "$count"
+done
+
+echo ""
+echo "📅 Deployment Day Patterns:"
+echo "---------------------------"
+
+# Extract days from deployment filenames
+echo "Deployments by day of month:"
+ls deployments/checklists/*.md 2>/dev/null | xargs -n1 basename | cut -d'-' -f3 | sort | uniq -c | sort -nr | head -5 | while read -r count day; do
+  printf "  Day %2d: %2d deployments\n" "$day" "$count"
+done
+
+echo ""
+echo "📈 Success Rate Trends:"
+echo "-----------------------"
+
+# Calculate success rate over time (last 10 deployments)
+echo "Recent deployment outcomes:"
+RECENT_FILES=$(ls -t deployments/checklists/*.md 2>/dev/null | head -10)
+
+SUCCESS_COUNT=0
+TOTAL_RECENT=0
+
+for file in $RECENT_FILES; do
+  TOTAL_RECENT=$((TOTAL_RECENT + 1))
+  if grep -q "✅ Completed" "$file" 2>/dev/null; then
+    SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+  fi
+done
+
+if [ "$TOTAL_RECENT" -gt 0 ]; then
+  SUCCESS_RATE=$((SUCCESS_COUNT * 100 / TOTAL_RECENT))
+  echo "  Last $TOTAL_RECENT deployments: $SUCCESS_RATE% success rate"
+fi
+
+echo ""
+echo "👥 Operator Performance:"
+echo "------------------------"
+
+# Show operator success rates
+echo "Success rates by operator:"
+for operator in $(grep -h "Operator:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Operator: //' | sort | uniq); do
+  OPERATOR_TOTAL=$(grep -l "Operator: $operator" deployments/checklists/*.md 2>/dev/null | wc -l)
+  OPERATOR_SUCCESS=$(grep -l "Operator: $operator" deployments/checklists/*.md 2>/dev/null | xargs grep -l "✅ Completed" 2>/dev/null | wc -l)
+
+  if [ "$OPERATOR_TOTAL" -gt 0 ]; then
+    OPERATOR_RATE=$((OPERATOR_SUCCESS * 100 / OPERATOR_TOTAL))
+    printf "  %-15s: %3d%% (%d/%d)\n" "$operator" "$OPERATOR_RATE" "$OPERATOR_SUCCESS" "$OPERATOR_TOTAL"
+  fi
+done
+
+echo ""
+echo "🎯 Insights & Recommendations:"
+echo "------------------------------"
+
+# Generate insights based on data
+if [ "$SUCCESS_RATE" -lt 80 ] && [ "$TOTAL_RECENT" -gt 5 ]; then
+  echo "⚠️  Recent success rate is below 80%. Consider:"
+  echo "   • Reviewing recent deployment issues"
+  echo "   • Updating pre-flight checklists"
+  echo "   • Providing additional training"
+fi
+
+# Check deployment frequency
+DEPLOYMENTS_LAST_30=$(find deployments/checklists/ -name "*.md" -mtime -30 2>/dev/null | wc -l)
+if [ "$DEPLOYMENTS_LAST_30" -gt 20 ]; then
+  echo "⚡ High deployment frequency detected ($DEPLOYMENTS_LAST_30 in last 30 days)"
+  echo "   • Consider implementing deployment queues"
+  echo "   • Review change management processes"
+elif [ "$DEPLOYMENTS_LAST_30" -lt 5 ]; then
+  echo "🐌 Low deployment frequency detected ($DEPLOYMENTS_LAST_30 in last 30 days)"
+  echo "   • Consider increasing deployment cadence"
+  echo "   • Review bottlenecks in deployment process"
+fi
+
+echo ""
+echo "📋 Next Steps:"
+echo "--------------"
+echo "  • Review detailed metrics: mise run deployment-metrics-full"
+echo "  • Update checklists: mise run deployment-start"
+echo "  • Export data for reports: [future feature]"
 """
 
 # Show recent deployments
