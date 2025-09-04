@@ -1,9 +1,9 @@
 name: "Jump Host VM (Proxmox) — PRP v1"
 description: |
-  Product Requirements Prompt for deploying a single Ubuntu 22.04 jump host VM
-  ("jump-man") to the doggos-homelab Proxmox cluster via Terraform + cloud-init.
-  This PRP is tailored for an AI coding assistant to implement the required IaC
-  changes, with clear validation loops and error-handling patterns.
+Product Requirements Prompt for deploying a single Ubuntu 22.04 jump host VM
+("jump-man") to the doggos-homelab Proxmox cluster via Terraform + cloud-init.
+This PRP is tailored for an AI coding assistant to implement the required IaC
+changes, with clear validation loops and error-handling patterns.
 
 ## Purpose
 
@@ -12,7 +12,7 @@ host VM used for DevOps tasks, decoupled from developer laptops.
 
 ## Core Principles
 
-1. Context is King: Include all Terraform and Proxmox details needed
+1. Context is King: Include all Terraform, Ansible, and Proxmox details needed
 1. Validation Loops: Use fmt/validate/plan/apply + runtime checks
 1. Information Dense: Reference repo paths and current module contracts
 1. Progressive Success: Start minimal, verify SSH reachability, then extend
@@ -39,12 +39,8 @@ Requested packages (cloud-init):
 - gnupg
 - lsb-release
 - software-properties-common
-- nftables
 - git
 - tmux
-- python3
-- docker
-- docker compose
 
 ## Why
 
@@ -308,25 +304,28 @@ Task 6: Runtime validation
 ## Integration Points
 
 - Providers/Backends:
+
   - Proxmox provider configured in `infrastructure/environments/production/providers.tf`
   - Local backend override present at `infrastructure/environments/production/backend_override.tf`
   - Env loading: `.mise.local.toml` sets environment variables directly (no Infisical integration yet)
     - Required vars set:
-      - `TF_VAR_pve_api_url`      → Terraform var `pve_api_url`
-      - `TF_VAR_pve_api_token`    → Terraform var `pve_api_token` (sensitive)
-      - `TF_VAR_ci_ssh_key`       → Terraform var `ci_ssh_key` (public key)
+      - `TF_VAR_pve_api_url` → Terraform var `pve_api_url`
+      - `TF_VAR_pve_api_token` → Terraform var `pve_api_token` (sensitive)
+      - `TF_VAR_ci_ssh_key` → Terraform var `ci_ssh_key` (public key)
     - Optional vars set:
       - `TF_VAR_proxmox_insecure` → Terraform var `proxmox_insecure` (bool as string ok)
-      - `PROXMOX_API_TOKEN`       → convenience mirror of the token (optional; may be omitted)
+      - `PROXMOX_API_TOKEN` → convenience mirror of the token (optional; may be omitted)
     - Validation: `printenv | grep -E "TF_VAR_pve_api_(url|token)|TF_VAR_ci_ssh_key|TF_VAR_proxmox_insecure|PROXMOX_API_TOKEN"`
       prints non-empty values for the TF_VAR entries; `PROXMOX_API_TOKEN` may be absent
 
 - Variables (production):
+
   - `variables.tf` already includes: `template_id` (default 8000), `template_node` (default lloyd),
     `vm_datastore` (local-lvm), `vm_bridge_1` (vmbr0), `dns_servers`, `ci_ssh_key`
   - Ensure `ci_ssh_key` contains the provided public key
 
 - Networking:
+
   - Single NIC on `vmbr0`; no VLAN
   - Static IP and gateway as above (not DHCP)
 
