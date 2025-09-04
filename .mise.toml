@@ -26,7 +26,7 @@ truncate = true
 # Core tools
 terraform = "1.13.0"      # Pin to Terraform >=1.10 for Ephemeral Resources support
 terraform-docs = "0.20.0" # Documentation generation
-tflint = "0.58.1"         # Terraform linting
+tflint = "0.59.1"         # Terraform linting
 
 # File search and manipulation
 rg = "14.1.1"  # ripgrep - fast search
