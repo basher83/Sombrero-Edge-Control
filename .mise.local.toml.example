@@ -1,18 +1,52 @@
 [env]
-# Infisical configuration
-INFISICAL_UNIVERSAL_AUTH_CLIENT_ID = "your_client_id"
-INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET = "your_secret_id"
+# ============================================================================
+# MISE LOCAL CONFIGURATION TEMPLATE
+#
+# Instructions:
+# 1. Copy this file to .mise.local.toml
+# 2. Fill in your actual values
+# 3. Never commit .mise.local.toml (it's gitignored)
+# ============================================================================
 
-# Proxmox configuration
-TF_VAR_proxmox_ssh_private_key = """your_private_key_content_here"""
+# ----------------------------------------------------------------------------
+# INFISICAL CONFIGURATION (Optional)
+# For secret scanning and management
+# ----------------------------------------------------------------------------
+# INFISICAL_UNIVERSAL_AUTH_CLIENT_ID = "your_client_id"
+# INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET = "your_secret_id"
 
-# Terraform variables
-TF_VAR_pve_api_token = "terraform@pve!terraform=..."
-TF_VAR_pve_api_url = "https://your_proxmox_host:8006/api2/json"
-TF_VAR_ci_ssh_key = "ssh-ed25519 your_public_key"
-TF_VAR_proxmox_insecure = "true" # Only for self-signed certs
-TF_VAR_proxmox_ssh_username = "your_ssh_username"
+# ----------------------------------------------------------------------------
+# PROXMOX API CONFIGURATION (Required)
+# ----------------------------------------------------------------------------
+# API token for Terraform to manage Proxmox resources
+# Format: username@realm!token-id=token-secret
+TF_VAR_pve_api_token = "terraform@pve!terraform=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-# Terraform CLI optimization
+# Proxmox API endpoint URL
+TF_VAR_pve_api_url = "https://192.168.10.2:8006/api2/json"
+
+# Skip TLS verification (only for self-signed certificates in development)
+TF_VAR_proxmox_insecure = "true"
+
+# SSH username for Proxmox host operations (typically "root")
+TF_VAR_proxmox_ssh_username = "root"
+
+# ----------------------------------------------------------------------------
+# VM CONFIGURATION (Required)
+# ----------------------------------------------------------------------------
+# SSH public key for cloud-init user authentication
+# This key will be added to the 'ansible' user on the VM
+TF_VAR_ci_ssh_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP... your-key-comment"
+
+# ----------------------------------------------------------------------------
+# TERRAFORM PERFORMANCE OPTIMIZATION (Optional)
+# ----------------------------------------------------------------------------
+# Increase parallelism for faster operations
 TF_CLI_ARGS_apply = "-parallelism=20"
 TF_CLI_ARGS_plan = "-parallelism=20"
+
+# ----------------------------------------------------------------------------
+# ADDITIONAL CONFIGURATION (Optional)
+# ----------------------------------------------------------------------------
+# Add any additional environment variables here
+# CUSTOM_VAR = "value"

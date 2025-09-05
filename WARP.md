@@ -1,7 +1,7 @@
 # WARP.md
 This file provides guidance to WARP (warp.dev) when working with code in this repository.
 
-**Last updated**: 2025-01-02
+**Last updated**: 2025-09-05
 
 ## 🚀 Quickstart
 
@@ -229,7 +229,26 @@ ssh ansible@192.168.10.250 'sudo journalctl -u cloud-init'
 # Terraform state issues
 terraform refresh                   # Sync state with real infrastructure
 terraform plan -detailed-exitcode  # Check for configuration drift
+
+# Docker container cleanup (KICS scanning)
+docker container prune -f          # Clean up stopped containers
+docker rm $(docker ps -aq --filter "ancestor=checkmarx/kics") # Remove KICS containers specifically
 ```
+
+### Docker Container Management
+
+**KICS Security Scanning**: The `mise run security-kics` tasks now include the `--rm` flag to automatically clean up containers after scanning. This prevents accumulation of stopped KICS containers in Docker Desktop.
+
+```bash
+# If you see dangling KICS containers (pre-fix cleanup)
+docker ps -a --filter "ancestor=checkmarx/kics"  # List KICS containers
+docker rm $(docker ps -aq --filter "ancestor=checkmarx/kics")  # Remove them
+
+# General container cleanup
+docker container prune -f          # Remove all stopped containers
+```
+
+**Note**: The fix is implemented in `.mise.toml` with `docker run --rm` flags. New scans automatically clean up their containers.
 
 ### Useful Scripts
 

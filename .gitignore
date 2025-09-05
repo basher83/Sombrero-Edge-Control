@@ -7,9 +7,6 @@
 crash.log
 crash.*.log
 
-# Ignore all files in the configuration vars directory
-configuration/vars/*
-
 # Terraform CLI dirs
 .terraform/
 **/.terraform/*
@@ -31,16 +28,17 @@ terraform.tfvars
 # KICS security scan results
 kics-results/
 
-# Ansible
-.ansible/
-inventory.ini
-hosts
-#group_vars/
-#host_vars/
+# Ansible - centralized in ansible/ directory
+ansible/inventory/*
+!ansible/inventory/*.example
+!ansible/inventory/README.md
+ansible/group_vars/*/vault.yml
+ansible/host_vars/*/vault.yml
+ansible/roles/*/vars/vault.yml
+ansible/*.vault
+ansible/ansible.cfg.local
 *.retry
-*.log
 .vault_pass.txt
-#ansible.cfg
 
 # IDE/editor noise
 .vscode/
@@ -60,3 +58,14 @@ Thumbs.db
 .envrc
 infrastructure/environments/production/terraform.tfvars.local
 .mise.local.toml
+
+# act (GitHub Actions local runner)
+.env.act
+
+# Packer
+packer/variables.pkrvars.hcl
+packer/*.pkrvars.hcl
+!packer/*.pkrvars.hcl.example
+packer/packer_cache/
+packer/output-*/
+*.box

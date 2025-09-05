@@ -15,6 +15,22 @@ Infrastructure as Code (IaC) for deploying a centralized jump host VM to Proxmox
 This repository deploys a dedicated Ubuntu 22.04 LTS jump host ("jump-man") for DevOps operations, providing a
 secure, centralized management point decoupled from developer laptops.
 
+## 🏗️ Infrastructure Pipeline
+
+```mermaid
+graph LR
+    A[Packer] -->|Build Template| B[VM Template ID 1001]
+    B -->|Terraform Clone| C[Jump-man VM]
+    C -->|Cloud-init Bootstrap| D[Basic Setup]
+    D -->|Ansible Configure| E[Production Ready]
+```
+
+**Pipeline Components:**
+- **Packer**: Creates golden image with Docker pre-installed
+- **Terraform**: Clones template and provisions infrastructure
+- **Cloud-init**: Performs initial VM configuration
+- **Ansible**: Handles complex post-deployment setup
+
 ## ✨ Features
 
 - **Automated Deployment**: Single command Terraform deployment to Proxmox
@@ -75,6 +91,14 @@ ssh ansible@192.168.10.250
 │   │   └── production/     # Production jump host configuration
 │   └── modules/
 │       └── vm/             # Reusable VM module
+├── packer/                 # Packer VM template builder
+│   ├── ubuntu-server-numbat-docker.pkr.hcl
+│   ├── files/             # Cloud-init configuration
+│   └── http/              # Ubuntu autoinstall
+├── ansible/               # Post-deployment configuration
+│   ├── playbooks/         # Ansible playbooks
+│   ├── roles/             # Ansible roles
+│   └── inventory/         # Host inventory
 ├── docs/
 │   └── PRP.md             # Product Requirements Prompt
 ├── CHANGELOG.md           # Version history

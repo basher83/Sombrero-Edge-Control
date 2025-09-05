@@ -1,1 +1,27 @@
-[]
+[
+ {
+  "RuleID": "terraform-sensitive-var",
+  "Description": "Terraform Sensitive Variable Values",
+  "StartLine": 22,
+  "EndLine": 22,
+  "StartColumn": 13,
+  "EndColumn": 46,
+  "Match": "TF_VAR_ci_ssh_key='ssh-ed25519...'",
+  "Secret": "ssh-ed25519...",
+  "File": "deployments/checklists/2025-08-31-03-33-deployment.md",
+  "SymlinkFile": "",
+  "Commit": "565bfd4085d47912d3a1a7dd0acd4ea1e1d8254d",
+  "Link": "https://github.com/basher83/Sombrero-Edge-Control/blob/565bfd4085d47912d3a1a7dd0acd4ea1e1d8254d/deployments/checklists/2025-08-31-03-33-deployment.md?plain=1#L22",
+  "Entropy": 3.182006,
+  "Author": "Brent",
+  "Email": "crashoverride6545@gmail.com",
+  "Date": "2025-09-01T01:44:14Z",
+  "Message": "docs(troubleshooting): add SSH/cloud-init issue resolution guide and deployment tracking\n\n- Add comprehensive troubleshooting guide for SSH connectivity and cloud-init conflicts\n- Document Proxmox provider user_account vs user_data_file_id configuration conflict\n- Include step-by-step resolution with code examples and verification steps\n- Add deployment checklist with lessons learned from production deployment\n- Remove obsolete .gitkeep file now that directory has content\n\nThis documentation captures solutions to infrastructure deployment issues\nencountered during VM provisioning and SSH authentication setup.\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude \u003cnoreply@anthropic.com\u003e",
+  "Tags": [
+   "terraform",
+   "environment",
+   "sensitive"
+  ],
+  "Fingerprint": "565bfd4085d47912d3a1a7dd0acd4ea1e1d8254d:deployments/checklists/2025-08-31-03-33-deployment.md:terraform-sensitive-var:22"
+ }
+]

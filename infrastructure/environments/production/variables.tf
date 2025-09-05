@@ -55,13 +55,6 @@ variable "proxmox_ssh_username" {
   default     = "root"
 }
 
-variable "proxmox_ssh_private_key" {
-  description = "SSH private key for Proxmox host authentication"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
 variable "dns_servers" {
   description = "List of DNS servers for VMs"
   type        = list(string)

@@ -64,25 +64,19 @@ For complete documentation, see [VM Module README](vm/README.md).
 ## Requirements
 
 No requirements.
-
 ## Providers
 
 No providers.
-
 ## Modules
 
 No modules.
-
 ## Resources
 
 No resources.
-
 ## Inputs
 
 No inputs.
-
 ## Outputs
 
 No outputs.
-
 <!-- END_TF_DOCS -->
