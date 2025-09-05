@@ -445,6 +445,7 @@ run = "mise tasks"
 # Start a new deployment with enhanced metadata and timing
 [tasks.deployment-start]
 description = "Initialize a new deployment checklist with comprehensive metadata and timing"
+shell = "bash -c"
 run = """
 # Capture deployment start time and metadata
 DEPLOYMENT_START=$(date +%s)
@@ -469,7 +470,7 @@ GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
 TERRAFORM_VERSION=$(terraform version 2>/dev/null | head -1 | cut -d' ' -f2 || echo "unknown")
 
 # Copy the template
-cp docs/deployment-checklist.md "$CHECKLIST"
+cp deployments/deployment-checklist.md "$CHECKLIST"
 
 # Create a temp file with enhanced badge and metadata
 TEMP_FILE=$(mktemp)

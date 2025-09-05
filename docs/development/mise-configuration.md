@@ -83,6 +83,28 @@ Location: `/Users/basher8383/dev/infra-as-code/Sombrero-Edge-Control/.mise.local
 | `INFISICAL_UNIVERSAL_AUTH_CLIENT_ID` | Infisical client ID for secret management |
 | `INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET` | Infisical client secret |
 
+#### MCP (Model Context Protocol) Settings (Optional)
+
+For projects using MCP tools like Proxmox integration, configuration is typically stored in separate JSON files:
+
+```json
+{
+    "proxmox": {
+        "host": "192.168.30.30",
+        "port": 8006,
+        "verify_ssl": false,
+        "service": "PVE"
+    },
+    "auth": {
+        "user": "api-user@pve",
+        "token_name": "homarr",
+        "token_value": "your-token-here"
+    }
+}
+```
+
+> **Note**: Keep MCP configuration files out of version control and reference them via environment variables in `.mise.local.toml` when needed.
+
 ## Tool Management
 
 ### Installed Tools
@@ -91,14 +113,29 @@ The project manages these tools via mise:
 
 ```toml
 [tools]
-terraform = "1.13.0"
-terraform-docs = "0.20.0"
-tflint = "0.58.1"
-pre-commit = "4.3.0"
-yamllint = "1.37.1"
-shellcheck = "0.11.0"
-markdownlint-cli2 = "0.18.1"
-act = "latest"  # GitHub Actions local runner
+# Core tools
+terraform = "1.13.1"    # Pin to Terraform >=1.10 for Ephemeral Resources support
+packer = "1.14.1"
+ansible-core = "2.19.1"
+
+terraform-docs = "0.20.0" # Documentation generation
+tflint = "0.59.1"         # Terraform linting
+
+# File search and manipulation
+rg = "14.1.1"  # ripgrep - fast search
+fd = "10.2.0"  # Modern find alternative
+eza = "0.23.0" # Modern ls alternative
+
+# Security and verification
+cosign = "2.5.3"     # Container signing and verification
+pre-commit = "4.3.0" # Git hook framework
+
+# Linting and formatting tools
+yamllint = "1.37.1"          # YAML linting
+yamlfmt = "0.17.2"           # YAML formatting
+shellcheck = "0.11.0"        # Shell script linting
+markdownlint-cli2 = "0.18.1" # Markdown linting
+act = "0.2.81"               # GitHub Actions local runner
 ```
 
 ### Installing Tools
@@ -186,6 +223,36 @@ mise run clean          # Clean Terraform cache
 mise run check          # Run all validation checks
 ```
 
+### Deployment Workflow
+
+```bash
+# Deployment tracking and checklists
+mise run deployment-start              # Initialize deployment checklist
+mise run deployment-phase-planning     # Mark planning phase start
+mise run deployment-phase-execution    # Mark execution phase start
+mise run deployment-phase-validation   # Mark validation phase start
+mise run deployment-finish             # Complete deployment
+
+# Full deployment pipeline
+mise run deploy-full                   # Complete Packer → Terraform → Ansible
+mise run deploy-full-tracked          # Full pipeline with tracking
+mise run deploy-init                  # Initialize deployment outputs
+mise run deploy-packer               # Build VM template with Packer
+mise run deploy-terraform            # Deploy infrastructure with Terraform
+mise run deploy-ansible              # Configure VM with Ansible
+
+# Deployment analytics
+mise run deployment-metrics          # Generate metrics dashboard
+mise run deployment-metrics-full     # Detailed performance analysis
+mise run deployment-trends           # Analyze deployment patterns
+mise run deployment-history          # Show recent deployments
+
+# Testing and validation
+mise run smoke-test                  # Full smoke test suite
+mise run smoke-test-quick           # Quick SSH connectivity test
+mise run smoke-test-docker          # Test Docker functionality
+```
+
 ## Creating Custom Tasks
 
 ### Basic Task Structure
@@ -230,6 +297,85 @@ env = { CUSTOM_VAR = "value", DEBUG = "true" }
 run = "echo $CUSTOM_VAR"
 ```
 
+### Task with Custom Shell
+
+```toml
+[tasks.bash-specific]
+description = "Task requiring bash features"
+shell = "bash -c"
+run = """
+# Use bash-specific features
+if [[ "$PWD" == *"/production"* ]]; then
+    ENVIRONMENT="production"
+elif [[ "$PWD" == *"/staging"* ]]; then
+    ENVIRONMENT="staging"
+else
+    ENVIRONMENT="development"
+fi
+
+echo "Detected environment: $ENVIRONMENT"
+"""
+```
+
+## Shell Configuration
+
+### Default Shell Behavior
+
+By default, mise executes tasks using `sh -c` on Unix systems, which is POSIX-compliant but doesn't support bash-specific features like:
+
+- Double bracket conditions `[[ ]]`
+- Parameter expansion like `${var//pattern/replacement}`
+- Bash arrays
+- Process substitution `<(command)`
+
+### Configuring Shell for Tasks
+
+For tasks that require bash-specific syntax, specify the shell explicitly:
+
+```toml
+[tasks.bash-task]
+description = "Task requiring bash features"
+shell = "bash -c"
+run = """
+if [[ -n "$HOME" ]]; then
+    echo "Home directory: ${HOME}"
+fi
+"""
+```
+
+### Alternative: Using Shebang
+
+You can also use a shebang to specify the interpreter:
+
+```toml
+[tasks.deployment-start]
+description = "Initialize deployment with bash features"
+run = """
+#!/usr/bin/env bash
+set -e
+
+# Bash-specific syntax works here
+if [[ "$PWD" == *"/staging"* ]]; then
+    ENVIRONMENT="staging"
+else
+    ENVIRONMENT="production"
+fi
+
+echo "Environment: $ENVIRONMENT"
+"""
+```
+
+### Shell Options
+
+Tasks run with different shells have different behaviors:
+
+| Shell | Error Handling | Features | Use Case |
+|-------|----------------|----------|----------|
+| `sh -c` (default) | `set -e` enabled | POSIX only | Simple, portable tasks |
+| `bash -c` | `set -e` enabled | Full bash | Complex scripting, conditionals |
+| `zsh -c` | `set -e` enabled | Zsh extensions | Zsh-specific features |
+| Custom shell | Varies | Any interpreter | Python, Node.js, Ruby scripts |
+
 ## Troubleshooting
 
 ### Common Issues
@@ -265,6 +411,26 @@ run = "echo $CUSTOM_VAR"
    ```bash
    # Ensure mise is activated
    eval "$(mise activate bash)"  # or zsh/fish
+   ```
+
+5. **Shell syntax errors** (`[[: not found`, `Bad substitution`)
+   ```bash
+   # Error indicates bash syntax in sh shell
+   # Fix: Add shell specification to the task
+   ```
+
+   **Problem**: Task contains bash-specific syntax but runs with default `sh`
+
+   **Solution**: Add `shell = "bash -c"` to task configuration:
+   ```toml
+   [tasks.problematic-task]
+   description = "Task with bash syntax"
+   shell = "bash -c"  # Add this line
+   run = """
+   if [[ -n "$VAR" ]]; then  # This requires bash
+       echo "Variable set"
+   fi
+   """
    ```
 
 ### Debugging
@@ -310,6 +476,13 @@ mise tasks --verbose
 - Provide `.mise.local.toml.example` template
 - Keep `.mise.toml` tasks generic and portable
 - Use consistent naming conventions
+
+### 5. Shell Selection
+
+- Use default `sh` for simple, portable tasks
+- Specify `shell = "bash -c"` for tasks using bash features
+- Add shebang (`#!/usr/bin/env bash`) for complex scripts
+- Test tasks across different environments to ensure compatibility
 
 ## Integration with Other Tools
 
