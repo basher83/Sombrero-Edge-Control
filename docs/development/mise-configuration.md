@@ -251,6 +251,9 @@ mise run deployment-history          # Show recent deployments
 mise run smoke-test                  # Full smoke test suite
 mise run smoke-test-quick           # Quick SSH connectivity test
 mise run smoke-test-docker          # Test Docker functionality
+
+# Issue tracking and documentation
+mise run deployment-add-issue       # Add issue to current deployment checklist
 ```
 
 ## Creating Custom Tasks

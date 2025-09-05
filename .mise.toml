@@ -530,7 +530,8 @@ echo "   • Start time: $(date '+%H:%M:%S')"
 echo ""
 echo "✏️  Edit as you go: $CHECKLIST"
 echo "⏱️  Run 'mise run deployment-phase-*' commands to track timing"
-echo "📝 Don't forget to add notes at the end!"
+echo "🚨 Document any issues in the 'Issues & Resolutions Log' section"
+echo "📚 Fill out 'Lessons Learned' section at completion"
 echo "💾 Commit when complete: git add $CHECKLIST && git commit"
 """
 
@@ -827,6 +828,100 @@ echo "--------------"
 echo "  • Review detailed metrics: mise run deployment-metrics-full"
 echo "  • Update checklists: mise run deployment-start"
 echo "  • Export data for reports: [future feature]"
+"""
+
+# Add an issue to the current deployment checklist
+[tasks.deployment-add-issue]
+description = "Add an issue to the current deployment checklist"
+shell = "bash -c"
+run = """
+# Find the latest deployment checklist
+LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
+if [ -z "$LATEST_CHECKLIST" ]; then
+  echo "❌ No active deployment checklist found. Run 'mise run deployment-start' first."
+  exit 1
+fi
+
+# Get issue details interactively
+echo "🚨 Adding issue to deployment checklist: $(basename "$LATEST_CHECKLIST")"
+echo ""
+
+# Use environment variables if set, otherwise prompt
+ISSUE_TITLE="${ISSUE_TITLE:-}"
+ISSUE_PHASE="${ISSUE_PHASE:-}"
+ISSUE_TIME="${ISSUE_TIME:-$(date '+%H:%M')}"
+ISSUE_DESC="${ISSUE_DESC:-}"
+ISSUE_ERROR="${ISSUE_ERROR:-}"
+ISSUE_RESOLUTION="${ISSUE_RESOLUTION:-}"
+ISSUE_IMPACT="${ISSUE_IMPACT:-}"
+
+if [ -z "$ISSUE_TITLE" ]; then
+  read -p "Issue Title: " ISSUE_TITLE
+fi
+
+if [ -z "$ISSUE_PHASE" ]; then
+  echo "Phase options: Pre-flight, Take-off, Post-flight, Emergency"
+  read -p "Phase: " ISSUE_PHASE
+fi
+
+if [ -z "$ISSUE_DESC" ]; then
+  read -p "Description: " ISSUE_DESC
+fi
+
+if [ -z "$ISSUE_ERROR" ]; then
+  read -p "Error/Symptoms (or 'none'): " ISSUE_ERROR
+fi
+
+if [ -z "$ISSUE_RESOLUTION" ]; then
+  read -p "Resolution (or 'PENDING'): " ISSUE_RESOLUTION
+fi
+
+if [ -z "$ISSUE_IMPACT" ]; then
+  echo "Impact options: High, Medium, Low"
+  read -p "Impact: " ISSUE_IMPACT
+fi
+
+# Count existing issues to get next number
+ISSUE_COUNT=$(grep -c "### Issue #" "$LATEST_CHECKLIST" || echo "0")
+NEXT_ISSUE=$((ISSUE_COUNT + 1))
+
+# Find the insertion point (after the Issues & Resolutions Log header)
+if grep -q "## 🚨 Issues & Resolutions Log" "$LATEST_CHECKLIST"; then
+  # Create the new issue entry
+  ISSUE_ENTRY="
+### Issue #$NEXT_ISSUE: $ISSUE_TITLE
+- **Phase**: $ISSUE_PHASE
+- **Time**: $ISSUE_TIME
+- **Description**: $ISSUE_DESC
+- **Error/Symptoms**:
+  ```
+  $ISSUE_ERROR
+  ```
+- **Root Cause**: [To be determined]
+- **Resolution**: $ISSUE_RESOLUTION
+- **Time to Resolve**: [To be updated]
+- **Impact**: $ISSUE_IMPACT
+- **Prevention**: [To be documented]
+"
+
+  # Insert the new issue after the first existing issue or after the guidelines
+  if grep -q "### Issue #1:" "$LATEST_CHECKLIST"; then
+    # Insert after the first issue block
+    awk -v entry="$ISSUE_ENTRY" '/^### Issue #1:/{p=1} p && /^$/ && !inserted {print entry; inserted=1} 1' "$LATEST_CHECKLIST" > "$LATEST_CHECKLIST.tmp"
+  else
+    # Insert after the guidelines section
+    awk -v entry="$ISSUE_ENTRY" '/^> - Suggest prevention measures/{print; print entry; next} 1' "$LATEST_CHECKLIST" > "$LATEST_CHECKLIST.tmp"
+  fi
+
+  mv "$LATEST_CHECKLIST.tmp" "$LATEST_CHECKLIST"
+
+  echo "✅ Added Issue #$NEXT_ISSUE: $ISSUE_TITLE"
+  echo "📝 Updated: $LATEST_CHECKLIST"
+  echo "📝 Remember to update root cause and prevention measures!"
+else
+  echo "❌ Issues section not found in checklist. Please use the updated template."
+  exit 1
+fi
 """
 
 # Show recent deployments
