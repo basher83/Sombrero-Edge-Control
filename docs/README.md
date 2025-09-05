@@ -33,6 +33,7 @@ Architectural Decision Records (ADRs) documenting important technical decisions.
 - **[ADR-2024-08-30-separate-files-terraform-injection.md](./decisions/ADR-2024-08-30-separate-files-terraform-injection.md)** - Decision about separate files for Terraform injection
 - **[ADR-2024-08-31-docker-iptables-firewall.md](./decisions/ADR-2024-08-31-docker-iptables-firewall.md)** - Docker iptables firewall configuration decision
 - **[ADR-2025-01-02-ansible-post-deployment-config.md](./decisions/ADR-2025-01-02-ansible-post-deployment-config.md)** - Ansible post-deployment configuration approach
+
 - **[ADR-2025-01-02-documentation-reorganization.md](./decisions/ADR-2025-01-02-documentation-reorganization.md)** - Documentation directory structure reorganization
 - **[ADR-TEMPLATE.md](./decisions/ADR-TEMPLATE.md)** - Template for creating new ADRs
 
