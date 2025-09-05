@@ -17,7 +17,7 @@ This file contains the default configuration for act:
 ```bash
 # Platform images - using medium-sized images for better tool compatibility
 -P ubuntu-latest=catthehacker/ubuntu:act-latest
--P ubuntu-22.04=catthehacker/ubuntu:act-22.04
+-P ubuntu-24.04=catthehacker/ubuntu:act-24.04
 -P ubuntu-20.04=catthehacker/ubuntu:act-20.04
 
 # Use Docker host network for better connectivity
@@ -182,7 +182,7 @@ act push --job terraform-format --job terraform-validate
 act -W .github/workflows/documentation.yml
 
 # Override platform
-act -P ubuntu-latest=ubuntu:22.04
+act -P ubuntu-latest=ubuntu:24.04
 
 # Pass secrets
 act -s GITHUB_TOKEN=$GITHUB_TOKEN

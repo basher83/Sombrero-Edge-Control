@@ -39,6 +39,7 @@ and consistency across the Sombrero Edge Control project.
 **Examples in this project**:
 
 - `.yamllint` - YAML structure and syntax validation
+- `yamlfmt` - Automatic YAML formatting and standardization
 - `.terraform-docs.yml` - Terraform documentation standards
 - `.infisical-scan.toml` - Secret scanning configuration
 - Pre-commit hooks - Multi-tool validation pipeline
@@ -65,6 +66,14 @@ line-length:
   max: 120 # ← Matches .editorconfig
 ```
 
+```yaml
+# From .yamlfmt
+formatter:
+  indent: 2 # ← Matches .editorconfig
+  max_line_length: 120 # ← Matches .editorconfig
+  line_ending: lf # ← Matches .editorconfig
+```
+
 ```toml
 # From .editorconfig
 [*.{yml,yaml}]
@@ -88,7 +97,7 @@ max_line_length = off  # Prevents breaking complex inline objects
 | File Type              | `.editorconfig` Rules         | Linting Tool    | Purpose                    |
 | ---------------------- | ----------------------------- | --------------- | -------------------------- |
 | `*.tf`                 | 2-space indent, 120 chars     | `terraform fmt` | Terraform formatting       |
-| `*.yaml`               | 2-space indent, 120 chars     | `.yamllint`     | YAML validation            |
+| `*.yaml`               | 2-space indent, 120 chars     | `yamlfmt` + `.yamllint` | YAML formatting + validation |
 | `*.md`                 | 2-space indent, no line limit | None            | Markdown flexibility       |
 | `*.sh`                 | 2-space indent, 120 chars     | `shellcheck`    | Shell script validation    |
 | `.infisical-scan.toml` | 2-space indent, no line limit | None            | Preserve complex structure |
@@ -122,6 +131,7 @@ Set this in your VS Code user settings to protect regex patterns:
 
 1. **Edit files** → `.editorconfig` applies formatting automatically
 1. **Save files** → Editor respects formatting rules
+1. **Format code** → Run `mise run yaml-fmt` or `mise run fmt-all`
 1. **Commit changes** → Pre-commit hooks run linters
 
 ### In CI/CD

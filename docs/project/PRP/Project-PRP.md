@@ -1,6 +1,6 @@
 name: "Jump Host VM (Proxmox) — PRP v1"
 description: |
-Product Requirements Prompt for deploying a single Ubuntu 22.04 jump host VM
+Product Requirements Prompt for deploying a single Ubuntu 24.04 jump host VM
 ("jump-man") to the doggos-homelab Proxmox cluster via Terraform + cloud-init.
 This PRP is tailored for an AI coding assistant to implement the required IaC
 changes, with clear validation loops and error-handling patterns.
@@ -22,7 +22,7 @@ host VM used for DevOps tasks, decoupled from developer laptops.
 
 ## Goal
 
-Deploy an Ubuntu 22.04 VM to Proxmox (node: lloyd) named "jump-man" using the
+Deploy an Ubuntu 24.04 VM to Proxmox (node: lloyd) named "jump-man" using the
 existing Terraform module, with a static IP and essential tooling installed via
 cloud-init.
 
@@ -157,7 +157,7 @@ If you see more than 2 resources being created, you've included template code th
 ## Deployment Parameters (Authoritative)
 
 - Proxmox node: `lloyd`
-- Template ID: `8000`
+- Template ID: `8024`
 - Template source node: `lloyd` (confirmed)
 - Datastore: `local-lvm`
 - Bridges: `vmbr0` (single NIC; no VLAN)
@@ -205,7 +205,7 @@ module "jump_man" {
   # Cloud-init
   cloud_init_username = "ansible"
   ci_ssh_key          = var.ci_ssh_key     # set in workspace/vars
-  template_id         = var.template_id    # 8000
+  template_id         = var.template_id    # 8024
   template_node       = var.template_node  # lloyd
 
   # Ballooning (requires module update in vm module — see Task 1b)
@@ -272,7 +272,7 @@ Task 2: Create cloud-init file for jump-man
 Task 3: Wire module in production environment
   MODIFY infrastructure/environments/production/main.tf:
     - ADD module "jump_man" block (see Terraform Module Interface above)
-    - Pass var.template_id=8000, var.template_node=lloyd, and other vars
+    - Pass var.template_id=8024, var.template_node=lloyd, and other vars
     - Set enable_dual_network=false; do not set secondary bridge/IP
     - If vendor_data made optional, set enable_vendor_data=true and vendor_data_content to file content
 
@@ -320,7 +320,7 @@ Task 6: Runtime validation
 
 - Variables (production):
 
-  - `variables.tf` already includes: `template_id` (default 8000), `template_node` (default lloyd),
+  - `variables.tf` already includes: `template_id` (default 8024), `template_node` (default lloyd),
     `vm_datastore` (local-lvm), `vm_bridge_1` (vmbr0), `dns_servers`, `ci_ssh_key`
   - Ensure `ci_ssh_key` contains the provided public key
 

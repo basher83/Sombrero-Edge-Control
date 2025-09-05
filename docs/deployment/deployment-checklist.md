@@ -7,7 +7,7 @@
 - [ ] **Validate configuration**: `mise run prod-validate`
 - [ ] **Review plan**: `mise run prod-plan` (verify creating 2 resources)
 - [ ] **Proxmox accessible**: `ping proxmox-host` succeeds
-- [ ] **Template exists**: Verify Ubuntu template ID 8000 on node lloyd
+- [ ] **Template exists**: Verify Ubuntu template ID 8024 on node lloyd
 
 ## Take-Off 🛫
 

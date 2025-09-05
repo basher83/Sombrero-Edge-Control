@@ -107,5 +107,5 @@ For detailed troubleshooting, see [Act Configuration - Troubleshooting](./act-co
 ## Related Documentation
 
 - [Act Configuration](./act-configuration.md) - Detailed act setup and configuration
-- [Mise Configuration](./mise-configuration.md) - Task runner and tool management
+- [Mise Configuration](../development/mise-configuration.md) - Task runner and tool management
 - [GitHub Workflows](./.github/workflows/) - Actual workflow definitions
