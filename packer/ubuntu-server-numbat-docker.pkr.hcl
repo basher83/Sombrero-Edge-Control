@@ -58,12 +58,12 @@ source "proxmox-clone" "ubuntu-server-numbat" {
 
   # VM General Settings
   node                 = "${var.proxmox_node_name}"
-  vm_id                = "1001"
+  # vm_id is not specified - Proxmox will assign next available ID dynamically
   vm_name              = "ubuntu-server-numbat-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
-  template_description = "Golden Image: Ubuntu 24.04 LTS with Docker, nvm, mise, uv - Built ${formatdate("YYYY-MM-DD hh:mm", timestamp())}"
+  template_description = "Golden Image: Ubuntu 24.04 LTS with Docker, nvm, mise, uv. Built ${formatdate("YYYY_MM_DD hh:mm", timestamp())}"
 
-  # Tags for dynamic template selection
-  tags = "packer-built,ubuntu-24-04,golden-image,docker,development-tools"
+  # Tags for dynamic template selection (temporarily disabled to test validation)
+  # tags = "packer_built,ubuntu_24_04,golden_image,docker,development_tools"
 
   # Clone from existing template - use template name
   clone_vm = "ubuntu24"  # Your existing cloud-init template name
