@@ -1,0 +1,25 @@
+# Act configuration for running GitHub Actions locally
+# Using medium-sized images for better tool compatibility
+
+# Platform images
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+-P ubuntu-22.04=catthehacker/ubuntu:act-22.04
+-P ubuntu-20.04=catthehacker/ubuntu:act-20.04
+
+# Use Docker host network for better connectivity
+--network host
+
+# Reuse containers for faster subsequent runs
+--reuse
+
+# Container architecture (for Apple Silicon compatibility)
+--container-architecture linux/amd64
+
+# Bind working directory
+--bind
+
+# Use local .env file if it exists
+--env-file .env.act
+
+# Default workflow event
+--eventpath .github/workflows/event.json

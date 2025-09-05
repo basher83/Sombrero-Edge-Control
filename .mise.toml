@@ -26,6 +26,8 @@ truncate = true
 # Core tools
 terraform = "1.13.1"    # Pin to Terraform >=1.10 for Ephemeral Resources support
 packer = "1.14.1"
+ansible-core = "2.19.1"
+
 terraform-docs = "0.20.0" # Documentation generation
 tflint = "0.59.1"         # Terraform linting
 
@@ -43,6 +45,7 @@ yamllint = "1.37.1"          # YAML linting
 yamlfmt = "0.17.2"           # YAML formatting
 shellcheck = "0.11.0"        # Shell script linting
 markdownlint-cli2 = "0.18.1" # Markdown linting
+act = "0.2.81"
 
 # ============================================================================
 # PACKER TASKS
@@ -205,7 +208,7 @@ description = "Run KICS infrastructure security scan"
 run = """
 echo "🔍 Running KICS security scan..."
 mkdir -p kics-results
-docker run -t -v "$(pwd)":/path checkmarx/kics:latest scan \
+docker run --rm -t -v "$(pwd)":/path checkmarx/kics:latest scan \
   -p /path \
   --config /path/kics.config \
   -o /path/kics-results \
@@ -220,7 +223,7 @@ description = "Run KICS scan with JSON output for CI integration"
 run = """
 echo "🔍 Running KICS security scan (CI mode)..."
 mkdir -p kics-results
-docker run -t -v "$(pwd)":/path checkmarx/kics:latest scan \
+docker run --rm -t -v "$(pwd)":/path checkmarx/kics:latest scan \
   -p /path \
   --config /path/kics.config \
   -o /path/kics-results \
@@ -230,6 +233,57 @@ docker run -t -v "$(pwd)":/path checkmarx/kics:latest scan \
 echo "✅ KICS scan complete"
 echo "📊 JSON results saved to kics-results/"
 """
+
+# ============================================================================
+# ACT (GITHUB ACTIONS LOCAL RUNNER) TASKS
+
+[tasks.act-list]
+description = "List all available GitHub Actions workflows"
+run = "act -l"
+
+[tasks.act-ci]
+description = "Run full CI pipeline locally with act"
+run = "act push --job terraform-format --job terraform-validate --job tflint --job terraform-docs --job yaml-lint --job shellcheck --job markdown-lint --job secret-scan"
+
+[tasks.act-format]
+description = "Run terraform format check locally"
+run = "act push --job terraform-format"
+
+[tasks.act-validate]
+description = "Run terraform validate locally"
+run = "act push --job terraform-validate"
+
+[tasks.act-lint]
+description = "Run TFLint locally"
+run = "act push --job tflint"
+
+[tasks.act-docs]
+description = "Run terraform-docs check locally"
+run = "act push --job terraform-docs"
+
+[tasks.act-security]
+description = "Run security scans (Infisical + KICS) locally"
+run = "act push --job secret-scan --job kics-scan"
+
+[tasks.act-quick]
+description = "Run quick CI checks (format, validate, lint)"
+run = "act push --job terraform-format --job terraform-validate --job tflint"
+
+[tasks.act-shell]
+description = "Run shell checks locally"
+run = "act push --job shellcheck"
+
+[tasks.act-pr]
+description = "Simulate a pull request CI run"
+run = "act pull_request"
+
+[tasks.act-debug]
+description = "Run act with verbose debugging"
+run = "act push --verbose"
+
+[tasks.act-dry]
+description = "Dry run to see what act would execute"
+run = "act push --dryrun"
 
 # ============================================================================
 # FORMATTING TASKS
