@@ -1,0 +1,27 @@
+# Packer Variables Configuration
+# Copy this file to variables.pkrvars.hcl and update with your values
+
+# Proxmox API Configuration
+proxmox_api_url          = "https://proxmox.example.com:8006/api2/json"
+proxmox_api_token_id     = "packer@pve!packer-token"
+proxmox_api_token_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Proxmox Node Configuration
+proxmox_node_name = "lloyd"
+
+# VM Instance Credentials
+# These are temporary credentials used during the build process
+# The password will be disabled after SSH key is configured
+instance_username = "ansible"
+instance_password = "ChangeMe!123"
+
+# Optional: Override default values
+# vm_id             = 1001
+# vm_name           = "ubuntu-server-numbat"
+# iso_file          = "local:iso/ubuntu-24.04-server-cloudimg-amd64.img"
+# iso_url           = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+# disk_size         = "20G"
+# memory            = "2048"
+# cores             = "1"
+# bridge_name       = "vmbr0"
+# storage_pool      = "local-lvm"

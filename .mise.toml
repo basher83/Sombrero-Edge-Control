@@ -24,7 +24,8 @@ truncate = true
 
 [tools]
 # Core tools
-terraform = "1.13.1"      # Pin to Terraform >=1.10 for Ephemeral Resources support
+terraform = "1.13.1"    # Pin to Terraform >=1.10 for Ephemeral Resources support
+packer = "1.14.1"
 terraform-docs = "0.20.0" # Documentation generation
 tflint = "0.59.1"         # Terraform linting
 
@@ -42,6 +43,42 @@ yamllint = "1.37.1"          # YAML linting
 yamlfmt = "0.17.2"           # YAML formatting
 shellcheck = "0.11.0"        # Shell script linting
 markdownlint-cli2 = "0.18.1" # Markdown linting
+
+# ============================================================================
+# PACKER TASKS
+# ============================================================================
+
+[tasks.packer-init]
+description = "Initialize Packer plugins"
+run = "cd packer && packer init ."
+
+[tasks.packer-validate]
+description = "Validate Packer template"
+run = "cd packer && packer validate ubuntu-server-numbat-docker.pkr.hcl"
+
+[tasks.packer-fmt]
+description = "Format Packer template files"
+run = "cd packer && packer fmt -recursive ."
+
+[tasks.packer-fmt-check]
+description = "Check Packer template formatting"
+run = "cd packer && packer fmt -check -recursive ."
+
+[tasks.packer-build]
+description = "Build VM template with Packer"
+run = """
+cd packer && \
+packer build ubuntu-server-numbat-docker.pkr.hcl
+"""
+
+[tasks.packer-build-debug]
+description = "Build VM template with Packer in debug mode"
+run = """
+cd packer && \
+PACKER_LOG=1 packer build \
+  -debug \
+  ubuntu-server-numbat-docker.pkr.hcl
+"""
 
 # ============================================================================
 # SETUP & INITIALIZATION TASKS
