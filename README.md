@@ -12,7 +12,7 @@ Infrastructure as Code (IaC) for deploying a centralized jump host VM to Proxmox
 
 ## 🎯 Purpose
 
-This repository deploys a dedicated Ubuntu 22.04 LTS jump host ("jump-man") for DevOps operations, providing a
+This repository deploys a dedicated Ubuntu 24.04 LTS jump host ("jump-man") for DevOps operations, providing a
 secure, centralized management point decoupled from developer laptops.
 
 ## 🏗️ Infrastructure Pipeline
@@ -45,7 +45,7 @@ graph LR
 
 ### Prerequisites
 
-- Proxmox cluster with Ubuntu 22.04 template (ID: 8000)
+- Proxmox cluster with Ubuntu 24.04 template (ID: 8024)
 - Terraform >= 1.3.0
 - Proxmox API token with appropriate permissions
 - mise for environment management (optional but recommended)

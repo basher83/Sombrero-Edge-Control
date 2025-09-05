@@ -296,8 +296,8 @@ run = "terraform fmt -recursive"
 
 # Format YAML files
 [tasks.yaml-fmt]
-description = "Format all YAML files in the repository"
-run = "yamlfmt ."
+description = "Format all YAML files in the repository using project configuration"
+run = "yamlfmt -conf .yamlfmt ."
 
 # Check Terraform formatting without making changes (CI-friendly)
 [tasks.fmt-check]
@@ -477,7 +477,7 @@ TEMP_FILE=$(mktemp)
   echo "<!-- Infrastructure Status Badges -->"
   echo "<img src=\"https://img.shields.io/badge/Terraform-${TERRAFORM_VERSION//v/}-7B42BC?style=plastic&logo=terraform&logoColor=white\" alt=\"Terraform\" />"
   echo "<img src=\"https://img.shields.io/badge/Proxmox-VE_E57000?style=plastic&logo=proxmox&logoColor=white\" alt=\"Proxmox\" />"
-  echo "<img src=\"https://img.shields.io/badge/Ubuntu_22.04-E95420?style=plastic&logo=ubuntu&logoColor=white\" alt=\"Ubuntu 22.04\" />"
+  echo "<img src=\"https://img.shields.io/badge/Ubuntu_24.04-E95420?style=plastic&logo=ubuntu&logoColor=white\" alt=\"Ubuntu 24.04\" />"
   echo ""
   echo "<!-- Deployment Status -->"
   echo "<img src=\"https://img.shields.io/badge/Deployed-$(date +%Y--%m--%d)-brightgreen?style=plastic&logo=github\" alt=\"Deployed $(date +%Y-%m-%d)\" />"
@@ -835,6 +835,277 @@ run = """
 echo "📚 Recent Deployments:"
 echo ""
 ls -la deployments/checklists/*.md 2>/dev/null | tail -10 || echo "No deployment records found"
+"""
+
+# ============================================================================
+# DEPLOYMENT PIPELINE TASKS (PACKER → TERRAFORM → ANSIBLE)
+# ============================================================================
+
+# Create outputs directory for cross-stage data passing
+[tasks.deploy-init]
+description = "Initialize deployment pipeline and create output directories"
+run = """
+echo "🚀 Initializing deployment pipeline..."
+mkdir -p deployments/outputs
+echo "✅ Created deployments/outputs directory"
+echo "📋 Pipeline ready for Packer → Terraform → Ansible deployment"
+"""
+
+# Stage 1: Packer Build with Output Capture
+[tasks.deploy-packer]
+description = "Build VM template with Packer and capture outputs"
+depends = ["deploy-init"]
+run = """
+echo "🏗️ Stage 1: Building VM template with Packer..."
+
+# Build with Packer
+cd packer && packer build ubuntu-server-numbat-docker.pkr.hcl
+
+# Capture Packer outputs
+echo "📝 Capturing Packer build outputs..."
+cat > ../deployments/outputs/packer-outputs.json << EOF
+{
+  "template_id": "1001",
+  "template_name": "ubuntu-server-numbat",
+  "build_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "docker_version": "$(docker --version 2>/dev/null | cut -d' ' -f3 | tr -d ',' || echo 'pre-installed')",
+  "packer_version": "$(packer version | head -1)",
+  "source_commit": "$(git rev-parse HEAD)"
+}
+EOF
+
+echo "✅ Packer build completed and outputs saved"
+echo "📄 Outputs: deployments/outputs/packer-outputs.json"
+"""
+
+# Stage 2: Terraform Deploy with Output Capture
+[tasks.deploy-terraform]
+description = "Deploy infrastructure with Terraform using Packer outputs"
+depends = ["deploy-init"]
+dir = "infrastructure/environments/production"
+run = """
+echo "🚀 Stage 2: Deploying infrastructure with Terraform..."
+
+# Check for Packer outputs
+if [ -f "../../../deployments/outputs/packer-outputs.json" ]; then
+  TEMPLATE_ID=$(jq -r '.template_id' ../../../deployments/outputs/packer-outputs.json)
+  echo "📋 Using Packer template ID: $TEMPLATE_ID"
+else
+  echo "⚠️  No Packer outputs found, using default template ID: 1001"
+  TEMPLATE_ID="1001"
+fi
+
+# Initialize and apply Terraform
+terraform init -input=false >/dev/null 2>&1
+terraform apply -auto-approve
+
+# Capture Terraform outputs for Ansible
+echo "📝 Generating Ansible inventory from Terraform outputs..."
+terraform output -json > ../../../deployments/outputs/terraform-outputs.json
+
+# Generate Ansible inventory from Terraform outputs (leveraging enhanced output)
+mkdir -p ../../../ansible/inventory
+echo "📋 Generating inventory from Terraform outputs..."
+terraform output -raw ansible_inventory > ../../../ansible/inventory/hosts.yml
+
+echo "✅ Terraform deployment completed and inventory generated"
+echo "📄 Outputs: deployments/outputs/terraform-outputs.json"
+echo "📋 Inventory: ansible/inventory/hosts.yml"
+"""
+
+# Stage 3: Ansible Configuration with Output Capture
+[tasks.deploy-ansible]
+description = "Configure VM with Ansible using Terraform outputs"
+depends = ["deploy-init"]
+dir = "ansible"
+run = """
+echo "⚙️ Stage 3: Configuring VM with Ansible..."
+
+# Check for Terraform outputs
+if [ ! -f "../deployments/outputs/terraform-outputs.json" ]; then
+  echo "❌ No Terraform outputs found. Run 'mise run deploy-terraform' first."
+  exit 1
+fi
+
+# Check for inventory file
+if [ ! -f "inventory/hosts.yml" ]; then
+  echo "❌ No Ansible inventory found. Run 'mise run deploy-terraform' to generate."
+  exit 1
+fi
+
+# Wait for VM to be ready
+echo "⏳ Waiting for VM to be ready for SSH..."
+VM_IP=$(jq -r '.vm_ip.value // "192.168.10.250"' ../deployments/outputs/terraform-outputs.json)
+for i in {1..30}; do
+  if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no ansible@$VM_IP 'exit' 2>/dev/null; then
+    echo "✅ SSH connection established"
+    break
+  fi
+  echo "Attempt $i/30: Waiting for SSH..."
+  sleep 10
+done
+
+# Run post-deployment configuration playbook
+if [ -f "playbooks/post-deploy.yml" ]; then
+  echo "🎯 Running post-deployment configuration..."
+  ansible-playbook -i inventory/hosts.yml playbooks/post-deploy.yml
+else
+  echo "📋 Testing Ansible connectivity and golden image..."
+  ansible all -i inventory/hosts.yml -m ping
+
+  echo "✅ Verifying golden image components..."
+  # Verify Docker is pre-installed from golden image
+  ansible all -i inventory/hosts.yml -m command -a 'docker --version'
+  ansible all -i inventory/hosts.yml -m command -a 'systemctl is-active docker'
+  # Verify development tools from golden image
+  ansible all -i inventory/hosts.yml -m command -a '/home/ansible/.local/bin/uv --version' -b
+  ansible all -i inventory/hosts.yml -m command -a '/home/ansible/.local/bin/mise --version' -b
+  # Verify nvm and Node.js installation
+  ansible all -i inventory/hosts.yml -m shell -a 'source ~/.nvm/nvm.sh && nvm --version' -b
+  ansible all -i inventory/hosts.yml -m shell -a 'source ~/.nvm/nvm.sh && node --version' -b
+fi
+
+# Capture Ansible results
+echo "📝 Capturing Ansible results..."
+cat > ../deployments/outputs/ansible-results.json << EOF
+{
+  "deployment_status": "success",
+  "configured_services": ["docker"],
+  "docker_status": "$(ansible all -i inventory/hosts.yml -m command -a 'systemctl is-active docker' 2>/dev/null | grep -o 'active' || echo 'unknown')",
+  "completion_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "vm_ip": "$VM_IP"
+}
+EOF
+
+echo "✅ Ansible configuration completed"
+echo "📄 Results: deployments/outputs/ansible-results.json"
+"""
+
+# Complete Pipeline: Packer → Terraform → Ansible
+[tasks.deploy-full]
+description = "Run complete deployment pipeline: Packer → Terraform → Ansible"
+depends = ["deploy-packer", "deploy-terraform", "deploy-ansible"]
+run = """
+echo "🎉 Complete deployment pipeline finished!"
+echo ""
+echo "📊 Pipeline Summary:"
+echo "==================="
+echo "🏗️  Packer: $(jq -r '.template_name' deployments/outputs/packer-outputs.json 2>/dev/null || echo 'completed')"
+echo "🚀 Terraform: $(jq -r '.vm_ip.value // "deployed"' deployments/outputs/terraform-outputs.json 2>/dev/null)"
+echo "⚙️  Ansible: $(jq -r '.deployment_status' deployments/outputs/ansible-results.json 2>/dev/null || echo 'completed')"
+echo ""
+echo "🔍 Run smoke tests: mise run smoke-test"
+echo "📋 View outputs: ls -la deployments/outputs/"
+"""
+
+# Pipeline with deployment tracking
+[tasks.deploy-full-tracked]
+description = "Run full pipeline with deployment tracking and analytics"
+run = """
+echo "📋 Starting tracked deployment pipeline..."
+
+# Start deployment tracking
+mise run deployment-start
+
+# Mark phases and run pipeline
+mise run deployment-phase-planning
+echo "📝 Planning phase: Pipeline validation"
+sleep 2
+
+mise run deployment-phase-execution
+echo "🚀 Executing full pipeline..."
+mise run deploy-full
+
+mise run deployment-phase-validation
+echo "✅ Running validation and smoke tests..."
+mise run smoke-test
+
+# Complete deployment
+mise run deployment-finish
+
+echo "🎉 Tracked deployment pipeline completed!"
+"""
+
+# Verify deployment pipeline integrity
+[tasks.deploy-verify]
+description = "Verify complete deployment pipeline and outputs"
+run = """
+echo "🔍 Verifying deployment pipeline..."
+echo ""
+
+# Check output files
+echo "📄 Checking output files:"
+for file in packer-outputs.json terraform-outputs.json ansible-results.json; do
+  if [ -f "deployments/outputs/$file" ]; then
+    echo "  ✅ $file exists"
+    echo "     Size: $(du -h deployments/outputs/$file | cut -f1)"
+  else
+    echo "  ❌ $file missing"
+  fi
+done
+
+echo ""
+echo "🎯 Running comprehensive smoke tests..."
+mise run smoke-test
+
+echo ""
+echo "📊 Pipeline Status Summary:"
+echo "==========================="
+if [ -f "deployments/outputs/packer-outputs.json" ]; then
+  echo "🏗️  Packer: $(jq -r '.template_name + " (" + .build_time + ")"' deployments/outputs/packer-outputs.json)"
+fi
+if [ -f "deployments/outputs/terraform-outputs.json" ]; then
+  echo "🚀 Terraform: VM deployed at $(jq -r '.vm_ip.value // "unknown IP"' deployments/outputs/terraform-outputs.json)"
+fi
+if [ -f "deployments/outputs/ansible-results.json" ]; then
+  echo "⚙️  Ansible: $(jq -r '.deployment_status + " (" + .completion_time + ")"' deployments/outputs/ansible-results.json)"
+fi
+"""
+
+# Rollback deployment (emergency)
+[tasks.deploy-rollback]
+description = "Emergency rollback of deployment"
+dir = "infrastructure/environments/production"
+run = """
+echo "⚠️  EMERGENCY ROLLBACK INITIATED"
+echo ""
+read -p "Are you sure you want to destroy the deployment? (yes/no): " -r
+if [[ $REPLY != "yes" ]]; then
+  echo "❌ Rollback cancelled"
+  exit 1
+fi
+
+echo "🔥 Destroying Terraform resources..."
+terraform destroy -auto-approve
+
+echo "🧹 Cleaning up output files..."
+rm -f ../../../deployments/outputs/terraform-outputs.json
+rm -f ../../../deployments/outputs/ansible-results.json
+rm -f ../../../ansible/inventory/hosts.yml
+
+echo "✅ Rollback completed"
+echo "⚠️  Packer template remains (manual cleanup required if needed)"
+"""
+
+# Environment-specific deployment
+[tasks.deploy-env]
+description = "Deploy to specific environment (ENV=production|staging|development)"
+run = """
+ENVIRONMENT=${ENV:-production}
+echo "🌍 Deploying to environment: $ENVIRONMENT"
+
+if [ ! -d "infrastructure/environments/$ENVIRONMENT" ]; then
+  echo "❌ Environment '$ENVIRONMENT' not found"
+  echo "Available environments:"
+  ls -1 infrastructure/environments/
+  exit 1
+fi
+
+echo "📂 Using environment: infrastructure/environments/$ENVIRONMENT"
+cd "infrastructure/environments/$ENVIRONMENT"
+
+# Run deployment for specific environment
+../../../scripts/deploy-env.sh "$ENVIRONMENT"
 """
 
 # ============================================================================

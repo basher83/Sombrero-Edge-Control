@@ -1,15 +1,17 @@
 #!/bin/bash
-# Generate Ansible inventory files from Terraform outputs
-# Usage: ./scripts/generate-ansible-inventory.sh [environment]
+# Dynamic Ansible Inventory Generation from Terraform Outputs
+# Automatically generates Ansible inventory files from Terraform state for jump host deployment
 
 set -euo pipefail
 
+# Configuration
 ENVIRONMENT="${1:-production}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 TERRAFORM_DIR="$PROJECT_ROOT/infrastructure/environments/$ENVIRONMENT"
 ANSIBLE_DIR="$PROJECT_ROOT/ansible"
 INVENTORY_DIR="$ANSIBLE_DIR/inventory"
+OUTPUTS_DIR="$PROJECT_ROOT/deployments/outputs"
 
 # Ensure directories exist
 mkdir -p "$INVENTORY_DIR"

@@ -105,7 +105,7 @@ infrastructure/
 The infrastructure uses a **modular Terraform design**:
 
 - **VM Module** ([`infrastructure/modules/vm/`](infrastructure/modules/vm/)): Reusable Proxmox VM provisioning with cloud-init support, memory ballooning, and dual-network capability
-- **Production Environment** ([`infrastructure/environments/production/`](infrastructure/environments/production/)): Instantiates the VM module for jump-man with Ubuntu 22.04 template
+- **Production Environment** ([`infrastructure/environments/production/`](infrastructure/environments/production/)): Instantiates the VM module for jump-man with Ubuntu 24.04 template
 
 ### Key Configuration
 
@@ -113,7 +113,7 @@ The infrastructure uses a **modular Terraform design**:
 - **Networking**: Static IP 192.168.10.250/24 with gateway 192.168.10.1
 - **Resources**: 2 vCPUs, 2GB RAM + 1GB floating, 32GB disk
 - **Provisioning**: Cloud-init with Docker CE, development tools, SSH keys
-- **Template**: Ubuntu 22.04 LTS (Proxmox template ID: 8000)
+- **Template**: Ubuntu 24.04 LTS (Proxmox template ID: 8024)
 
 ### State Management
 
@@ -279,4 +279,4 @@ mise run smoke-test 2>&1 | tee logs/smoke-test-$(date +%Y%m%d).log
 
 ---
 
-*This repository deploys a centralized Ubuntu 22.04 jump host (jump-man) for DevOps operations using Terraform and Proxmox with comprehensive automation, tracking, and validation.*
+*This repository deploys a centralized Ubuntu 24.04 jump host (jump-man) for DevOps operations using Terraform and Proxmox with comprehensive automation, tracking, and validation.*

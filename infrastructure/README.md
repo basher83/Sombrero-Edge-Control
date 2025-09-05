@@ -78,7 +78,7 @@ The infrastructure includes a dedicated jump host VM ("jump-man") for DevOps ope
 
 ### Jump Host Features
 
-- **Ubuntu 22.04 LTS** base OS with latest updates
+- **Ubuntu 24.04 LTS** base OS with latest updates
 - **Docker CE** with Compose plugin for containerized services
 - **Essential DevOps tools**: git, tmux, curl, wget, jq, python3
 - **Security**: nftables with permissive baseline (hardening via Ansible)

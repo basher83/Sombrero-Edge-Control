@@ -492,7 +492,7 @@ The infrastructure uses a modular Terraform design:
 
    - Static IP: 192.168.10.250/24
    - Node: lloyd (Proxmox host)
-   - Template: Ubuntu 22.04 LTS (ID: 8000)
+   - Template: Ubuntu 24.04 LTS (ID: 8024)
    - Resources: 2 vCPUs, 2GB RAM + 1GB floating, 32GB disk
 
 1. **Cloud-init Provisioning**: Automated installation of Docker CE, development tools, and basic security configuration

@@ -7,7 +7,7 @@ This directory contains the Terraform configuration for the production environme
 The production environment deploys the jump host VM ("jump-man") to the Proxmox cluster.
 
 ### Key Features:
-- Ubuntu 22.04 LTS jump host
+- Ubuntu 24.04 LTS jump host
 - Static IP: 192.168.10.250/24
 - Docker CE and essential DevOps tools
 - Memory ballooning for efficiency

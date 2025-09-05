@@ -2,7 +2,6 @@
 # Vendor-data for jump-man VM
 # This handles advanced configuration, scripts, and Docker installation
 # NOTE: Essential packages are handled in user-data for reliability
-
 # Write configuration files
 write_files:
   - path: /opt/docker-install.sh
@@ -10,34 +9,28 @@ write_files:
       ${indent(6, docker_install_script)}
     owner: root:root
     permissions: '0755'
-
   - path: /opt/firewall-setup.sh
     content: |
       ${indent(6, firewall_setup_script)}
     owner: root:root
     permissions: '0755'
-
   - path: /home/ansible/README.md
     content: |
       ${indent(6, readme_content)}
     owner: ansible:ansible
     permissions: '0644'
     defer: true
-
   - path: /home/ansible/docker-firewall-notes.md
     content: |
       ${indent(6, docker_firewall_docs)}
     owner: ansible:ansible
     permissions: '0644'
     defer: true
-
 # Run commands for advanced setup
 runcmd:
   # Wait a bit for user-data to complete package installation
   - sleep 30
-
   # Install Docker using the official method
   - /opt/docker-install.sh
-
   # Setup firewall with Docker compatibility
   - /opt/firewall-setup.sh

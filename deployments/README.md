@@ -1,98 +1,274 @@
-# Deployment Records & Analytics 📊📚
+# Infrastructure Deployment Pipeline 🚀
 
-This directory contains an **automated deployment tracking system** with comprehensive analytics, designed for audit trails, knowledge transfer, and continuous improvement.
+This directory manages the **complete three-tier deployment pipeline** using Packer → Terraform → Ansible, with comprehensive tracking, output passing, and automation.
 
-## 🚀 **Enhanced Features**
+## 🏗️ **Three-Tier Architecture**
 
-### **Automated Metadata Collection**
+```mermaid
+graph TB
+    A[1️⃣ Packer Build] --> B[Golden Image]
+    B --> C[2️⃣ Terraform Deploy]
+    C --> D[VM Instance]
+    D --> E[3️⃣ Ansible Configure]
+    E --> F[🎯 Production Ready]
 
-- ✅ **Git commit hash** capture (links deployments to code versions)
-- ✅ **Environment auto-detection** (production/staging/development)
-- ✅ **Terraform version** tracking
-- ✅ **Timing automation** with phase-based tracking
-- ✅ **Operator identification** and accountability
+    A --> A1[Template ID]
+    C --> C1[VM IP/SSH Info]
+    E --> E1[Service Status]
 
-### **Analytics & Insights**
+    A1 -.-> C
+    C1 -.-> E
+    E1 -.-> F
+```
 
-- 📊 **Success rate tracking** and performance metrics
-- 📈 **Trend analysis** for deployment patterns
-- 👥 **Team performance** insights and contributor analytics
-- 🎯 **Automated recommendations** based on historical data
-- 📅 **Deployment frequency** and timing analysis
+### **Pipeline Stages**
+
+| Stage | Tool | Purpose | Outputs |
+|-------|------|---------|----------|
+| 🏗️ **Build** | Packer + Ansible | Create comprehensive golden image | Template ID, Pre-installed tooling |
+| 🚀 **Deploy** | Terraform | Provision infrastructure | VM IP, SSH keys, inventory data |
+| ⚙️ **Configure** | Ansible | Instance-specific setup | Service status, final configuration |
 
 ## 📁 **Directory Structure**
 
 ```text
 deployments/
-├── checklists/                    # Enhanced deployment records
+├── outputs/                       # Cross-stage data passing
+│   ├── packer-outputs.json        # Packer build results
+│   ├── terraform-outputs.json     # Terraform provision results
+│   └── ansible-results.json       # Ansible configuration results
+├── checklists/                    # Deployment tracking records
 │   └── YYYY-MM-DD-HH-MM-deployment.md
 ├── deployment-checklist.md        # Template with phase tracking
 ├── deployment-process.md          # Complete process documentation
 └── README.md                      # This overview (you are here)
 ```
 
-## ⚡ **Quick Start Commands**
+## ⚡ **Complete Pipeline Commands**
 
-### **Start a New Deployment**
+### **Full Pipeline (Recommended)**
 
 ```bash
-# Enhanced deployment initialization with full metadata
-mise run deployment-start
+# Complete end-to-end deployment
+mise run deploy-full
+
+# With specific template (if multiple exist)
+mise run deploy-full TEMPLATE_ID=1001
 ```
 
-### **Track Deployment Progress**
+### **Individual Pipeline Stages**
 
 ```bash
-# Mark phase transitions with automatic timing
-mise run deployment-phase-planning
-mise run deployment-phase-execution
-mise run deployment-phase-validation
+# Stage 1: Build golden image
+mise run deploy-packer
+
+# Stage 2: Deploy infrastructure
+mise run deploy-terraform
+
+# Stage 3: Configure with Ansible
+mise run deploy-ansible
+
+# Verify deployment
+mise run deploy-verify
+```
+
+### **Pipeline with Tracking**
+
+```bash
+# Start tracked deployment
+mise run deployment-start
+
+# Run pipeline stages with tracking
+mise run deploy-full-tracked
+
+# Complete deployment record
 mise run deployment-finish
 ```
 
-### **View Analytics**
+## 🔄 **Output Passing Between Stages**
+
+### **Packer → Terraform**
 
 ```bash
-# Comprehensive metrics dashboard
-mise run deployment-metrics
-
-# Detailed performance analysis
-mise run deployment-metrics-full
-
-# Trend analysis and insights
-mise run deployment-trends
+# Packer outputs (automatically captured)
+deployments/outputs/packer-outputs.json:
+{
+  "template_id": "1001",
+  "template_name": "ubuntu-server-numbat",
+  "build_time": "2025-01-02T14:30:00Z",
+  "docker_version": "24.0.7",
+  "packer_version": "1.14.1"
+}
 ```
 
-### **Review History**
+### **Terraform → Ansible**
 
 ```bash
-# Quick deployment history
-mise run deployment-history
+# Terraform outputs (automatically captured)
+deployments/outputs/terraform-outputs.json:
+{
+  "vm_ip": "192.168.10.250",
+  "vm_hostname": "jump-man",
+  "vm_id": "150",
+  "ssh_user": "ansible",
+  "ssh_key_path": "~/.ssh/jump-man-key",
+  "ansible_inventory": {
+    "all": {
+      "hosts": {
+        "jump-man": {
+          "ansible_host": "192.168.10.250",
+          "ansible_user": "ansible"
+        }
+      }
+    }
+  }
+}
+```
+
+### **Ansible Results**
+
+```bash
+# Ansible outputs (automatically captured)
+deployments/outputs/ansible-results.json:
+{
+  "deployment_status": "success",
+  "configured_services": ["docker", "mise", "uv"],
+  "docker_status": "running",
+  "user_groups": ["ansible", "docker"],
+  "completion_time": "2025-01-02T14:45:00Z"
+}
+```
+
+## 🚀 **Advanced Pipeline Features**
+
+### **Automatic Output Capture**
+
+- ✅ **Packer builds** write template IDs to output files
+- ✅ **Terraform applies** generate Ansible inventory automatically
+- ✅ **Ansible runs** report service status and configuration
+- ✅ **Cross-stage validation** ensures output compatibility
+
+### **Error Handling & Rollback**
+
+```bash
+# Pipeline with automatic rollback on failure
+mise run deploy-full-safe
+
+# Manual rollback to previous state
+mise run deploy-rollback
+
+# Validate pipeline integrity
+mise run deploy-validate-pipeline
+```
+
+### **Environment-Aware Deployment**
+
+```bash
+# Deploy to specific environment
+ENV=production mise run deploy-full
+ENV=staging mise run deploy-full
+
+# Environment-specific configurations auto-loaded
 ```
 
 ## 📊 **What Gets Captured Automatically**
 
-### **Metadata (Auto-collected)**
+### **Cross-Stage Data**
 
-- **Deployment ID**: Unique identifier (DEP-YYYY-MM-DD-HH-MM)
-- **Git Information**: Commit hash, branch, repository state
-- **Environment Context**: Auto-detected environment type
-- **System Information**: Terraform version, working directory
-- **Timing Data**: Phase start times and durations
+- **Template IDs**: Packer build artifacts automatically passed to Terraform
+- **Infrastructure Data**: VM IPs, hostnames, SSH keys passed to Ansible
+- **Configuration Results**: Service status, user setup results captured
+- **Deployment Metadata**: Git commits, versions, timing across all stages
 
 ### **Visual Indicators**
 
-- **Technology Badges**: Terraform, Proxmox, Ubuntu versions
-- **Status Badges**: Deployment date, operator, environment
-- **Git Badges**: Branch and commit information
-- **Progress Tracking**: Visual checklist status
+- **Pipeline Badges**: Packer, Terraform, Ansible status indicators
+- **Technology Versions**: Docker, Terraform, Ansible versions tracked
+- **Environment Context**: Production/staging/development detection
+- **Status Tracking**: Real-time pipeline progress visualization
 
-### **Analytics Data**
+## 🔧 **Troubleshooting**
 
-- **Success Rates**: Individual and team performance
-- **Timing Patterns**: Peak deployment hours/days
-- **Issue Patterns**: Common problems and solutions
-- **Trend Analysis**: Performance over time
+### **Pipeline Failures**
+
+```bash
+# Check pipeline status
+mise run deploy-verify
+
+# View detailed logs for each stage
+cat deployments/outputs/packer-outputs.json
+cat deployments/outputs/terraform-outputs.json
+cat deployments/outputs/ansible-results.json
+
+# Emergency rollback
+mise run deploy-rollback
+```
+
+### **Common Issues**
+
+| Issue | Stage | Solution |
+|-------|-------|----------|
+| Template not found | Terraform | Run `mise run deploy-packer` first |
+| SSH connection fails | Ansible | Check VM is running and SSH keys |
+| Output files missing | Any | Run `mise run deploy-init` |
+| Inventory generation fails | Terraform | Check Terraform outputs exist |
+
+### **Debug Mode**
+
+```bash
+# Debug individual stages
+PACKER_LOG=1 mise run deploy-packer
+TF_LOG=DEBUG mise run deploy-terraform
+ANSIBLE_VERBOSE=3 mise run deploy-ansible
+```
+
+## 📋 **Examples**
+
+### **Basic Pipeline**
+
+```bash
+# Simple deployment
+mise run deploy-full
+
+# Check status
+mise run deploy-verify
+```
+
+### **Production Deployment with Tracking**
+
+```bash
+# Start tracked deployment
+mise run deployment-start
+
+# Run full pipeline with tracking
+mise run deploy-full-tracked
+
+# View analytics
+mise run deployment-metrics
+```
+
+### **Environment-Specific Deployment**
+
+```bash
+# Deploy to staging
+ENV=staging mise run deploy-env
+
+# Deploy to development
+ENV=development mise run deploy-env
+```
+
+### **Individual Stage Testing**
+
+```bash
+# Test just Packer build
+mise run deploy-packer
+
+# Test Terraform with existing template
+mise run deploy-terraform
+
+# Test Ansible configuration
+mise run deploy-ansible
+```
 
 ## 🎯 **Enhanced Workflow**
 

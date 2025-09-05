@@ -25,7 +25,7 @@ module "simple_vm" {
   vm_ip_primary = "192.168.1.10/24"
   vm_gateway    = "192.168.1.1"
   vm_datastore  = "local-lvm"
-  template_id   = 8000
+  template_id   = 8024
   template_node = "proxmox-node"
   ci_ssh_key    = "ssh-ed25519 AAAA..."
 }
@@ -63,7 +63,7 @@ module "jump_host" {
   vendor_data_content = file("${path.module}/cloud-init.yaml")
 
   # Template
-  template_id   = 8000
+  template_id   = 8024
   template_node = "lloyd"
 
   # Tags

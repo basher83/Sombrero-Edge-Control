@@ -1,0 +1,10 @@
+# Deployment Pipeline Outputs
+
+This directory stores JSON output files that pass data between pipeline stages:
+
+- `packer-outputs.json` - Template IDs and build artifacts from Packer
+- `terraform-outputs.json` - Infrastructure details (IPs, hostnames) from Terraform
+- `ansible-results.json` - Configuration status and service details from Ansible
+
+These files enable automatic data passing in the Packer → Terraform → Ansible pipeline.
+Files are automatically generated during deployment runs.

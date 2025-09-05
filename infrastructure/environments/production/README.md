@@ -83,7 +83,7 @@ ci_ssh_key        = "ssh-ed25519 AAAA... your-key"
 
 ```hcl
 vault_network_subnet = "192.168.10"  # Default network subnet
-template_id         = 8000           # Ubuntu 22.04 template
+template_id         = 8024          # Ubuntu 24.04 template
 vm_datastore        = "local-lvm"    # Storage location
 vm_bridge_1         = "vmbr0"        # Network bridge
 ```
@@ -282,7 +282,9 @@ Our infrastructure uses a sophisticated cloud-init setup:
 | <a name="requirement_proxmox"></a> [proxmox](#requirement\_proxmox) | >= 0.73.2 |
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_proxmox"></a> [proxmox](#provider\_proxmox) | >= 0.73.2 |
 ## Modules
 
 | Name | Source | Version |
@@ -290,7 +292,8 @@ No providers.
 | <a name="module_jump_man"></a> [jump\_man](#module\_jump\_man) | ../../modules/vm | n/a |
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -302,7 +305,7 @@ No resources.
 | <a name="input_proxmox_ssh_username"></a> [proxmox\_ssh\_username](#input\_proxmox\_ssh\_username) | SSH username for Proxmox host (for file uploads) | `string` | `"root"` | no |
 | <a name="input_pve_api_token"></a> [pve\_api\_token](#input\_pve\_api\_token) | Proxmox API token ID | `string` | n/a | yes |
 | <a name="input_pve_api_url"></a> [pve\_api\_url](#input\_pve\_api\_url) | Proxmox API endpoint URL | `string` | n/a | yes |
-| <a name="input_template_id"></a> [template\_id](#input\_template\_id) | Template ID for VM cloning | `number` | `8000` | no |
+| <a name="input_template_id"></a> [template\_id](#input\_template\_id) | Template ID for VM cloning | `number` | `8024` | no |
 | <a name="input_template_node"></a> [template\_node](#input\_template\_node) | Node where the template VM exists | `string` | `"lloyd"` | no |
 | <a name="input_vm_bridge_1"></a> [vm\_bridge\_1](#input\_vm\_bridge\_1) | Primary network bridge for VMs | `string` | `"vmbr0"` | no |
 | <a name="input_vm_datastore"></a> [vm\_datastore](#input\_vm\_datastore) | Proxmox datastore for VM disks | `string` | `"local-lvm"` | no |
@@ -310,7 +313,8 @@ No resources.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_ansible_inventory"></a> [ansible\_inventory](#output\_ansible\_inventory) | Ansible inventory in YAML format for jump host |
+| <a name="output_ansible_inventory"></a> [ansible\_inventory](#output\_ansible\_inventory) | Enhanced Ansible inventory with golden image metadata |
+| <a name="output_deployment_metadata"></a> [deployment\_metadata](#output\_deployment\_metadata) | Deployment metadata for tracking and analytics |
 | <a name="output_jump_host"></a> [jump\_host](#output\_jump\_host) | Jump host (jump-man) VM details |
 | <a name="output_network_configuration"></a> [network\_configuration](#output\_network\_configuration) | Network configuration for the jump host |
 <!-- END_TF_DOCS -->

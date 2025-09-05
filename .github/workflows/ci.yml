@@ -253,7 +253,7 @@ jobs:
       - markdown-lint
     steps:
       - name: Summary
-        run: |
+        run: |-
           echo "### CI Summary" >> $GITHUB_STEP_SUMMARY
           echo "✅ All quality checks passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

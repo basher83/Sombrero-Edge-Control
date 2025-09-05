@@ -4,13 +4,14 @@ This directory contains Packer configurations for building Proxmox VM templates 
 
 ## Overview
 
-The Packer template creates an Ubuntu 24.04 LTS (Numbat) VM template with:
-- Docker CE pre-installed
-- Cloud-init support
-- 2GB swap configuration
-- QEMU Guest Agent
-- SSH key authentication setup
-- Ansible user pre-configured
+The Packer template creates an Ubuntu 24.04 LTS (Numbat) VM template with comprehensive tooling:
+- **Docker CE** with Compose plugin pre-installed and configured
+- **Development tools**: mise, uv, Node.js LTS, Python 3, essential packages
+- **System hardening**: SSH security configuration, unattended upgrades
+- **Cloud-init support** with Proxmox integration
+- **QEMU Guest Agent** for VM management
+- **Ansible user** pre-configured with docker group membership
+- **Golden image optimizations**: cleaned cache, reset machine-id
 
 ## Directory Structure
 
@@ -110,14 +111,33 @@ packer build ubuntu-server-numbat-docker.pkr.hcl
 - **Network**: virtio on vmbr0
 - **Features**: QEMU Guest Agent, Cloud-init
 
-### Installed Software
+### Installed Software (via Ansible Provisioner)
 
-The template includes:
-- Docker CE (latest stable)
-- Docker Compose
+The template includes comprehensive tooling installed via Ansible during the Packer build:
+
+**Container Runtime:**
+- Docker CE (latest stable) with Compose plugin
+- Buildx plugin for multi-platform builds
+- Containerd runtime
+
+**Development Tools:**
+- mise (development tool version manager)
+- uv (ultra-fast Python package manager)
+- nvm with Node.js LTS (Node Version Manager)
+- npm global packages: yarn, pnpm, Angular CLI, Vue CLI, create-react-app
+- Python 3 with pip and venv
+- Essential build tools (gcc, make, etc.)
+
+**System Utilities:**
+- Git, vim, htop, tree, jq
+- curl, wget, unzip
 - QEMU Guest Agent
-- Cloud-init
-- Basic system utilities
+- Cloud-init with Proxmox integration
+
+**Security & Hardening:**
+- SSH hardening configuration
+- Unattended security updates
+- Disabled root login baseline
 
 ### Cloud-init Configuration
 
@@ -258,8 +278,8 @@ graph LR
 ### Template Versioning
 
 Consider using VM ID ranges:
-- 1000-1099: Ubuntu 22.04 templates
-- 1100-1199: Ubuntu 24.04 templates
+- 1000-1099: Ubuntu 22.04 templates (legacy)
+- 1100-1199: Ubuntu 24.04 templates (current)
 - 1200-1299: Rocky/Alma Linux templates
 
 ## Resources

@@ -1,6 +1,6 @@
 # Jump Host (jump-man) - DevOps Management Server
 
-This Ubuntu 22.04 jump host is configured for DevOps operations.
+This Ubuntu 24.04 jump host is configured for DevOps operations.
 
 ## Installed Tools
 

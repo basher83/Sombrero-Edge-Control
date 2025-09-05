@@ -1,17 +1,14 @@
-#cloud-config
+# cloud-config
 # User-data for jump-man VM
 # This handles essential packages that need to be installed reliably
-
 # System configuration
 hostname: jump-man
 manage_etc_hosts: true
 fqdn: jump-man
 timezone: UTC
-
 # System updates
 package_update: true
 package_upgrade: true
-
 # Essential packages - these MUST be installed
 packages:
   - qemu-guest-agent
@@ -29,7 +26,6 @@ packages:
   - git
   - tmux
   - python3
-
 # Users configuration
 users:
   - default
@@ -38,20 +34,16 @@ users:
     shell: /bin/bash
     ssh_authorized_keys:
       - ${ci_ssh_key}
-
 # Enable and start essential services
 runcmd:
   # Enable and start QEMU guest agent first (critical for Proxmox integration)
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
-
   # Ensure SSH service is enabled and running
   - systemctl enable ssh
   - systemctl start ssh
-
 # Disable password authentication (security)
 chpasswd:
-  expire: False
-
+  expire: false
 # Preserve SSH keys
 ssh_deletekeys: false

@@ -8,6 +8,10 @@ packer {
       version = ">= 1.2.0"
       source  = "github.com/hashicorp/proxmox"
     }
+    ansible = {
+      version = ">= 1.1.0"
+      source  = "github.com/hashicorp/ansible"
+    }
   }
 }
 
@@ -55,8 +59,11 @@ source "proxmox-clone" "ubuntu-server-numbat" {
   # VM General Settings
   node                 = "${var.proxmox_node_name}"
   vm_id                = "1001"
-  vm_name              = "ubuntu-server-numbat"
-  template_description = "Ubuntu Server numbat Image with Docker"
+  vm_name              = "ubuntu-server-numbat-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
+  template_description = "Golden Image: Ubuntu 24.04 LTS with Docker, nvm, mise, uv - Built ${formatdate("YYYY-MM-DD hh:mm", timestamp())}"
+
+  # Tags for dynamic template selection
+  tags = "packer-built,ubuntu-24-04,golden-image,docker,development-tools"
 
   # Clone from existing template - use template name
   clone_vm = "ubuntu24"  # Your existing cloud-init template name
@@ -127,15 +134,29 @@ build {
     inline = ["sudo cp /tmp/99-pve.cfg /etc/cloud/cloud.cfg.d/99-pve.cfg"]
   }
 
-  # Provisioning the VM Template with Docker Installation #4
-  provisioner "shell" {
-    inline = [
-      "sudo apt-get update",
-      "sudo apt-get install -y ca-certificates curl gnupg lsb-release",
-      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
-      "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
-      "sudo apt-get -y update",
-      "sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"
+  # Provisioning with Ansible for comprehensive golden image setup
+  provisioner "ansible" {
+    # Core configuration
+    playbook_file = "../ansible/playbooks/packer-provision.yml"
+    user         = "${var.instance_username}"
+
+    # Performance and reliability settings
+    use_proxy                = false  # Recommended for Ansible 2.8+
+    ansible_env_vars = [
+      "ANSIBLE_HOST_KEY_CHECKING=False",
+      "ANSIBLE_FORCE_COLOR=1",
+      "PYTHONUNBUFFERED=1"
     ]
+
+    # Pass Packer context to Ansible
+    extra_arguments = [
+      "--extra-vars", "packer_build=true",
+      "--extra-vars", "golden_image_build=true",
+      "--extra-vars", "build_timestamp=${timestamp()}",
+      "-v"  # Verbose output for debugging
+    ]
+
+    # Inventory configuration (automatically handled by Packer)
+    groups = ["golden_image", "packer_build"]
   }
 }

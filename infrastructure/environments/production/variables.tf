@@ -2,7 +2,7 @@
 
 variable "template_id" {
   type        = number
-  default     = 8000 # Ubuntu 22.04 template
+  default     = 8024 # Ubuntu 24.04 template
   description = "Template ID for VM cloning"
 }
 
