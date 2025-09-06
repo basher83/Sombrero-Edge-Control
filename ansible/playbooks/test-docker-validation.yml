@@ -1,0 +1,120 @@
+---
+# Test playbook for docker_validation role
+
+- name: Test Docker Validation Role
+  hosts: localhost
+  gather_facts: yes
+
+  vars:
+    # Test configuration - minimal setup for macOS testing
+    docker_validation_phases:
+      - engine_validation
+      # Skip other phases in basic test due to Docker requirements
+
+    # Docker Engine Requirements (relaxed for testing)
+    docker_min_version: "20.10.0"
+    docker_max_container_count: 1000
+    docker_min_disk_space_gb: 1
+
+    # Container validation (empty for basic test)
+    expected_containers: []
+
+    # Image validation (empty for basic test)
+    expected_images: []
+
+    # Docker Compose stacks (empty for basic test)
+    docker_compose_stacks: []
+
+    # Registry configuration (empty for basic test)
+    docker_registries: []
+
+    # Security validation settings
+    security_validation:
+      check_privileged_containers: false  # Disabled for testing
+      check_root_user: false             # Disabled for testing
+      validate_user_namespaces: false    # Disabled for testing
+      check_capabilities: false          # Disabled for testing
+      validate_seccomp: false           # Disabled for testing
+      check_read_only_root: false       # Disabled for testing
+
+    # Network validation (minimal)
+    network_validation:
+      expected_networks: []
+      validate_bridge_config: false     # Disabled for testing
+      check_port_conflicts: false       # Disabled for testing
+      validate_dns_config: false        # Disabled for testing
+
+    # Storage validation (minimal)
+    storage_validation:
+      expected_volumes: []
+      check_volume_permissions: false   # Disabled for testing
+      validate_storage_driver: true     # Keep enabled for basic engine test
+      max_volume_size_gb: 100
+
+    # Performance monitoring (disabled for testing)
+    performance_monitoring:
+      enable_resource_monitoring: false
+      cpu_alert_threshold: 90
+      memory_alert_threshold: 90
+      disk_io_alert_threshold: 95
+      network_io_alert_threshold: 95
+
+    # Monitoring integration (disabled for testing)
+    monitoring_integration:
+      enable_prometheus: false
+      enable_cadvisor: false
+      prometheus_port: 9090
+      cadvisor_port: 8080
+      monitoring_endpoints: []
+
+    # Log validation (minimal)
+    log_validation:
+      check_container_logs: false       # Disabled for testing
+      log_driver_validation: true       # Keep basic validation
+      max_log_size_mb: 100
+      log_rotation_validation: false    # Disabled for testing
+      error_log_patterns: []
+
+    # Validation behavior
+    validation_config:
+      fail_fast: false
+      parallel_validation: true
+      timeout_seconds: 120              # Reduced timeout for testing
+      retry_count: 2                    # Reduced retries for testing
+      retry_delay: 3
+      collect_debug_info: true
+
+    # Reporting configuration
+    reporting:
+      generate_json_report: true
+      generate_html_report: false       # Disabled for testing
+      report_path: "/tmp"
+      log_level: "info"
+      include_performance_metrics: false # Disabled for testing
+
+    # Daemon configuration validation (minimal)
+    daemon_config_validation:
+      validate_daemon_config: false     # Disabled for testing
+      required_config_keys: []
+      forbidden_config_keys: []
+      storage_driver_whitelist:
+        - "overlay2"
+        - "devicemapper"
+        - "aufs"
+        - "overlayfs"                   # macOS Docker Desktop
+      logging_driver_whitelist:
+        - "json-file"
+        - "journald"
+        - "syslog"
+
+    # Cleanup validation (minimal)
+    cleanup_validation:
+      check_disk_usage: false           # Disabled for testing
+      validate_image_cleanup: false     # Disabled for testing
+      check_container_cleanup: false    # Disabled for testing
+      validate_volume_cleanup: false    # Disabled for testing
+      max_unused_images: 10
+      max_stopped_containers: 5
+
+  roles:
+    - role: docker_validation
