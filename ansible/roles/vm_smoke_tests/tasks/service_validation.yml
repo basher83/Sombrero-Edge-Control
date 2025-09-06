@@ -1,0 +1,148 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Service validation tasks
+
+- name: Gather systemd service information
+  service_facts:
+  register: services_info
+
+- name: Check expected system services
+  block:
+    - name: Validate critical services are running
+      assert:
+        that:
+          - services_info.ansible_facts.services[item] is defined
+          - services_info.ansible_facts.services[item].state == "running"
+        fail_msg: "Service {{ item }} is not running or not found"
+        success_msg: "Service {{ item }} is running"
+      loop: "{{ expected_services }}"
+      register: service_check_results
+      when:
+        - expected_services | length > 0
+        - services_info is defined
+        - services_info.ansible_facts is defined
+
+    - name: Record service validation results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'service_validation': {'status': 'PASS', 'services': expected_services}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+      when: expected_services | length > 0
+
+    - name: Skip service validation if no services expected
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'service_validation': {'status': 'SKIP', 'reason': 'No services configured for validation'}}) }}"
+      when: expected_services | length == 0
+
+  rescue:
+    - name: Record service validation failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'service_validation': {'status': 'FAIL', 'expected_services': expected_services, 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug service validation failure
+      debug:
+        msg: "Service validation failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+    - name: List available services for debugging
+      debug:
+        msg: "Available services: {{ services_info.ansible_facts.services.keys() | list | sort }}"
+      when:
+        - test_config.collect_debug_info | default(true)
+        - reporting.log_level == 'debug'
+        - services_info is defined
+        - services_info.ansible_facts is defined
+
+- name: Check expected listening ports
+  block:
+    - name: Test port availability
+      wait_for:
+        port: "{{ item.port }}"
+        host: "{{ ansible_host | default('127.0.0.1') }}"
+        timeout: "{{ test_config.timeout_default }}"
+        state: started
+      loop: "{{ expected_ports }}"
+      register: port_check_results
+
+    - name: Record port availability results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'port_availability': {'status': 'PASS', 'ports': expected_ports}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+
+  rescue:
+    - name: Record port availability failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'port_availability': {'status': 'FAIL', 'expected_ports': expected_ports, 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug port availability failure
+      debug:
+        msg: "Port availability check failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+- name: Docker container validation (if enabled and containers expected)
+  block:
+    - name: Check if Docker is available
+      command: docker --version
+      register: docker_version_check
+      changed_when: false
+      failed_when: false
+
+    - name: Validate Docker containers
+      community.docker.docker_container_info:
+        name: "{{ item.name }}"
+      loop: "{{ expected_containers }}"
+      register: container_info_results
+      when:
+        - docker_settings.validate_containers | default(true)
+        - expected_containers | length > 0
+        - docker_version_check.rc == 0
+
+    - name: Check container states
+      assert:
+        that:
+          - item.container.State.Status == item.item.expected_state | default('running')
+        fail_msg: "Container {{ item.container.Name }} is {{ item.container.State.Status }}, expected {{ item.item.expected_state | default('running') }}"
+        success_msg: "Container {{ item.container.Name }} is {{ item.container.State.Status }}"
+      loop: "{{ container_info_results.results }}"
+      when:
+        - container_info_results is defined
+        - container_info_results.results is defined
+      register: container_state_checks
+
+    - name: Record Docker container validation results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'docker_containers': {'status': 'PASS', 'containers': expected_containers}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+      when:
+        - expected_containers | length > 0
+        - docker_version_check.rc == 0
+
+    - name: Skip Docker validation if no containers expected
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'docker_containers': {'status': 'SKIP', 'reason': 'No containers expected or Docker not available'}}) }}"
+      when:
+        - expected_containers | length == 0 or docker_version_check.rc != 0
+
+  rescue:
+    - name: Record Docker container validation failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'docker_containers': {'status': 'FAIL', 'expected_containers': expected_containers, 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug Docker container validation failure
+      debug:
+        msg: "Docker container validation failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+  when:
+    - docker_settings.validate_containers | default(true)
+
+- name: Display service validation summary
+  debug:
+    msg:
+      - "Service Validation Results:"
+      - "  System Services: {{ smoke_test_results.service_validation.status | default('SKIP') }}"
+      - "  Port Availability: {{ smoke_test_results.port_availability.status | default('SKIP') }}"
+      - "  Docker Containers: {{ smoke_test_results.docker_containers.status | default('SKIP') }}"
+  when: reporting.log_level in ['debug', 'info']

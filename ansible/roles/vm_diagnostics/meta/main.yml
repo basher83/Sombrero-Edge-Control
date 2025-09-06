@@ -1,0 +1,114 @@
+---
+#SPDX-License-Identifier: MIT-0
+# VM Diagnostics Role - Metadata
+
+galaxy_info:
+  role_name: vm_diagnostics
+  namespace: sombrero_edge
+  author: Sombrero Edge Control Infrastructure Team
+  description: |
+    Comprehensive VM diagnostics and troubleshooting capabilities for systematic
+    problem analysis and resolution. Provides automated diagnostic workflows
+    across system health, log analysis, network connectivity, service status,
+    performance monitoring, and troubleshooting automation.
+
+  company: Sombrero Edge Control
+  license: MIT-0
+
+  min_ansible_version: "2.15"
+
+  # Platform support based on research and testing
+  platforms:
+    - name: Ubuntu
+      versions:
+        - "20.04"
+        - "22.04"
+        - "24.04"
+    - name: Debian
+      versions:
+        - "11"
+        - "12"
+    - name: CentOS
+      versions:
+        - "8"
+        - "9"
+    - name: RedHat
+      versions:
+        - "8"
+        - "9"
+    - name: Fedora
+      versions:
+        - "39"
+        - "40"
+    - name: Alpine
+      versions:
+        - "3.18"
+        - "3.19"
+
+  galaxy_tags:
+    - diagnostics
+    - monitoring
+    - troubleshooting
+    - system
+    - network
+    - performance
+    - logging
+    - docker
+    - vm
+    - infrastructure
+    - automation
+    - devops
+    - maintenance
+
+# Role Dependencies
+# Based on comprehensive research findings
+dependencies:
+  # Community General Collection - Essential utilities
+  - name: community.general
+    version: ">=8.0.0"
+
+  # POSIX Collection - System diagnostics
+  - name: ansible.posix
+    version: ">=1.5.0"
+
+  # Extended Facts Collection - Hardware diagnostics
+  # Note: This is an external collection that needs to be installed
+  # ansible-galaxy collection install deltabg.extended_facts:1.0.6
+  # Commented out as optional dependency
+  # - name: deltabg.extended_facts
+  #   version: ">=1.0.0"
+
+# Collection Requirements
+# These collections provide the diagnostic capabilities
+collections:
+  - community.general
+  - ansible.posix
+  - ansible.builtin
+
+# Optional Collections for Advanced Features
+# Install these for enhanced functionality:
+#   - deltabg.extended_facts (Hardware diagnostics)
+#   - community.docker (Container diagnostics)
+#   - prometheus.community (Monitoring integration)
+#   - grafana.community (Dashboard integration)
+
+# Role Compatibility Notes:
+# - Designed for cross-platform compatibility (Linux distributions)
+# - Handles container environments gracefully
+# - Provides graceful degradation for missing features
+# - Respects security boundaries and file permissions
+# - Optimized for minimal system impact during diagnostics
+
+# Performance Characteristics:
+# - Low resource impact by default
+# - Configurable performance thresholds
+# - Parallel execution where safe
+# - Timeout protection for long-running checks
+# - Nice priority control for system impact
+
+# Integration Capabilities:
+# - CI/CD pipeline integration
+# - Monitoring system integration (Prometheus, Grafana)
+# - Log aggregation platform support
+# - Custom webhook notifications
+# - Structured JSON/YAML output formats
