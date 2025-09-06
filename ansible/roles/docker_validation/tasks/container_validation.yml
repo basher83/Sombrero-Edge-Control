@@ -1,0 +1,219 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Container validation tasks
+
+- name: Validate expected containers
+  block:
+    - name: Get information for expected containers
+      community.docker.docker_container_info:
+        name: "{{ item.name }}"
+      loop: "{{ expected_containers }}"
+      register: container_info_results
+      when: expected_containers | length > 0
+
+    - name: Validate container states
+      assert:
+        that:
+          - item.container is defined
+          - item.container.State.Status == item.item.state | default('running')
+        fail_msg: "Container {{ item.item.name }} is {{ item.container.State.Status | default('not found') }}, expected {{ item.item.state | default('running') }}"
+        success_msg: "Container {{ item.item.name }} state is correct: {{ item.container.State.Status }}"
+      loop: "{{ container_info_results.results }}"
+      when:
+        - expected_containers | length > 0
+        - container_info_results is defined
+        - item.container is defined
+      register: container_state_checks
+
+    - name: Validate container health status
+      assert:
+        that:
+          - item.container.State.Health.Status | default('none') == item.item.health_status | default('none')
+        fail_msg: "Container {{ item.item.name }} health is {{ item.container.State.Health.Status | default('none') }}, expected {{ item.item.health_status | default('none') }}"
+        success_msg: "Container {{ item.item.name }} health status correct: {{ item.container.State.Health.Status | default('none') }}"
+      loop: "{{ container_info_results.results }}"
+      when:
+        - expected_containers | length > 0
+        - container_info_results is defined
+        - item.container is defined
+        - item.item.health_status is defined
+      register: container_health_checks
+
+    - name: Validate container restart policies
+      assert:
+        that:
+          - item.container.HostConfig.RestartPolicy.Name == item.item.restart_policy | default('no')
+        fail_msg: "Container {{ item.item.name }} restart policy is {{ item.container.HostConfig.RestartPolicy.Name }}, expected {{ item.item.restart_policy | default('no') }}"
+        success_msg: "Container {{ item.item.name }} restart policy correct: {{ item.container.HostConfig.RestartPolicy.Name }}"
+      loop: "{{ container_info_results.results }}"
+      when:
+        - expected_containers | length > 0
+        - container_info_results is defined
+        - item.container is defined
+        - item.item.restart_policy is defined
+      register: container_restart_checks
+
+    - name: Record container validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_validation': {'status': 'PASS', 'containers_validated': expected_containers | length, 'containers': expected_containers | map(attribute='name') | list}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when: expected_containers | length > 0
+
+    - name: Skip container validation if no containers expected
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_validation': {'status': 'SKIP', 'reason': 'No containers configured for validation'}}) }}"
+      when: expected_containers | length == 0
+
+  rescue:
+    - name: Record container validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_validation': {'status': 'FAIL', 'expected_containers': expected_containers, 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug container validation failure
+      debug:
+        msg: "Container validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate container resource usage
+  block:
+    - name: Get container stats for resource monitoring
+      community.docker.docker_container_info:
+        name: "{{ item.name }}"
+      loop: "{{ expected_containers }}"
+      register: container_stats_results
+      when:
+        - expected_containers | length > 0
+        - performance_monitoring.enable_resource_monitoring | default(true)
+
+    - name: Validate container CPU usage
+      assert:
+        that:
+          - item.container.State.Status == 'running'
+        fail_msg: "Cannot check CPU usage for container {{ item.item.name }}: not running"
+        success_msg: "Container {{ item.item.name }} is running and available for resource monitoring"
+      loop: "{{ container_stats_results.results }}"
+      when:
+        - expected_containers | length > 0
+        - performance_monitoring.enable_resource_monitoring | default(true)
+        - container_stats_results is defined
+        - item.container is defined
+      register: container_resource_checks
+
+    - name: Record container resource validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_resources': {'status': 'PASS', 'monitoring_enabled': performance_monitoring.enable_resource_monitoring, 'containers_monitored': running_containers | length}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      vars:
+        running_containers: "{{ container_stats_results.results | selectattr('container.State.Status', 'equalto', 'running') | list }}"
+      when:
+        - expected_containers | length > 0
+        - performance_monitoring.enable_resource_monitoring | default(true)
+        - container_stats_results is defined
+
+    - name: Skip container resource validation if monitoring disabled
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_resources': {'status': 'SKIP', 'reason': 'Resource monitoring disabled'}}) }}"
+      when: not (performance_monitoring.enable_resource_monitoring | default(true))
+
+  rescue:
+    - name: Record container resource validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_resources': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug container resource validation failure
+      debug:
+        msg: "Container resource validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate container environment variables
+  block:
+    - name: Check required environment variables are present
+      assert:
+        that:
+          - item.1 in (item.0.container.Config.Env | map('regex_replace', '^([^=]+)=.*$', '\\1') | list)
+        fail_msg: "Container {{ item.0.item.name }} missing required environment variable: {{ item.1 }}"
+        success_msg: "Container {{ item.0.item.name }} has required environment variable: {{ item.1 }}"
+      loop: "{{ container_info_results.results | subelements('item.required_env_vars', skip_missing=True) }}"
+      when:
+        - expected_containers | length > 0
+        - container_info_results is defined
+      register: container_env_checks
+
+    - name: Record environment variable validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_env_vars': {'status': 'PASS', 'containers_checked': containers_with_env_vars | length}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      vars:
+        containers_with_env_vars: "{{ expected_containers | selectattr('required_env_vars', 'defined') | list }}"
+      when: expected_containers | length > 0
+
+  rescue:
+    - name: Record environment variable validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_env_vars': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug environment variable validation failure
+      debug:
+        msg: "Environment variable validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate container log accessibility
+  block:
+    - name: Test container log accessibility
+      command: docker logs {{ item.name }} --tail 1
+      loop: "{{ expected_containers }}"
+      register: container_log_results
+      changed_when: false
+      failed_when: false
+      when:
+        - expected_containers | length > 0
+        - log_validation.check_container_logs | default(true)
+
+    - name: Validate logs are accessible
+      assert:
+        that:
+          - item.rc == 0
+        fail_msg: "Cannot access logs for container {{ item.item.name }}: {{ item.stderr | default('Unknown error') }}"
+        success_msg: "Logs accessible for container {{ item.item.name }}"
+      loop: "{{ container_log_results.results }}"
+      when:
+        - expected_containers | length > 0
+        - log_validation.check_container_logs | default(true)
+        - container_log_results is defined
+
+    - name: Record log accessibility validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_logs': {'status': 'PASS', 'containers_checked': expected_containers | length}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when:
+        - expected_containers | length > 0
+        - log_validation.check_container_logs | default(true)
+
+    - name: Skip log validation if disabled
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_logs': {'status': 'SKIP', 'reason': 'Log validation disabled'}}) }}"
+      when: not (log_validation.check_container_logs | default(true))
+
+  rescue:
+    - name: Record log accessibility validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'container_logs': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug log accessibility validation failure
+      debug:
+        msg: "Log accessibility validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Display container validation summary
+  debug:
+    msg:
+      - "Container Validation Results:"
+      - "  Container States: {{ docker_validation_results.container_validation.status | default('SKIP') }}"
+      - "  Resource Monitoring: {{ docker_validation_results.container_resources.status | default('SKIP') }}"
+      - "  Environment Variables: {{ docker_validation_results.container_env_vars.status | default('SKIP') }}"
+      - "  Log Accessibility: {{ docker_validation_results.container_logs.status | default('SKIP') }}"
+  when: reporting.log_level in ['debug', 'info']

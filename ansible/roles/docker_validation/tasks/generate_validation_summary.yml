@@ -1,0 +1,196 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Generate comprehensive Docker validation summary and reporting
+
+- name: Calculate validation execution time
+  set_fact:
+    docker_validation_end_time: "{{ ansible_date_time.epoch }}"
+    docker_validation_duration: "{{ (ansible_date_time.epoch | int) - (docker_validation_start_time | int) }}"
+
+- name: Generate detailed validation summary
+  set_fact:
+    docker_validation_summary:
+      metadata:
+        target_host: "{{ inventory_hostname }}"
+        ansible_host: "{{ ansible_host | default('N/A') }}"
+        validation_start_time: "{{ docker_validation_start_time }}"
+        validation_end_time: "{{ docker_validation_end_time }}"
+        validation_duration_seconds: "{{ docker_validation_duration }}"
+        validation_phases_executed: "{{ docker_validation_phases }}"
+        ansible_version: "{{ ansible_version.full }}"
+        docker_version: "{{ docker_host_info.host_info.ServerVersion | default('Unknown') if docker_host_info is defined else 'Unknown' }}"
+      statistics:
+        total_validations: "{{ docker_validation_passed_count + docker_validation_failed_count }}"
+        validations_passed: "{{ docker_validation_passed_count }}"
+        validations_failed: "{{ docker_validation_failed_count }}"
+        success_rate: "{{ ((docker_validation_passed_count / (docker_validation_passed_count + docker_validation_failed_count)) * 100) | round(2) if (docker_validation_passed_count + docker_validation_failed_count) > 0 else 0 }}"
+        overall_status: "{{ 'PASS' if docker_validation_failed_count == 0 else 'FAIL' }}"
+      validation_results: "{{ docker_validation_results }}"
+      configuration:
+        docker_min_version: "{{ docker_min_version }}"
+        expected_containers_count: "{{ expected_containers | length }}"
+        expected_images_count: "{{ expected_images | length }}"
+        compose_stacks_count: "{{ docker_compose_stacks | length }}"
+        monitoring_enabled: "{{ monitoring_integration.enable_prometheus | default(false) or monitoring_integration.enable_cadvisor | default(false) }}"
+
+- name: Write JSON validation report to file
+  copy:
+    content: "{{ docker_validation_summary | to_nice_json }}"
+    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
+    mode: '0644'
+  when: reporting.generate_json_report | default(true)
+
+- name: Generate human-readable validation report
+  set_fact:
+    human_readable_report: |
+      ========================================
+      Docker Environment Validation Report
+      ========================================
+      Target Host: {{ inventory_hostname }}
+      Validation Start: {{ ansible_date_time.iso8601 }}
+      Duration: {{ docker_validation_duration }} seconds
+      Docker Version: {{ docker_host_info.host_info.ServerVersion | default('Unknown') if docker_host_info is defined else 'Unknown' }}
+
+      SUMMARY
+      -------
+      Total Validations: {{ docker_validation_passed_count + docker_validation_failed_count }}
+      Passed: {{ docker_validation_passed_count }}
+      Failed: {{ docker_validation_failed_count }}
+      Success Rate: {{ ((docker_validation_passed_count / (docker_validation_passed_count + docker_validation_failed_count)) * 100) | round(2) if (docker_validation_passed_count + docker_validation_failed_count) > 0 else 0 }}%
+      Overall Status: {{ 'PASS' if docker_validation_failed_count == 0 else 'FAIL' }}
+
+      VALIDATION PHASES EXECUTED
+      --------------------------
+      {% for phase in docker_validation_phases %}
+      - {{ phase.replace('_', ' ').title() }}
+      {% endfor %}
+
+      SYSTEM INFORMATION
+      ------------------
+      OS: {{ ansible_distribution | default('Unknown') }} {{ ansible_distribution_version | default('') }}
+      Kernel: {{ ansible_kernel | default('Unknown') }}
+      Architecture: {{ ansible_architecture | default('Unknown') }}
+      CPU Cores: {{ ansible_processor_cores | default(ansible_processor_count) | default('Unknown') }}
+      Total Memory: {{ ansible_memtotal_mb | default('Unknown') }}MB
+      Docker Root Dir: {{ docker_host_info.host_info.DockerRootDir | default('Unknown') if docker_host_info is defined else 'Unknown' }}
+      Storage Driver: {{ docker_host_info.host_info.Driver | default('Unknown') if docker_host_info is defined else 'Unknown' }}
+
+      CONFIGURATION SUMMARY
+      ---------------------
+      Expected Containers: {{ expected_containers | length }}
+      Expected Images: {{ expected_images | length }}
+      Compose Stacks: {{ docker_compose_stacks | length }}
+      Registry Connections: {{ docker_registries | length }}
+      Monitoring Enabled: {{ 'Yes' if (monitoring_integration.enable_prometheus | default(false) or monitoring_integration.enable_cadvisor | default(false)) else 'No' }}
+
+      ========================================
+
+- name: Generate detailed results section separately
+  set_fact:
+    detailed_results: |
+      DETAILED VALIDATION RESULTS
+      ---------------------------
+      {% for category, result in docker_validation_results.items() %}
+      {{ category.replace('_', ' ').title() }}: {{ result.status }}
+      {% if result.status == 'FAIL' %}
+        Error: {{ result.error | default('N/A') }}
+      {% endif %}
+      {% if result.status == 'PASS' and result.containers_validated is defined %}
+        Containers Validated: {{ result.containers_validated }}
+      {% endif %}
+      {% if result.status == 'PASS' and result.images_validated is defined %}
+        Images Validated: {{ result.images_validated }}
+      {% endif %}
+      {% endfor %}
+
+- name: Write human-readable report to file
+  copy:
+    content: "{{ human_readable_report }}{{ detailed_results }}"
+    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+    mode: '0644'
+
+- name: Generate category breakdown message
+  set_fact:
+    category_breakdown_msg: |
+      Docker Validation Results by Category:
+      {% for category, result in docker_validation_results.items() %}
+        {{ category.replace('_', ' ').title() }}: {{ result.status }}
+      {% endfor %}
+
+- name: Display validation category breakdown
+  debug:
+    msg: "{{ category_breakdown_msg.split('\n') }}"
+  when: reporting.log_level in ['debug', 'info']
+
+- name: Generate failed validation details message
+  set_fact:
+    failed_validation_msg: |
+      Failed Docker Validation Details:
+      {% for category, result in docker_validation_results.items() %}
+      {% if result.status == 'FAIL' %}
+        {{ category.replace('_', ' ').title() }}: {{ result.error | default('Unknown error') }}
+      {% endif %}
+      {% endfor %}
+  when: docker_validation_failed_count > 0
+
+- name: Display failed validation details
+  debug:
+    msg: "{{ failed_validation_msg.split('\n') }}"
+  when:
+    - docker_validation_failed_count > 0
+    - reporting.log_level in ['debug', 'info']
+    - failed_validation_msg is defined
+
+- name: Display performance and configuration summary
+  debug:
+    msg:
+      - "Docker Environment Configuration:"
+      - "  Docker Version: {{ docker_host_info.host_info.ServerVersion | default('Unknown') if docker_host_info is defined else 'Unknown' }}"
+      - "  Storage Driver: {{ docker_host_info.host_info.Driver | default('Unknown') if docker_host_info is defined else 'Unknown' }}"
+      - "  Container Count: {{ docker_host_info.host_info.Containers | default('Unknown') if docker_host_info is defined else 'Unknown' }}"
+      - "  Image Count: {{ docker_host_info.host_info.Images | default('Unknown') if docker_host_info is defined else 'Unknown' }}"
+      - "  Expected Containers: {{ expected_containers | length }}"
+      - "  Expected Images: {{ expected_images | length }}"
+      - "  Compose Stacks: {{ docker_compose_stacks | length }}"
+  when:
+    - "'engine_validation' in docker_validation_phases"
+    - reporting.log_level in ['debug', 'info']
+
+- name: Generate CI/CD integration artifact
+  set_fact:
+    ci_validation_result:
+      test_suite: "docker_validation"
+      target: "{{ inventory_hostname }}"
+      timestamp: "{{ ansible_date_time.iso8601 }}"
+      duration: "{{ docker_validation_duration }}"
+      status: "{{ 'passed' if docker_validation_failed_count == 0 else 'failed' }}"
+      total_validations: "{{ docker_validation_passed_count + docker_validation_failed_count }}"
+      passed_validations: "{{ docker_validation_passed_count }}"
+      failed_validations: "{{ docker_validation_failed_count }}"
+      docker_version: "{{ docker_host_info.host_info.ServerVersion | default('Unknown') if docker_host_info is defined else 'Unknown' }}"
+      validation_phases: "{{ docker_validation_phases }}"
+      validation_results: "{{ docker_validation_results }}"
+
+- name: Write CI/CD integration result
+  copy:
+    content: "{{ ci_validation_result | to_nice_json }}"
+    dest: "{{ reporting.report_path }}/ci_docker_validation_result_{{ inventory_hostname }}.json"
+    mode: '0644'
+
+- name: Generate HTML report (if enabled)
+  template:
+    src: docker_validation_report.html.j2
+    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.html"
+    mode: '0644'
+  when: reporting.generate_html_report | default(false)
+  ignore_errors: true  # Template may not exist
+
+- name: Set validation completion facts for external integration
+  set_fact:
+    docker_validation_completed: true
+    docker_validation_status: "{{ 'PASS' if docker_validation_failed_count == 0 else 'FAIL' }}"
+    docker_validation_summary_data: "{{ docker_validation_summary }}"
+    docker_validation_report_files:
+      json: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
+      text: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+      ci_integration: "{{ reporting.report_path }}/ci_docker_validation_result_{{ inventory_hostname }}.json"

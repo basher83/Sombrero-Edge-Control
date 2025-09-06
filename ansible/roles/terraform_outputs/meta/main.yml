@@ -1,0 +1,107 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Terraform Outputs Role - Metadata
+
+galaxy_info:
+  role_name: terraform_outputs
+  namespace: sombrero_edge
+  author: Sombrero Edge Control Infrastructure Team
+  description: |
+    Parse Terraform outputs and integrate them with Ansible inventory management.
+    Provides seamless integration between Terraform-provisioned infrastructure
+    and Ansible automation workflows with dynamic inventory generation and
+    variable integration capabilities.
+
+  company: Sombrero Edge Control
+  license: MIT-0
+
+  min_ansible_version: "2.15"
+
+  # Platform support (control node platforms)
+  platforms:
+    - name: Ubuntu
+      versions:
+        - "20.04"
+        - "22.04"
+        - "24.04"
+    - name: Debian
+      versions:
+        - "11"
+        - "12"
+    - name: CentOS
+      versions:
+        - "8"
+        - "9"
+    - name: RedHat
+      versions:
+        - "8"
+        - "9"
+    - name: Fedora
+      versions:
+        - "39"
+        - "40"
+    - name: MacOSX
+      versions:
+        - "13"
+        - "14"
+    - name: Darwin
+      versions:
+        - "22"
+        - "23"
+
+  galaxy_tags:
+    - terraform
+    - inventory
+    - integration
+    - automation
+    - infrastructure
+    - dynamic
+    - provisioning
+    - devops
+    - outputs
+    - variables
+    - state
+    - management
+
+# Role Dependencies
+dependencies: []
+
+# Collection Requirements
+collections:
+  - ansible.builtin
+  - community.general
+
+# External Tool Requirements:
+# - terraform or tofu CLI (for output parsing)
+# - jq (for JSON processing - optional but recommended)
+# - Python json module (included in standard library)
+
+# Role Compatibility Notes:
+# - Designed for control node execution (delegate_to: localhost)
+# - Supports both Terraform and OpenTofu
+# - Compatible with local and remote state backends
+# - Multi-project and multi-workspace support
+# - Cross-platform support for control nodes
+# - No target host dependencies
+
+# Integration Capabilities:
+# - Dynamic inventory generation (YAML, JSON, INI formats)
+# - Variable integration with Ansible facts
+# - Multi-environment project support
+# - State validation and drift detection
+# - Caching for performance optimization
+# - Comprehensive error handling and validation
+
+# Security Features:
+# - Sensitive output masking and filtering
+# - Secure file permissions for generated artifacts
+# - Variable sanitization and validation
+# - Configurable access controls
+# - Secure temporary file handling
+
+# Performance Characteristics:
+# - Optimized for large Terraform states
+# - Caching support for repeated operations
+# - Parallel processing for multi-project scenarios
+# - Efficient JSON parsing and transformation
+# - Minimal Terraform CLI invocations
