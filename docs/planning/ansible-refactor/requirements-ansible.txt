@@ -1,0 +1,18 @@
+# Python Requirements for Ansible Development
+# Install with: uv pip install -r docs/planning/ansible-refactor/requirements-ansible.txt
+
+# Core testing framework for Ansible roles
+molecule[docker]>=4.0.0
+
+# Linting for Ansible playbooks and roles
+ansible-lint>=6.22.2
+
+# Test assertions for infrastructure
+pytest-testinfra>=10.0.0
+
+# Additional testing utilities
+pytest>=7.4.0
+pytest-ansible>=4.1.0
+
+# Ansible collections (if needed)
+# ansible>=8.0.0  # Full Ansible package if ansible-core from mise is not sufficient

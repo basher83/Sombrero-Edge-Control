@@ -1,5 +1,21 @@
 # Jump-Man Deployment Flight Checklist 🚀
 
+## Deployment Environment Details 🖥️
+<!-- Document the deployment environment for troubleshooting and reproducibility -->
+- **Platform**: [ ] Local Linux [ ] WSL [ ] macOS [ ] Linux VM [ ] CI/CD Pipeline
+- **Operating System**: <!-- e.g., Ubuntu 20.04, Windows 11 + WSL2, macOS 14.0 -->
+- **WSL Details** (if applicable):
+  - WSL Version: <!-- wsl --version -->
+  - Distribution: <!-- e.g., Ubuntu-20.04 -->
+  - Host Windows Version: <!-- e.g., Windows 11 Pro 22H2 -->
+- **Deployment Method**: [ ] Local [ ] Remote SSH [ ] VPN [ ] Direct Network
+- **SSH Configuration**:
+  - Agent Type: [ ] ssh-agent [ ] keychain [ ] Windows OpenSSH [ ] 1Password
+  - Key Type: <!-- e.g., ed25519, rsa-4096 -->
+- **Network Path to Proxmox**: <!-- e.g., Direct LAN, VPN, SSH tunnel -->
+- **Known Environment Constraints**:
+  <!-- e.g., Corporate firewall, WSL SSH agent issues, Network latency -->
+
 ## Pre-Flight Checks ✈️
 
 - [ ] **Environment variables loaded**: `mise env` shows TF_VAR_* values

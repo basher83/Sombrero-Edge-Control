@@ -4,9 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a Terraform-based Infrastructure-as-Code repository for deploying a centralized jump host VM ("jump-man")
-to Proxmox using cloud-init automation. The VM serves as a secure DevOps management point with Docker, development
-tools, and SSH key-only authentication.
+This is a Packer, Terraform and Ansible-based Infrastructure-as-Code pipeline repository for deploying a centralized jump host VM ("jump-man")
+to Proxmox. The VM serves as a secure DevOps management point with Docker, development tools, and SSH key-only authentication.
 
 # CRITICAL: ARCHON-FIRST RULE - READ THIS FIRST
 
