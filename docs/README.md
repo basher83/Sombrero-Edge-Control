@@ -5,6 +5,7 @@ This directory contains comprehensive documentation for the Sombrero-Edge-Contro
 ## 📁 Directory Structure
 
 ### [deployment/](./deployment/)
+
 Core deployment pipeline documentation and processes.
 
 - **[pipeline-enhancements-summary.md](./deployment/pipeline-enhancements-summary.md)** - Summary of recent pipeline enhancements and improvements
@@ -12,8 +13,11 @@ Core deployment pipeline documentation and processes.
 - **[deployment-checklist.md](./deployment/deployment-checklist.md)** - Step-by-step deployment checklist
 - **[deployment-process.md](./deployment/deployment-process.md)** - General deployment process guide
 - **[smoke-testing-implementation.md](./deployment/smoke-testing-implementation.md)** - Smoke testing procedures and implementation
+- **[terraform-ansible-integration-guide.md](./deployment/terraform-ansible-integration-guide.md)** - Integration guide between Terraform and Ansible
+- **[wsl-deployment-guide.md](./deployment/wsl-deployment-guide.md)** - Windows Subsystem for Linux deployment instructions
 
 ### [development/](./development/)
+
 Development workflow, tooling, and local development setup.
 
 - **[act-configuration.md](./development/act-configuration.md)** - GitHub Actions local testing with ACT
@@ -22,12 +26,14 @@ Development workflow, tooling, and local development setup.
 - **[mise-configuration.md](./development/mise-configuration.md)** - Mise tool version manager setup
 
 ### [infrastructure/](./infrastructure/)
+
 Infrastructure-specific configuration and optimization guides.
 
 - **[infisical-setup.md](./infrastructure/infisical-setup.md)** - Infisical secrets management setup
 - **[terraform-optimization.md](./infrastructure/terraform-optimization.md)** - Terraform performance optimization
 
 ### [decisions/](./decisions/)
+
 Architectural Decision Records (ADRs) documenting important technical decisions.
 
 - **[ADR-2024-08-30-separate-files-terraform-injection.md](./decisions/ADR-2024-08-30-separate-files-terraform-injection.md)** - Decision about separate files for Terraform injection
@@ -38,11 +44,36 @@ Architectural Decision Records (ADRs) documenting important technical decisions.
 - **[ADR-TEMPLATE.md](./decisions/ADR-TEMPLATE.md)** - Template for creating new ADRs
 
 ### [troubleshooting/](./troubleshooting/)
+
 Troubleshooting guides and known issue resolutions.
 
 - **[ssh-cloud-init-issues.md](./troubleshooting/ssh-cloud-init-issues.md)** - SSH and cloud-init related issues
+- **[terraform-proxmox-ssh-issues.md](./troubleshooting/terraform-proxmox-ssh-issues.md)** - Terraform and Proxmox SSH connectivity issues
+
+### [planning/](./planning/)
+
+Project planning, architecture decisions, and strategic documentation.
+
+- **[README.md](./planning/README.md)** - Overview of planning documentation
+- **[ansible-refactor/](./planning/ansible-refactor/)** - Ansible refactoring and modernization planning
+  - **[README.md](./planning/ansible-refactor/README.md)** - Ansible refactor project overview
+  - **[migration-strategy.md](./planning/ansible-refactor/migration-strategy.md)** - Strategy for migrating existing Ansible configurations
+  - **[mise-integration.md](./planning/ansible-refactor/mise-integration.md)** - Mise tool integration for Ansible development
+  - **[refactor-plan.md](./planning/ansible-refactor/refactor-plan.md)** - Detailed refactoring implementation plan
+  - **[requirements-ansible.txt](./planning/ansible-refactor/requirements-ansible.txt)** - Ansible-specific requirements and dependencies
+  - **[research-strategy.md](./planning/ansible-refactor/research-strategy.md)** - Research approach for Ansible improvements
+  - **[role-specifications.md](./planning/ansible-refactor/role-specifications.md)** - Detailed specifications for Ansible roles
+- **[architecture-decisions/](./planning/architecture-decisions/)** - Architecture decision records and planning
+  - **[ADR-2025-01-06-ansible-roles.md](./planning/architecture-decisions/ADR-2025-01-06-ansible-roles.md)** - Ansible roles architecture decision
+
+### [ai_docs/](./ai_docs/)
+
+AI and automation tooling documentation.
+
+- **[archon-tools.md](./ai_docs/archon-tools.md)** - Archon AI tools configuration and usage
 
 ### [project/](./project/)
+
 Project planning, requirements, and management documentation.
 
 - **[PRP/](./project/PRP/)** - Project Requirements and Planning
@@ -74,4 +105,4 @@ For new team members or those setting up the project:
 
 ---
 
-**Last updated**: Document structure reorganized for better organization and maintainability.
+**Last updated**: 2025-09-06
