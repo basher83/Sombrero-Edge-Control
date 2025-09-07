@@ -1,0 +1,44 @@
+---
+# Docker user management tasks
+
+- name: Display security warning about docker group
+  debug:
+    msg: |
+      WARNING: Users in the 'docker' group have root-equivalent access!
+      The docker group grants privileges equivalent to the root user.
+      For production systems, consider using sudo for docker commands instead.
+  when: docker_users_list | length > 0
+
+- name: Ensure docker group exists
+  group:
+    name: docker
+    state: present
+  become: true
+
+- name: Add users to docker group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  become: true
+  loop: "{{ docker_users_list }}"
+  when: docker_users_list | length > 0
+
+- name: Reset connection to apply group membership
+  meta: reset_connection
+  when:
+    - docker_users_list | length > 0
+    - ansible_user in docker_users_list
+
+- name: Verify user docker group membership
+  command: "groups {{ item }}"
+  register: user_groups
+  changed_when: false
+  loop: "{{ docker_users_list }}"
+  become: true
+
+- name: Display user group membership
+  debug:
+    msg: "User {{ item.item }} groups: {{ item.stdout }}"
+  loop: "{{ user_groups.results }}"
+  when: docker_debug_mode | bool

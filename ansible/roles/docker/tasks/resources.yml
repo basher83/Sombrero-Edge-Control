@@ -1,0 +1,74 @@
+---
+# Docker resource management tasks
+
+- name: Configure Docker cleanup cron job
+  cron:
+    name: "Docker system prune"
+    minute: "0"
+    hour: "2"
+    job: "docker system prune -af --volumes --filter 'until=72h' > /dev/null 2>&1"
+    user: root
+    state: "{{ 'present' if docker_enable_cleanup_cron else 'absent' }}"
+  become: true
+
+- name: Configure Docker log rotation
+  copy:
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "{{ docker_log_max_size }}",
+          "max-file": "{{ docker_log_max_files }}",
+          "compress": "true"
+        }
+      }
+    dest: /etc/docker/daemon.json.d/logging.json
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  when: docker_configure_log_rotation | bool
+  notify: restart docker
+
+- name: Create Docker daemon config directory
+  file:
+    path: /etc/docker/daemon.json.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+  when: docker_configure_log_rotation | bool
+
+- name: Set Docker storage driver limits
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+  loop:
+    - { key: 'fs.inotify.max_user_watches', value: '524288' }
+    - { key: 'fs.inotify.max_user_instances', value: '512' }
+  become: true
+  when: docker_configure_sysctl | bool
+
+- name: Configure Docker memory limits
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet cgroup_enable=memory swapaccount=1"'
+    backup: true
+  become: true
+  when: docker_enable_memory_limits | bool
+  notify: update grub
+
+- name: Monitor Docker disk usage
+  command: docker system df
+  register: docker_disk_usage
+  changed_when: false
+  when: docker_debug_mode | bool
+
+- name: Display Docker disk usage
+  debug:
+    msg: "{{ docker_disk_usage.stdout_lines }}"
+  when: docker_debug_mode | bool
