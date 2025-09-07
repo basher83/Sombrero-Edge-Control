@@ -1,0 +1,202 @@
+---
+# Docker compatibility tasks for firewall role
+# CRITICAL: Docker manages its own iptables chains - we must not interfere!
+
+- name: Display Docker firewall integration warning
+  debug:
+    msg: |
+      =====================================
+      DOCKER FIREWALL INTEGRATION ACTIVE
+      =====================================
+      Docker is installed on this system.
+
+      IMPORTANT NOTES:
+      1. Docker bypasses host firewall rules for published ports
+      2. Container ports exposed with -p will be accessible regardless of INPUT rules
+      3. Custom rules must be added to DOCKER-USER chain to restrict container access
+      4. Never modify DOCKER or DOCKER-ISOLATION chains directly
+      5. Never flush all iptables rules when Docker is running
+
+      This role will configure the DOCKER-USER chain for container security.
+      =====================================
+
+- name: Check if Docker chains exist
+  shell: |
+    iptables -L DOCKER -n >/dev/null 2>&1 && echo "exists" || echo "missing"
+  register: docker_chain_check
+  changed_when: false
+
+- name: Check if DOCKER-USER chain exists
+  shell: |
+    iptables -L DOCKER-USER -n >/dev/null 2>&1 && echo "exists" || echo "missing"
+  register: docker_user_chain_check
+  changed_when: false
+
+- name: Create DOCKER-USER chain if missing
+  iptables:
+    chain: DOCKER-USER
+    chain_management: true
+    state: present
+  when: docker_user_chain_check.stdout == "missing"
+
+# CRITICAL: The DOCKER-USER chain is evaluated BEFORE Docker's own rules
+# This allows us to add restrictions that Docker won't override
+
+- name: Configure DOCKER-USER chain default return
+  iptables:
+    chain: DOCKER-USER
+    jump: RETURN
+    comment: "Default return for DOCKER-USER chain"
+  when: firewall_docker_user_rules | length == 0
+
+- name: Apply Docker-USER chain rules for container restrictions
+  block:
+    - name: Clear existing DOCKER-USER rules (if configured)
+      shell: |
+        # Save the default RETURN rule if it exists
+        iptables -S DOCKER-USER | grep -E "^-A DOCKER-USER -j RETURN$" > /tmp/docker-user-return.tmp || true
+        # Flush the chain
+        iptables -F DOCKER-USER
+        # Restore the RETURN rule if it existed
+        if [ -s /tmp/docker-user-return.tmp ]; then
+          iptables -A DOCKER-USER -j RETURN
+        fi
+      when: firewall_docker_user_rules | length > 0
+
+    - name: Add custom DOCKER-USER rules
+      iptables:
+        chain: DOCKER-USER
+        in_interface: "{{ item.interface | default(firewall_external_interface) }}"
+        protocol: "{{ item.protocol | default(omit) }}"
+        destination_port: "{{ item.port | default(omit) }}"
+        source: "{{ item.source | default(omit) }}"
+        jump: "{{ item.action | default('DROP') }}"
+        comment: "{{ item.name | default('Docker restriction rule') }}"
+      loop: "{{ firewall_docker_user_rules }}"
+      when:
+        - firewall_docker_user_rules is defined
+        - firewall_docker_user_rules | length > 0
+
+    - name: Add final RETURN rule to DOCKER-USER chain
+      iptables:
+        chain: DOCKER-USER
+        jump: RETURN
+        comment: "Final return for DOCKER-USER chain"
+      when: firewall_docker_user_rules | length > 0
+
+  when: firewall_configure_docker_user_chain | bool
+
+# Example DOCKER-USER configuration for common scenarios
+- name: Apply default Docker security rules
+  block:
+    - name: Block all external access to containers by default
+      iptables:
+        chain: DOCKER-USER
+        in_interface: "{{ firewall_external_interface }}"
+        jump: DROP
+        comment: "Block external access to Docker containers"
+      when: "'block_external' in firewall_docker_security_presets"
+
+    - name: Allow specific ports to containers from external
+      iptables:
+        chain: DOCKER-USER
+        in_interface: "{{ firewall_external_interface }}"
+        protocol: tcp
+        destination_port: "{{ item }}"
+        jump: ACCEPT
+        comment: "Allow port {{ item }} to Docker containers"
+      loop:
+        - 80
+        - 443
+      when: "'allow_web' in firewall_docker_security_presets"
+
+    - name: Allow trusted networks to access containers
+      iptables:
+        chain: DOCKER-USER
+        source: "{{ item }}"
+        jump: ACCEPT
+        comment: "Allow trusted network {{ item }}"
+      loop: "{{ firewall_trusted_networks }}"
+      when: "'allow_trusted' in firewall_docker_security_presets"
+
+    - name: Final RETURN for DOCKER-USER chain
+      iptables:
+        chain: DOCKER-USER
+        jump: RETURN
+        comment: "Default return"
+  when:
+    - firewall_docker_security_presets is defined
+    - firewall_docker_security_presets | length > 0
+  tags:
+    - docker_security_presets
+
+# Verify Docker networking still works
+- name: Test Docker networking functionality
+  block:
+    - name: Check docker0 bridge exists
+      command: ip link show docker0
+      register: docker_bridge_check
+      changed_when: false
+      failed_when: false
+
+    - name: Verify Docker iptables chains
+      shell: |
+        for chain in DOCKER DOCKER-ISOLATION-STAGE-1 DOCKER-ISOLATION-STAGE-2 DOCKER-USER; do
+          iptables -L $chain -n >/dev/null 2>&1 || echo "Missing: $chain"
+        done
+      register: docker_chains_verify
+      changed_when: false
+
+    - name: Display Docker chain verification results
+      debug:
+        msg: |
+          Docker bridge status: {{ 'OK' if docker_bridge_check.rc == 0 else 'MISSING' }}
+          Docker chains status: {{ 'OK' if docker_chains_verify.stdout == '' else docker_chains_verify.stdout }}
+      when: firewall_debug_mode | bool
+
+  when: firewall_validate_rules | bool
+
+# Important notes for Docker compatibility
+- name: Create Docker firewall documentation
+  copy:
+    content: |
+      DOCKER FIREWALL CONFIGURATION NOTES
+      ====================================
+      Generated: {{ ansible_date_time.iso8601 }}
+
+      Docker Status: Installed
+      DOCKER-USER Chain: Configured
+
+      CRITICAL REMINDERS:
+      1. Docker published ports (-p) bypass INPUT chain rules
+      2. To restrict container access, use DOCKER-USER chain
+      3. Never flush all iptables rules when Docker is running
+      4. Never modify DOCKER or DOCKER-ISOLATION chains
+
+      Current DOCKER-USER Rules:
+      {% for rule in firewall_docker_user_rules %}
+      - {{ rule.name | default('Rule') }}: {{ rule.action | default('DROP') }} on {{ rule.interface | default(firewall_external_interface) }}
+        {% if rule.port is defined %}Port: {{ rule.port }}{% endif %}
+        {% if rule.source is defined %}Source: {{ rule.source }}{% endif %}
+      {% endfor %}
+
+      To test Docker networking:
+      1. docker run --rm hello-world
+      2. docker run --rm -p 8080:80 nginx:alpine
+      3. Check connectivity from external network
+
+      To view current Docker iptables rules:
+      - iptables -L DOCKER -n -v
+      - iptables -L DOCKER-USER -n -v
+      - iptables -L DOCKER-ISOLATION-STAGE-1 -n -v
+
+      To add emergency access:
+      - iptables -I DOCKER-USER -j RETURN
+
+      To block all external container access:
+      - iptables -I DOCKER-USER -i eth0 -j DROP
+    dest: /etc/iptables/docker-firewall-notes.txt
+    owner: root
+    group: root
+    mode: '0644'
+  when: firewall_docker_compatibility | bool
