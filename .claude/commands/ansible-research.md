@@ -2,7 +2,7 @@
 allowed-tools: mcp__github-repo-content-search, mcp__github-code-search, mcp__github-starred-repositories, mcp__github-stargazers-list, mcp__github-list-repositories, mcp__github-search-repositories, mcp__github-get-repository, mcp__github-get-commit, mcp__github-get-repository-content, mcp__github-get-file-content, mcp__github-list-releases, mcp__github-list-repository-issues, mcp__github-list-repository-commits, mcp__github-list-repository-branches, mcp__github-list-repository-tags, mcp__github-list-repository-contributors, mcp__github-list-repository-pull-requests, mcp__github-search-code, mcp__github-search-commits, mcp__github-search-issues, mcp__github-search-prs, mcp__github-search-users, Read, Write, Grep, Glob, WebFetch
 argument-hint: search <collection-name> | analyze <github-repo> | discover <technology> | quality <repo-url>
 description: Research Ansible collections using GitHub API to find quality modules, discover patterns, and analyze community collections directly from source repositories
-model: claude-opus-4-1-20250805
+model: claude-sonnet-4-20250514
 ---
 
 ## Context
@@ -22,24 +22,29 @@ Research Ansible collections based on the user's needs: $ARGUMENTS
 ## Research Workflow
 
 ### Phase 1: Discovery
+
 When searching for collections:
 
 1. **Search Official Collections First**:
+
    - Use `mcp__github-list-repositories` to list ansible-collections org repos
    - Filter by technology keywords in repo names/descriptions
    - Check for galaxy.yml to confirm it's a genuine collection
 
 2. **Expand to Community Collections**:
+
    - Use `mcp__github-search-code` to find galaxy.yml files with relevant keywords
    - Use `mcp__github-search-repositories` for technology-specific collections
    - Identify collections from major vendors and community maintainers
 
 3. **Collection Discovery Strategy**:
    **Tier 1 - Major Multi-Domain Collections**:
+
    - community.general (800+ modules including Proxmox, Nomad, Consul, Keycloak)
    - ansible.builtin - Core functionality
 
    **Tier 2 - Specialized Collections**:
+
    - netbox.netbox - NetBox DCIM/IPAM
    - community.proxmox - Dedicated Proxmox (complements community.general)
    - community.hashi_vault - HashiCorp Vault
@@ -49,27 +54,32 @@ When searching for collections:
    - community.crypto - Certificates
 
    **Discovery Approach**:
+
    - Start with collection-level exploration
    - Use pattern matching (e.g., `community.general.nomad*`) for specific modules
    - Cross-reference implementations across collections
    - Mine real-world usage patterns from repositories
 
 ### Phase 2: Quality Assessment
+
 For each relevant collection found:
 
 1. **Repository Health Metrics**:
+
    - Use `mcp__github-get-repository` for stars, forks, watchers
    - Use `mcp__github-list-repository-commits` to check activity (last 30 days)
    - Use `mcp__github-list-releases` for release frequency and versioning
    - Use `mcp__github-list-repository-contributors` for community size
 
 2. **Code Quality Analysis**:
+
    - Use `mcp__github-get-file-content` to examine galaxy.yml for metadata
    - Check for testing frameworks (molecule, ansible-test)
    - Review documentation quality in README.md
    - Examine CI/CD configuration (.github/workflows/)
 
 3. **Module Implementation Review**:
+
    - Use `mcp__github-repo-content-search` to find specific modules
    - Examine module code for best practices
    - Check for idempotency implementation
@@ -82,14 +92,17 @@ For each relevant collection found:
    - Review discussion quality in issues/PRs
 
 ### Phase 3: Deep Analysis
+
 For high-value collections:
 
 1. **Code Examples**:
+
    - Use `mcp__github-search-code` to find usage examples in the repo
    - Extract playbook examples from docs/ or examples/ directories
    - Review test playbooks for implementation patterns
 
 2. **Integration Patterns**:
+
    - Analyze how modules work together
    - Check for lookup plugins and filters
    - Review inventory plugin implementations
@@ -103,12 +116,14 @@ For high-value collections:
 ### Phase 4: Practical Recommendations
 
 1. **Quality Scoring** (0-100):
+
    - Activity (25 points): Recent commits, release frequency
    - Community (25 points): Contributors, stars, issue engagement
    - Code Quality (25 points): Testing, documentation, structure
    - Relevance (25 points): Match to specific needs
 
 2. **Integration Guidance**:
+
    - Installation instructions via ansible-galaxy
    - Configuration requirements
    - Authentication patterns
@@ -124,10 +139,11 @@ For high-value collections:
 
 Provide findings in this structure:
 
-```markdown
+````markdown
 # Ansible Collection Research Report
 
 ## Executive Summary
+
 - Primary findings
 - Top recommendations
 - Key insights
@@ -135,7 +151,9 @@ Provide findings in this structure:
 ## Collections Discovered
 
 ### Tier 1: Production-Ready (Score 80-100)
+
 #### [Collection Name] (Score: XX/100)
+
 - **Repository**: github.com/org/repo
 - **Version**: X.Y.Z
 - **Activity**: Last commit X days ago
@@ -146,34 +164,42 @@ Provide findings in this structure:
   ```yaml
   # Actual code example from the collection
   ```
+````
 
 ### Tier 2: Promising (Score 60-79)
+
 [Similar structure]
 
 ### Tier 3: Experimental (Score <60)
+
 [Similar structure]
 
 ## Integration Recommendations
 
 ### For Your Infrastructure
+
 1. Specific collection for NetBox operations
 2. Best Proxmox automation collection
 3. Recommended DNS/IPAM tools
 
 ### Implementation Patterns
+
 - Authentication strategies
 - Error handling approaches
 - Idempotency patterns
 
 ## Risk Analysis
+
 - Maintenance concerns
 - Security considerations
 - Upgrade paths
 
 ## Next Steps
+
 1. Priority implementation order
 2. Testing recommendations
 3. Documentation needs
+
 ```
 
 ## Best Practices
@@ -214,3 +240,4 @@ Provide findings in this structure:
 - Breaking changes without major version bumps
 - Poor documentation
 - No release tags
+```
