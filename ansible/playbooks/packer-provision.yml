@@ -58,43 +58,26 @@
           - python3-venv
         state: present
     # ============================================================================
-    # DOCKER INSTALLATION
+    # DOCKER INSTALLATION (via role)
     # ============================================================================
-    - name: Add Docker GPG key
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        keyring: /usr/share/keyrings/docker-archive-keyring.gpg
-        state: present
-    - name: Add Docker repository
-      apt_repository:
-        # yamllint disable rule:line-length
-        repo: >
-          deb [arch={{ ansible_architecture }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu
-          {{ ansible_distribution_release }} stable
-        # yamllint enable rule:line-length
-        filename: docker
-    - name: Install Docker CE and related packages
-      apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-          - docker-buildx-plugin
-          - docker-compose-plugin
-        state: present
-        update_cache: true
-    - name: Enable and start Docker service
-      systemd:
+    - name: Install and configure Docker
+      include_role:
         name: docker
-        enabled: true
-        state: started
-        daemon_reload: true
-    - name: Add default user to docker group (for Packer builds)
-      user:
-        name: "{{ ansible_user }}"
-        groups: docker
-        append: true
-      when: packer_build | bool
+      vars:
+        docker_installation_mode: "install"
+        docker_users_list:
+          - "{{ ansible_user }}"  # Add ansible_user to docker group for Packer builds
+        docker_service_enabled: true
+        docker_service_state: "started"
+        docker_packages:
+          - "docker-ce"
+          - "docker-ce-cli"
+          - "containerd.io"
+          - "docker-buildx-plugin"
+          - "docker-compose-plugin"
+        docker_enable_cleanup_cron: false  # Don't enable cleanup in golden image
+        docker_configure_log_rotation: true
+        docker_debug_mode: "{{ debug_mode | default(false) }}"
     # ============================================================================
     # DEVELOPMENT TOOLS INSTALLATION
     # ============================================================================
