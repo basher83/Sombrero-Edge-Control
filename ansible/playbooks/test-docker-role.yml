@@ -1,0 +1,38 @@
+---
+# Test playbook for Docker role
+# Usage: ansible-playbook -i inventory test-docker-role.yml --check
+
+- name: Test Docker role installation
+  hosts: localhost
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Test Docker role in validate mode
+      include_role:
+        name: docker
+      vars:
+        docker_installation_mode: "validate"
+        docker_debug_mode: true
+        docker_export_summary: true
+
+- name: Test Docker role with full installation (dry-run safe)
+  hosts: localhost
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Test Docker role in install mode (use --check for dry-run)
+      include_role:
+        name: docker
+      vars:
+        docker_installation_mode: "install"
+        docker_users_list:
+          - "{{ ansible_user | default('ubuntu') }}"
+        docker_service_enabled: true
+        docker_service_state: "started"
+        docker_enable_cleanup_cron: false
+        docker_configure_log_rotation: true
+        docker_debug_mode: true
+      tags:
+        - install
