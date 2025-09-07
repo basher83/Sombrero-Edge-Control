@@ -9,5 +9,11 @@ collections:
     version: ">=8.0.0"
   - name: ansible.posix
     version: ">=1.5.0"
+  - name: ansible.security
+    version: ">=1.0.0"  # Meta-collection for security hardening
   - name: community.docker
-    version: ">=3.0.0"
+    version: ">=3.13.0"  # Updated for latest Docker management features
+
+roles:
+  - name: geerlingguy.docker
+    version: ">=7.5.0"  # Mature, production-ready Docker installation role
