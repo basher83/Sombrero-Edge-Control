@@ -1,23 +1,25 @@
 name: MegaLinter
 
+# Temporarily disabled due to conflicts with CI workflow
+# Uncomment to re-enable MegaLinter as a secondary linting solution
 on:
   workflow_dispatch:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-    paths:
-      - "**/*.md"
-      - "**/*.tf"
-      - "**/*.hcl"
-      - "**/*.yaml"
-      - "**/*.yml"
-      - "**/*.json"
-      - "**/*.sh"
-      - "ansible/**"
-      - "infrastructure/**"
-      - "packer/**"
-      - "docs/**"
+  # push:
+  #   branches: [main, develop]
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - "**/*.md"
+  #     - "**/*.tf"
+  #     - "**/*.hcl"
+  #     - "**/*.yaml"
+  #     - "**/*.yml"
+  #     - "**/*.json"
+  #     - "**/*.sh"
+  #     - "ansible/**"
+  #     - "infrastructure/**"
+  #     - "packer/**"
+  #     - "docs/**"
 
 # Fast mode for development branches (skip slow linters)
 env:
