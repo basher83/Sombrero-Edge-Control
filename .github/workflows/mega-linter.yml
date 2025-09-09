@@ -1,25 +1,13 @@
 name: MegaLinter
 
-# Temporarily disabled due to conflicts with CI workflow
-# Uncomment to re-enable MegaLinter as a secondary linting solution
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [main, develop]
-  # pull_request:
-  #   branches: [main]
-  #   paths:
-  #     - "**/*.md"
-  #     - "**/*.tf"
-  #     - "**/*.hcl"
-  #     - "**/*.yaml"
-  #     - "**/*.yml"
-  #     - "**/*.json"
-  #     - "**/*.sh"
-  #     - "ansible/**"
-  #     - "infrastructure/**"
-  #     - "packer/**"
-  #     - "docs/**"
+  # Run MegaLinter on schedule (weekly) instead of every push/PR
+  schedule:
+    # Run every Monday at 2 AM UTC to avoid conflicts with CI
+    - cron: "0 2 * * 1"
+  # Manual trigger for testing MegaLinter independently
+  workflow_call:
 
 # Fast mode for development branches (skip slow linters)
 env:

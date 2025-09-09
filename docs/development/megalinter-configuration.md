@@ -29,6 +29,32 @@ This document covers MegaLinter setup, configuration, and optimizations for the 
 - **`scripts/test-megalinter.sh`** - Local validation testing
 - **`scripts/fix-markdown-issues.sh`** - Markdown formatting helper
 
+## Integration with CI
+
+MegaLinter is configured to **complement** rather than duplicate your existing CI workflow:
+
+### CI Workflow (Primary)
+- **Trigger**: Every push and PR
+- **Purpose**: Fast, focused quality checks
+- **Tools**: Individual linters (TFLint, ShellCheck, yamllint, etc.)
+- **Speed**: ~3-5 minutes
+
+### MegaLinter (Secondary)
+- **Trigger**: Weekly schedule + manual runs
+- **Purpose**: Comprehensive multi-language linting
+- **Tools**: 50+ linters in one unified system
+- **Speed**: ~8-15 minutes (with optimizations)
+
+### When to Use Each
+
+| Scenario | Use CI Workflow | Use MegaLinter |
+|----------|----------------|----------------|
+| **Everyday commits** | ✅ Primary gate | ❌ Too slow |
+| **Code reviews** | ✅ Fast feedback | ❌ Not triggered |
+| **Weekly health check** | ❌ Too frequent | ✅ Comprehensive |
+| **New linter testing** | ❌ Limited scope | ✅ All linters |
+| **Manual deep dive** | ❌ Individual tools | ✅ Unified report |
+
 ## Local Usage
 
 ### Quick Commands
@@ -58,6 +84,20 @@ mise run act-security  # Security scanning
 # Local testing with timeout
 timeout 300 ./scripts/test-megalinter.sh
 ```
+
+### Manual GitHub Actions Triggers
+
+```bash
+# Trigger MegaLinter manually via GitHub CLI
+gh workflow run "MegaLinter"
+
+# Or trigger via GitHub web interface:
+# Actions → MegaLinter → "Run workflow"
+```
+
+### Scheduled Runs
+
+MegaLinter runs automatically every **Monday at 2 AM UTC** for comprehensive weekly code quality checks.
 
 ## Optimizations Applied
 
