@@ -34,30 +34,45 @@ This document covers MegaLinter setup, configuration, and optimizations for the 
 MegaLinter is configured to **complement** rather than duplicate your existing CI workflow:
 
 ### CI Workflow (Primary)
+
 - **Trigger**: Every push and PR
 - **Purpose**: Fast, focused quality checks
 - **Tools**: Individual linters (TFLint, ShellCheck, yamllint, etc.)
 - **Speed**: ~3-5 minutes
 
-### MegaLinter (Secondary)
-- **Trigger**: Weekly schedule + manual runs
+### MegaLinter (Quality Gate)
+
+- **Trigger**: Pull requests + manual runs
 - **Purpose**: Comprehensive multi-language linting
 - **Tools**: 50+ linters in one unified system
 - **Speed**: ~8-15 minutes (with optimizations)
 
 ### When to Use Each
 
-| Scenario | Use CI Workflow | Use MegaLinter |
-|----------|----------------|----------------|
-| **Everyday commits** | ✅ Primary gate | ❌ Too slow |
-| **Code reviews** | ✅ Fast feedback | ❌ Not triggered |
-| **Weekly health check** | ❌ Too frequent | ✅ Comprehensive |
-| **New linter testing** | ❌ Limited scope | ✅ All linters |
-| **Manual deep dive** | ❌ Individual tools | ✅ Unified report |
+| Scenario                | Use CI Workflow     | Use MegaLinter    |
+| ----------------------- | ------------------- | ----------------- |
+| **Pull request reviews**| ✅ Fast feedback    | ✅ Quality gate   |
+| **Pre-commit checks**   | ✅ Primary gate     | ❌ Too slow       |
+| **Local development**   | ❌ Individual tools | ✅ npx runner     |
+| **Comprehensive scan**  | ❌ Limited scope    | ✅ All linters    |
+| **Manual deep dive**    | ❌ Individual tools | ✅ Unified report |
 
 ## Local Usage
 
-### Quick Commands
+### Primary: Local MegaLinter with npx
+
+```bash
+# Run MegaLinter locally (matches CI configuration exactly)
+npx mega-linter-runner
+
+# Run with specific flavor for IaC projects
+npx mega-linter-runner --flavor terraform
+
+# Run with fixes applied automatically
+npx mega-linter-runner --fix
+```
+
+### Alternative: Mise-based Commands
 
 ```bash
 # Fast validation (format, validate, lint)
@@ -95,9 +110,11 @@ gh workflow run "MegaLinter"
 # Actions → MegaLinter → "Run workflow"
 ```
 
-### Scheduled Runs
+### GitHub Actions Triggers
 
-MegaLinter runs automatically every **Monday at 2 AM UTC** for comprehensive weekly code quality checks.
+MegaLinter runs automatically on:
+- **Pull Requests** - Comprehensive quality gate for all relevant file changes
+- **Manual Dispatch** - On-demand runs via GitHub Actions interface
 
 ## Optimizations Applied
 
