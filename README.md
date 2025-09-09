@@ -1,5 +1,6 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/basher83/Sombrero-Edge-Control?path=README.md&display_timestamp=author&style=plastic&logo=github)
 ![GitHub License](https://img.shields.io/github/license/basher83/Sombrero-Edge-Control?style=plastic)
+[![MegaLinter](https://github.com/basher83/Sombrero-Edge-Control/workflows/MegaLinter/badge.svg?branch=main)](https://github.com/basher83/Sombrero-Edge-Control/actions?query=workflow%3AMegaLinter+branch%3Amain)
 
 ![Terraform](https://img.shields.io/badge/terraform-000000?style=plastic&logo=terraform&logoColor=)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=plastic&logo=ubuntu&logoColor=white)
