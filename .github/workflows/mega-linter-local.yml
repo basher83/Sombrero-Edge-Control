@@ -1,0 +1,80 @@
+name: MegaLinter Local Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  megalinter:
+    name: MegaLinter Local Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: MegaLinter
+        uses: oxsecurity/megalinter@v8
+        env:
+          # Scope linting to this repo's layout
+          FILTER_REGEX_INCLUDE: "(docs/|README.md|infrastructure/|ansible/|packer/)"
+          FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
+
+          # Enable core linters for local testing
+          ENABLE_LINTERS: >
+            MARKDOWN_MARKDOWNLINT,
+            TERRAFORM_TFLINT,
+            TERRAFORM_TERRAFORM_FMT,
+            ANSIBLE_ANSIBLE_LINT,
+            YAML_YAMLLINT,
+            JSON_ESLINT_PLUGIN_JSONC,
+            BASH_SHFMT
+
+          # Rules live under .github/linters
+          LINTER_RULES_PATH: .github/linters
+
+          # Performance optimizations
+          MEGALINTER_MAX_TIMEOUT_MINUTES: "10"
+          MEGALINTER_MAX_TIMEOUT_SECONDS: "600"
+          SKIP_CLI_LINT_MODES: "project"
+
+          # Reporters and outputs
+          PRINT_ALPACA: "false"
+          REPORT_OUTPUT_FOLDER: "${{ github.workspace }}/report"
+          SARIF_REPORTER: "true"
+          SHOW_ELAPSED_TIME: "true"
+
+          # Auto-fix settings (off by default for safety)
+          APPLY_FIXES: "none"
+          APPLY_FIXES_EVENT: "pull_request"
+          APPLY_FIXES_MODE: "pull_request"
+
+          # Git settings for fixes
+          APPLY_FIXES_IF: "modified"
+          APPLY_FIXES_IF_SARIF: "error"
+
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: report/megalinter-report.sarif
+          category: code-quality
+
+      - name: Upload MegaLinter results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: megalinter-results
+          path: report/
+          retention-days: 30

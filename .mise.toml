@@ -39,6 +39,7 @@ eza = "0.23.0" # Modern ls alternative
 # Security and verification
 cosign = "2.5.3"     # Container signing and verification
 pre-commit = "4.3.0" # Git hook framework
+terrascan = "1.19.9" # Infrastructure security scanning
 
 # Linting and formatting tools
 yamllint = "1.37.1"          # YAML linting

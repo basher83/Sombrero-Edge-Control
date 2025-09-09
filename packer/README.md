@@ -5,6 +5,7 @@ This directory contains Packer configurations for building Proxmox VM templates 
 ## Overview
 
 The Packer template creates an Ubuntu 24.04 LTS (Numbat) VM template with comprehensive tooling:
+
 - **Docker CE** with Compose plugin pre-installed and configured
 - **Development tools**: mise, uv, Node.js LTS, Python 3, essential packages
 - **System hardening**: SSH security configuration, unattended upgrades
@@ -15,7 +16,7 @@ The Packer template creates an Ubuntu 24.04 LTS (Numbat) VM template with compre
 
 ## Directory Structure
 
-```
+```text
 packer/
 ├── ubuntu-server-numbat-docker.pkr.hcl  # Main Packer template
 ├── variables.pkrvars.hcl.example        # Example variables file
@@ -116,11 +117,13 @@ packer build ubuntu-server-numbat-docker.pkr.hcl
 The template includes comprehensive tooling installed via Ansible during the Packer build:
 
 **Container Runtime:**
+
 - Docker CE (latest stable) with Compose plugin
 - Buildx plugin for multi-platform builds
 - Containerd runtime
 
 **Development Tools:**
+
 - mise (development tool version manager)
 - uv (ultra-fast Python package manager)
 - nvm with Node.js LTS (Node Version Manager)
@@ -129,12 +132,14 @@ The template includes comprehensive tooling installed via Ansible during the Pac
 - Essential build tools (gcc, make, etc.)
 
 **System Utilities:**
+
 - Git, vim, htop, tree, jq
 - curl, wget, unzip
 - QEMU Guest Agent
 - Cloud-init with Proxmox integration
 
 **Security & Hardening:**
+
 - SSH hardening configuration
 - Unattended security updates
 - Disabled root login baseline
@@ -142,6 +147,7 @@ The template includes comprehensive tooling installed via Ansible during the Pac
 ### Cloud-init Configuration
 
 The template is configured for Proxmox cloud-init integration:
+
 - Datasources: ConfigDrive, NoCloud
 - Network configuration via cloud-init
 - User data injection support
@@ -165,6 +171,7 @@ resource "proxmox_virtual_environment_vm" "example" {
 ### 2. Configure with Cloud-init
 
 The template supports cloud-init for:
+
 - Setting hostname
 - Configuring network interfaces
 - Adding SSH keys
@@ -206,15 +213,18 @@ provisioner "shell" {
 ### Common Issues
 
 1. **API Connection Failed**
+
    - Verify Proxmox API URL and credentials
    - Check network connectivity
    - Ensure API token has correct permissions
 
 2. **ISO Not Found**
+
    - Verify ISO is uploaded to specified storage pool
    - Check ISO filename matches template configuration
 
 3. **SSH Connection Timeout**
+
    - Ensure SSH key is correctly added to autoinstall
    - Check network configuration allows SSH access
    - Verify cloud-init completed successfully
@@ -265,6 +275,7 @@ graph LR
 ### Updating Templates
 
 1. Regular updates for security patches:
+
    ```bash
    # Rebuild template monthly
    mise run packer-build
@@ -278,6 +289,7 @@ graph LR
 ### Template Versioning
 
 Consider using VM ID ranges:
+
 - 1000-1099: Ubuntu 22.04 templates (legacy)
 - 1100-1199: Ubuntu 24.04 templates (current)
 - 1200-1299: Rocky/Alma Linux templates

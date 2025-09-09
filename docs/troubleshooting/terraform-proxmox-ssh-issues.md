@@ -2,15 +2,17 @@
 
 ## Problem Description
 
-When using the bpg/proxmox Terraform provider, you may encounter SSH authentication errors when Terraform attempts to upload files (like cloud-init vendor data) to the Proxmox host:
+When using the bpg/proxmox Terraform provider, you may encounter SSH authentication errors
+when Terraform attempts to upload files (like cloud-init vendor data) to the Proxmox host:
 
-```
+```text
 Error: ssh: unable to authenticate, attempted methods [none]
 ```
 
 ## Root Cause
 
 The bpg/proxmox provider requires SSH access to the Proxmox host for certain operations, particularly:
+
 - Uploading cloud-init configuration files
 - Managing vendor data files
 - Accessing storage pools directly
@@ -42,6 +44,7 @@ TF_VAR_proxmox_ssh_username = "root"  # Usually root for Proxmox
 ```
 
 Verify it's loaded:
+
 ```bash
 mise env | grep proxmox_ssh_username
 ```
@@ -126,6 +129,7 @@ provider "proxmox" {
 ### Issue: SSH agent not persisting
 
 **Solution**: Add to your shell profile:
+
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
 if [ -z "$SSH_AUTH_SOCK" ]; then
@@ -137,6 +141,7 @@ fi
 ### Issue: Permission denied even with correct key
 
 **Solution**: Check Proxmox SSH configuration:
+
 ```bash
 # On Proxmox host
 grep -E "^(PermitRootLogin|PubkeyAuthentication)" /etc/ssh/sshd_config
@@ -148,6 +153,7 @@ grep -E "^(PermitRootLogin|PubkeyAuthentication)" /etc/ssh/sshd_config
 ### Issue: Multiple SSH keys causing confusion
 
 **Solution**: Specify exact key in SSH config:
+
 ```bash
 # ~/.ssh/config
 Host proxmox 192.168.10.2

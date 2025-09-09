@@ -107,17 +107,17 @@ Act can run any workflow defined in `.github/workflows/`:
 
 Main quality and security checks:
 
-| Job ID | Description | Mise Command |
-|--------|-------------|--------------|
-| `terraform-format` | Check Terraform formatting | `mise run act-format` |
+| Job ID               | Description                      | Mise Command            |
+| -------------------- | -------------------------------- | ----------------------- |
+| `terraform-format`   | Check Terraform formatting       | `mise run act-format`   |
 | `terraform-validate` | Validate Terraform configuration | `mise run act-validate` |
-| `tflint` | Terraform linting | `mise run act-lint` |
-| `terraform-docs` | Documentation generation check | `mise run act-docs` |
-| `yaml-lint` | YAML file linting | - |
-| `shellcheck` | Shell script linting | `mise run act-shell` |
-| `markdown-lint` | Markdown linting | - |
-| `secret-scan` | Infisical secret scanning | Part of `act-security` |
-| `kics-scan` | Infrastructure security scan | Part of `act-security` |
+| `tflint`             | Terraform linting                | `mise run act-lint`     |
+| `terraform-docs`     | Documentation generation check   | `mise run act-docs`     |
+| `yaml-lint`          | YAML file linting                | -                       |
+| `shellcheck`         | Shell script linting             | `mise run act-shell`    |
+| `markdown-lint`      | Markdown linting                 | -                       |
+| `secret-scan`        | Infisical secret scanning        | Part of `act-security`  |
+| `kics-scan`          | Infrastructure security scan     | Part of `act-security`  |
 
 ### Other Workflows
 
@@ -204,16 +204,19 @@ act --container-options "--cpus 2"
 ### Development Workflow
 
 1. **Initial Check**: After making changes
+
    ```bash
    mise run act-quick  # Fast validation
    ```
 
 2. **Full Validation**: Before committing
+
    ```bash
    mise run act-ci    # Complete CI pipeline
    ```
 
 3. **PR Simulation**: Before creating PR
+
    ```bash
    mise run act-pr    # Test PR-specific checks
    ```
@@ -236,15 +239,16 @@ Act uses Docker images that simulate GitHub Actions runners:
 
 ### Available Images
 
-| Image Type | Size | Use Case | Tools Included |
-|------------|------|----------|----------------|
-| Micro | ~200MB | Minimal workflows | Basic shell tools |
-| Medium | ~500MB | Standard workflows | Common CI tools |
-| Large | ~17GB | Complex workflows | Full GitHub runner toolkit |
+| Image Type | Size   | Use Case           | Tools Included             |
+| ---------- | ------ | ------------------ | -------------------------- |
+| Micro      | ~200MB | Minimal workflows  | Basic shell tools          |
+| Medium     | ~500MB | Standard workflows | Common CI tools            |
+| Large      | ~17GB  | Complex workflows  | Full GitHub runner toolkit |
 
 ### Current Configuration
 
 We use `catthehacker/ubuntu:act-*` images (medium-sized):
+
 - Good balance of size and functionality
 - Includes most common CI tools
 - Faster pull and startup times
@@ -255,6 +259,7 @@ We use `catthehacker/ubuntu:act-*` images (medium-sized):
 ### Common Issues and Solutions
 
 #### 1. Docker Not Running
+
 ```bash
 # Check Docker status
 docker info
@@ -264,6 +269,7 @@ open -a Docker
 ```
 
 #### 2. Image Pull Failures
+
 ```bash
 # Manually pull the image
 docker pull catthehacker/ubuntu:act-latest
@@ -273,6 +279,7 @@ docker system prune -a
 ```
 
 #### 3. Permission Errors
+
 ```bash
 # Check Docker socket permissions
 ls -la /var/run/docker.sock
@@ -282,15 +289,18 @@ sudo usermod -aG docker $USER
 ```
 
 #### 4. Apple Silicon Issues
+
 The `.actrc` includes `--container-architecture linux/amd64` for compatibility.
 
 If you still have issues:
+
 ```bash
 # Force platform in command
 act --container-architecture linux/amd64
 ```
 
 #### 5. Network Connectivity
+
 ```bash
 # Test with different network modes
 act --network bridge  # Isolated network
@@ -298,6 +308,7 @@ act --network host    # Host network (current default)
 ```
 
 #### 6. Container Resource Issues
+
 ```bash
 # Increase resources
 act --container-options "--memory 8g --cpus 4"
@@ -306,12 +317,14 @@ act --container-options "--memory 8g --cpus 4"
 ### Debugging Workflows
 
 #### Interactive Debugging
+
 ```bash
 # Get shell access to debug
 act push --job terraform-format -s
 ```
 
 #### Verbose Logging
+
 ```bash
 # Maximum verbosity
 mise run act-debug
@@ -321,6 +334,7 @@ act push --verbose --debug
 ```
 
 #### Step-by-Step Execution
+
 ```bash
 # Preview what will run
 mise run act-dry
@@ -355,6 +369,7 @@ Ensuring local tests match GitHub Actions:
 ### Environment Variables
 
 Act inherits from your shell environment. With mise active:
+
 - All `TF_VAR_*` variables are available
 - Tool versions match exactly
 - Configuration is consistent
@@ -362,6 +377,7 @@ Act inherits from your shell environment. With mise active:
 ### File System
 
 Using `--bind` ensures:
+
 - Correct file permissions
 - Symlinks work properly
 - Git operations function
@@ -369,6 +385,7 @@ Using `--bind` ensures:
 ### Network Access
 
 Host network mode provides:
+
 - External API access
 - Package downloads
 - Docker daemon access
@@ -378,16 +395,18 @@ Host network mode provides:
 ### Best Practices
 
 1. **Secrets Management**
+
    - Never commit `.env.act`
    - Use environment variables for sensitive data
    - Rotate tokens regularly
 
-2. **Container Isolation**
+1. **Container Isolation**
+
    - Containers run with limited privileges
    - Network isolation available if needed
    - Resource limits prevent system impact
 
-3. **Code Review**
+1. **Code Review**
    - Review workflow files before running
    - Understand what actions do
    - Verify third-party actions
@@ -411,8 +430,8 @@ act -s GITHUB_TOKEN=xxx
 ### VS Code
 
 1. Install "GitHub Actions" extension
-2. Use integrated terminal for act commands
-3. Set up tasks.json:
+1. Use integrated terminal for act commands
+1. Set up tasks.json:
    ```json
    {
      "version": "2.0.0",
@@ -429,6 +448,7 @@ act -s GITHUB_TOKEN=xxx
 ### Shell Aliases
 
 Add to your shell RC file:
+
 ```bash
 alias act-quick='mise run act-quick'
 alias act-ci='mise run act-ci'
@@ -438,6 +458,7 @@ alias act-debug='mise run act-debug'
 ### Git Hooks
 
 Create `.git/hooks/pre-push`:
+
 ```bash
 #!/bin/bash
 echo "Running local CI checks..."
@@ -469,9 +490,10 @@ docker image prune
 ### Configuration Updates
 
 When workflows change:
+
 1. Test with `act --dryrun`
-2. Update mise tasks if needed
-3. Document any new requirements
+1. Update mise tasks if needed
+1. Document any new requirements
 
 ## Additional Resources
 

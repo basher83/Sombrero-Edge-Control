@@ -28,6 +28,9 @@ terraform.tfvars
 # KICS security scan results
 kics-results/
 
+# MegaLinter reports
+report/
+
 # Ansible - centralized in ansible/ directory
 ansible/inventory/*
 !ansible/inventory/*.example

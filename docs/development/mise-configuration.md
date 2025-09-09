@@ -1,6 +1,7 @@
 # Mise Configuration Guide
 
-This document provides comprehensive guidance on configuring and using [mise](https://mise.jdx.dev/) (formerly rtx) for this project.
+This document provides comprehensive guidance on configuring and using [mise](https://mise.jdx.dev/)
+(formerly rtx) for this project.
 
 ## Overview
 
@@ -38,11 +39,13 @@ Location: `/Users/basher8383/dev/infra-as-code/Sombrero-Edge-Control/.mise.local
 ### Initial Setup
 
 1. **Copy the example configuration** (if available):
+
    ```bash
    cp .mise.local.toml.example .mise.local.toml
    ```
 
-2. **Or create a new `.mise.local.toml`**:
+1. **Or create a new `.mise.local.toml`**:
+
    ```toml
    [env]
    # Terraform variables
@@ -61,27 +64,27 @@ Location: `/Users/basher8383/dev/infra-as-code/Sombrero-Edge-Control/.mise.local
 
 #### Proxmox Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `TF_VAR_pve_api_token` | Proxmox API token for Terraform | `terraform@pve!scalr=token-id` |
-| `TF_VAR_pve_api_url` | Proxmox API endpoint URL | `https://192.168.10.2:8006/api2/json` |
-| `TF_VAR_ci_ssh_key` | SSH public key for VM access | `ssh-ed25519 AAAA...` |
-| `TF_VAR_proxmox_insecure` | Skip TLS verification (dev only) | `true` or `false` |
-| `TF_VAR_proxmox_ssh_username` | SSH user for Proxmox operations | `root` |
+| Variable                      | Description                      | Example                               |
+| ----------------------------- | -------------------------------- | ------------------------------------- |
+| `TF_VAR_pve_api_token`        | Proxmox API token for Terraform  | `terraform@pve!scalr=token-id`        |
+| `TF_VAR_pve_api_url`          | Proxmox API endpoint URL         | `https://192.168.10.2:8006/api2/json` |
+| `TF_VAR_ci_ssh_key`           | SSH public key for VM access     | `ssh-ed25519 AAAA...`                 |
+| `TF_VAR_proxmox_insecure`     | Skip TLS verification (dev only) | `true` or `false`                     |
+| `TF_VAR_proxmox_ssh_username` | SSH user for Proxmox operations  | `root`                                |
 
 #### Optional Performance Settings
 
-| Variable | Description | Default |
-|----------|-------------|---------|
+| Variable            | Description               | Default           |
+| ------------------- | ------------------------- | ----------------- |
 | `TF_CLI_ARGS_apply` | Terraform apply arguments | `-parallelism=20` |
-| `TF_CLI_ARGS_plan` | Terraform plan arguments | `-parallelism=20` |
+| `TF_CLI_ARGS_plan`  | Terraform plan arguments  | `-parallelism=20` |
 
 #### Infisical Settings (Optional)
 
-| Variable | Description |
-|----------|-------------|
-| `INFISICAL_UNIVERSAL_AUTH_CLIENT_ID` | Infisical client ID for secret management |
-| `INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET` | Infisical client secret |
+| Variable                                 | Description                               |
+| ---------------------------------------- | ----------------------------------------- |
+| `INFISICAL_UNIVERSAL_AUTH_CLIENT_ID`     | Infisical client ID for secret management |
+| `INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET` | Infisical client secret                   |
 
 #### MCP (Model Context Protocol) Settings (Optional)
 
@@ -89,21 +92,22 @@ For projects using MCP tools like Proxmox integration, configuration is typicall
 
 ```json
 {
-    "proxmox": {
-        "host": "192.168.30.30",
-        "port": 8006,
-        "verify_ssl": false,
-        "service": "PVE"
-    },
-    "auth": {
-        "user": "api-user@pve",
-        "token_name": "homarr",
-        "token_value": "your-token-here"
-    }
+  "proxmox": {
+    "host": "192.168.30.30",
+    "port": 8006,
+    "verify_ssl": false,
+    "service": "PVE"
+  },
+  "auth": {
+    "user": "api-user@pve",
+    "token_name": "homarr",
+    "token_value": "your-token-here"
+  }
 }
 ```
 
-> **Note**: Keep MCP configuration files out of version control and reference them via environment variables in `.mise.local.toml` when needed.
+> **Note**: Keep MCP configuration files out of version control and reference them via
+> environment variables in `.mise.local.toml` when needed.
 
 ## Tool Management
 
@@ -324,7 +328,8 @@ echo "Detected environment: $ENVIRONMENT"
 
 ### Default Shell Behavior
 
-By default, mise executes tasks using `sh -c` on Unix systems, which is POSIX-compliant but doesn't support bash-specific features like:
+By default, mise executes tasks using `sh -c` on Unix systems, which is POSIX-compliant but
+doesn't support bash-specific features like:
 
 - Double bracket conditions `[[ ]]`
 - Parameter expansion like `${var//pattern/replacement}`
@@ -372,18 +377,19 @@ echo "Environment: $ENVIRONMENT"
 
 Tasks run with different shells have different behaviors:
 
-| Shell | Error Handling | Features | Use Case |
-|-------|----------------|----------|----------|
-| `sh -c` (default) | `set -e` enabled | POSIX only | Simple, portable tasks |
-| `bash -c` | `set -e` enabled | Full bash | Complex scripting, conditionals |
-| `zsh -c` | `set -e` enabled | Zsh extensions | Zsh-specific features |
-| Custom shell | Varies | Any interpreter | Python, Node.js, Ruby scripts |
+| Shell             | Error Handling   | Features        | Use Case                        |
+| ----------------- | ---------------- | --------------- | ------------------------------- |
+| `sh -c` (default) | `set -e` enabled | POSIX only      | Simple, portable tasks          |
+| `bash -c`         | `set -e` enabled | Full bash       | Complex scripting, conditionals |
+| `zsh -c`          | `set -e` enabled | Zsh extensions  | Zsh-specific features           |
+| Custom shell      | Varies           | Any interpreter | Python, Node.js, Ruby scripts   |
 
 ## Troubleshooting
 
 ### Common Issues
 
 1. **Missing environment variables**
+
    ```bash
    # Check current environment
    mise env
@@ -392,7 +398,8 @@ Tasks run with different shells have different behaviors:
    echo $TF_VAR_pve_api_token
    ```
 
-2. **Tools not found**
+1. **Tools not found**
+
    ```bash
    # Reinstall tools
    mise install
@@ -401,7 +408,8 @@ Tasks run with different shells have different behaviors:
    mise list
    ```
 
-3. **Task not found**
+1. **Task not found**
+
    ```bash
    # List all available tasks
    mise tasks
@@ -410,13 +418,15 @@ Tasks run with different shells have different behaviors:
    mise run --verbose task-name
    ```
 
-4. **Permission issues**
+1. **Permission issues**
+
    ```bash
    # Ensure mise is activated
    eval "$(mise activate bash)"  # or zsh/fish
    ```
 
-5. **Shell syntax errors** (`[[: not found`, `Bad substitution`)
+1. **Shell syntax errors** (`[[: not found`, `Bad substitution`)
+
    ```bash
    # Error indicates bash syntax in sh shell
    # Fix: Add shell specification to the task
@@ -425,6 +435,7 @@ Tasks run with different shells have different behaviors:
    **Problem**: Task contains bash-specific syntax but runs with default `sh`
 
    **Solution**: Add `shell = "bash -c"` to task configuration:
+
    ```toml
    [tasks.problematic-task]
    description = "Task with bash syntax"

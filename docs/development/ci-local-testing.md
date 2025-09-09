@@ -71,38 +71,38 @@ mise run act-dry       # Preview what will run without executing
 ## Recommended Development Workflow
 
 1. **Make changes** to Terraform, scripts, or documentation
-2. **Quick check** with `mise run act-quick` (takes ~30 seconds)
-3. **Fix any issues** locally
-4. **Full validation** with `mise run act-ci` (takes ~2 minutes)
-5. **Commit and push** with confidence
+1. **Quick check** with `mise run act-quick` (takes ~30 seconds)
+1. **Fix any issues** locally
+1. **Full validation** with `mise run act-ci` (takes ~2 minutes)
+1. **Commit and push** with confidence
 
 ## Troubleshooting Quick Reference
 
-| Issue | Solution |
-|-------|----------|
-| Docker not running | `docker info` to check, start Docker Desktop |
-| Act not found | `mise install act` |
-| Image pull failures | `docker pull catthehacker/ubuntu:act-latest` |
-| Permission issues | Check Docker socket: `ls -la /var/run/docker.sock` |
-| Apple Silicon issues | Already handled by `.actrc` configuration |
-| Need verbose output | Use `mise run act-debug` |
-| Want to preview only | Use `mise run act-dry` |
+| Issue                | Solution                                           |
+| -------------------- | -------------------------------------------------- |
+| Docker not running   | `docker info` to check, start Docker Desktop       |
+| Act not found        | `mise install act`                                 |
+| Image pull failures  | `docker pull catthehacker/ubuntu:act-latest`       |
+| Permission issues    | Check Docker socket: `ls -la /var/run/docker.sock` |
+| Apple Silicon issues | Already handled by `.actrc` configuration          |
+| Need verbose output  | Use `mise run act-debug`                           |
+| Want to preview only | Use `mise run act-dry`                             |
 
 For detailed troubleshooting, see [Act Configuration - Troubleshooting](./act-configuration.md#troubleshooting).
 
 ## CI Job Reference
 
-| Job | Purpose | Mise Command |
-|-----|---------|--------------|
-| terraform-format | Check Terraform formatting | `mise run act-format` |
-| terraform-validate | Validate Terraform syntax | `mise run act-validate` |
-| tflint | Terraform best practices | `mise run act-lint` |
-| terraform-docs | Documentation generation | `mise run act-docs` |
-| shellcheck | Shell script linting | `mise run act-shell` |
-| secret-scan | Infisical secret scanning | Part of `act-security` |
-| kics-scan | Infrastructure security | Part of `act-security` |
-| **all checks** | Complete CI pipeline | `mise run act-ci` |
-| **quick checks** | Format + Validate + Lint | `mise run act-quick` |
+| Job                | Purpose                    | Mise Command            |
+| ------------------ | -------------------------- | ----------------------- |
+| terraform-format   | Check Terraform formatting | `mise run act-format`   |
+| terraform-validate | Validate Terraform syntax  | `mise run act-validate` |
+| tflint             | Terraform best practices   | `mise run act-lint`     |
+| terraform-docs     | Documentation generation   | `mise run act-docs`     |
+| shellcheck         | Shell script linting       | `mise run act-shell`    |
+| secret-scan        | Infisical secret scanning  | Part of `act-security`  |
+| kics-scan          | Infrastructure security    | Part of `act-security`  |
+| **all checks**     | Complete CI pipeline       | `mise run act-ci`       |
+| **quick checks**   | Format + Validate + Lint   | `mise run act-quick`    |
 
 ## Related Documentation
 

@@ -6,7 +6,9 @@
 
 ## Problem Summary
 
-SSH connectivity to the jump-man VM was failing with authentication errors, despite Terraform reporting successful deployment. The core issue was a **configuration conflict** in the Proxmox Terraform provider between `user_account` and `user_data_file_id` directives.
+SSH connectivity to the jump-man VM was failing with authentication errors,
+despite Terraform reporting successful deployment. The core issue was a **configuration conflict**
+in the Proxmox Terraform provider between `user_account` and `user_data_file_id` directives.
 
 ## Symptoms Observed
 
@@ -18,7 +20,7 @@ SSH connectivity to the jump-man VM was failing with authentication errors, desp
 
 2. **Cloud-init Processing Issues**
 
-   ```
+   ```text
    WARNING: Unhandled non-multipart (text/x-not-multipart) userdata
    ```
 
@@ -209,14 +211,14 @@ SSH_OPTS="-o ConnectTimeout=10"
 ## Implementation Steps Taken
 
 1. **Identified the conflict** using bpg/proxmox provider documentation
-2. **Updated VM module** to support conditional user_account usage
-3. **Created separate user-data file** for essential packages
-4. **Split responsibilities**:
+1. **Updated VM module** to support conditional user_account usage
+1. **Created separate user-data file** for essential packages
+1. **Split responsibilities**:
    - **User-data**: Essential packages, user accounts, basic services
    - **Vendor-data**: Advanced configuration, Docker installation, scripts
-5. **Fixed 1Password SSH configuration** for proper key loading
-6. **Recreated VM** to apply new cloud-init configuration
-7. **Verified resolution** with smoke tests
+1. **Fixed 1Password SSH configuration** for proper key loading
+1. **Recreated VM** to apply new cloud-init configuration
+1. **Verified resolution** with smoke tests
 
 ## Verification Results
 
@@ -237,17 +239,17 @@ SSH_OPTS="-o ConnectTimeout=10"
 ## Lessons Learned
 
 1. **Always check provider documentation** for configuration conflicts
-2. **Separate concerns** between user-data (essential) and vendor-data (advanced)
-3. **Test cloud-init configurations** incrementally
-4. **Use conditional blocks** in Terraform for mutually exclusive options
-5. **Validate 1Password SSH configuration** matches actual vault/item names
+1. **Separate concerns** between user-data (essential) and vendor-data (advanced)
+1. **Test cloud-init configurations** incrementally
+1. **Use conditional blocks** in Terraform for mutually exclusive options
+1. **Validate 1Password SSH configuration** matches actual vault/item names
 
 ## Prevention Measures
 
 1. **Added validation** in VM module for conflicting configurations
-2. **Documented user-data vs user-account conflict** in module README
-3. **Implemented proper error handling** in smoke tests
-4. **Created troubleshooting documentation** (this document)
+1. **Documented user-data vs user-account conflict** in module README
+1. **Implemented proper error handling** in smoke tests
+1. **Created troubleshooting documentation** (this document)
 
 ## Related Files
 

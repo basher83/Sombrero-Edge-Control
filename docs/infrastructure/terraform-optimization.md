@@ -2,13 +2,15 @@
 
 ## Overview
 
-This guide documents various optimization techniques to speed up Terraform operations, reduce redundant work, and improve the development experience.
+This guide documents various optimization techniques to speed up Terraform operations, reduce
+redundant work, and improve the development experience.
 
 ## Plugin Caching
 
 ### Problem
 
-By default, Terraform downloads provider plugins for every `terraform init`, even if they're already present on your system. This wastes bandwidth and time.
+By default, Terraform downloads provider plugins for every `terraform init`, even if they're
+already present on your system. This wastes bandwidth and time.
 
 ### Solution
 
@@ -18,19 +20,19 @@ Configure a central plugin cache directory that Terraform will check before down
 
 1. **Create the cache directory**:
 
-```bash
-mkdir -p ~/.terraform.d/plugin-cache
-```
+   ```bash
+   mkdir -p ~/.terraform.d/plugin-cache
+   ```
 
-2. **Create Terraform CLI configuration**:
+1. **Create Terraform CLI configuration**:
 
-```bash
-cat > ~/.terraformrc << 'EOF'
-plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"
-EOF
-```
+   ```bash
+   cat > ~/.terraformrc << 'EOF'
+   plugin_cache_dir = "$HOME/.terraform.d/plugin-cache"
+   EOF
+   ```
 
-3. **Verify it works**:
+1. **Verify it works**:
 
 ```bash
 # First init will download to cache
@@ -86,7 +88,7 @@ terraform apply -parallelism=20
 
 Terraform respects `TF_CLI_ARGS_*` environment variables to automatically add arguments to commands.
 
-#### Common Optimizations in `.mise.local.toml`:
+#### Common Optimizations in `.mise.local.toml`
 
 ```toml
 [env]
@@ -263,13 +265,13 @@ TF_CLI_ARGS_plan = "-parallelism=10"  # Back to default
    - Use aggressive optimizations in development
    - Be conservative in production (don't skip refresh, use default parallelism)
 
-2. **Team Settings**:
+1. **Team Settings**:
 
    - Document optimization settings in this guide
    - Share `.mise.local.toml.example` with recommended settings
    - Let team members adjust based on their hardware/network
 
-3. **CI/CD Pipeline**:
+1. **CI/CD Pipeline**:
    - Use plugin caching in CI runners
    - Set appropriate parallelism for CI environment
    - Never use `-auto-approve` without proper guards

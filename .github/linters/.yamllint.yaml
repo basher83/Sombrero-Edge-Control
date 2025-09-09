@@ -1,0 +1,34 @@
+extends: default
+
+rules:
+  line-length:
+    max: 120
+    level: warning
+
+  truthy:
+    check-keys: false
+
+  comments-indentation: disable
+
+  comments:
+    min-spaces-from-content: 1
+
+  document-start:
+    present: false
+
+  empty-lines:
+    max-start: 2
+    max-end: 1
+    max: 2
+
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  key-duplicates: enable
+
+  new-lines:
+    type: unix
+
+  new-line-at-end-of-file: enable

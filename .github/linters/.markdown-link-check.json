@@ -1,0 +1,20 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^mailto:"
+    },
+    {
+      "pattern": "github\\.com/.*/(issues|pull)/\\d+"
+    }
+  ],
+  "aliveStatusCodes": [200, 206, 429],
+  "retryOn429": true,
+  "retries": 3,
+  "timeout": "20s",
+  "replacementPatterns": [
+    {
+      "pattern": "^/",
+      "replacement": "{{BASEURL}}/"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+project:
+  name: Sombrero-Edge-Control
+  tz: America/New_York
+  adrFolder: ./docs/decisions
+  packages: []

@@ -26,6 +26,7 @@ graph LR
 ```
 
 **Pipeline Components:**
+
 - **Packer**: Creates golden image with Docker pre-installed
 - **Terraform**: Clones template and provisions infrastructure
 - **Cloud-init**: Performs initial VM configuration

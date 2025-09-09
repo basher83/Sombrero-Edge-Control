@@ -1,0 +1,27 @@
+[defaults]
+profile = production
+
+[exclude_paths]
+./.git/
+./.terraform/
+./kics-results/
+
+[rules]
+# Allow skipping of tasks
+skip_list = []
+
+# Warn list for less critical rules
+warn_list = [
+  "no-changed-when",
+  "unnamed-task"
+]
+
+# Custom rule configurations
+var-naming = {"pattern": "^[a-z_][a-z0-9_]*$"}
+
+[rules:retry]
+max_attempts = 3
+
+[rules:task-name]
+# Allow short task names for simple operations
+min_length = 10
