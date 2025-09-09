@@ -22,6 +22,17 @@ Utility scripts for managing the Sombrero Edge Control jump host infrastructure.
 ```
 **Output**: Creates inventory files in `ansible/inventories/`
 
+### 🚀 `run-megalinter-local.sh`
+**Purpose**: Run MegaLinter locally for fast pre-commit quality checks
+**Features**: Uses efrecon/mega-linter-runner (fast, no Node.js deps, GHCR registry)
+**Usage**:
+```bash
+./scripts/run-megalinter-local.sh              # Basic run
+./scripts/run-megalinter-local.sh --fix        # Apply auto-fixes
+./scripts/run-megalinter-local.sh --verbose    # Detailed output
+```
+**Output**: Generates reports in `report/` directory
+
 ### 📚 `generate-docs.sh`
 **Purpose**: Generate Terraform documentation for all modules and environments
 **Requirements**: `terraform-docs` (install via `mise install terraform-docs`)

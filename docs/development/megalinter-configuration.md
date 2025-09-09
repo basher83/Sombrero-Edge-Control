@@ -59,7 +59,20 @@ MegaLinter is configured to **complement** rather than duplicate your existing C
 
 ## Local Usage
 
-### Primary: Local MegaLinter with efrecon runner
+### Primary: Local MegaLinter with convenience script
+
+```bash
+# Easiest method - our wrapper script handles everything
+./scripts/run-megalinter-local.sh
+
+# Run with fixes applied automatically
+./scripts/run-megalinter-local.sh --fix
+
+# Pass additional arguments to MegaLinter
+./scripts/run-megalinter-local.sh --verbose
+```
+
+### Alternative: Direct efrecon runner
 
 ```bash
 # Download and run the fast MegaLinter runner
