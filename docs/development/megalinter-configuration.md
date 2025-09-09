@@ -285,6 +285,107 @@ mise run act-debug    # Maximum verbosity
 - [Mise Configuration](./mise-configuration.md) - Tool version management
 - [Act Configuration](./act-configuration.md) - GitHub Actions local testing
 
+## Troubleshooting & Gotchas
+
+### Common Issues
+
+#### Docker Hub Rate Limits
+```bash
+# Use GHCR registry (recommended)
+./scripts/run-megalinter-local.sh
+
+# Manual GHCR pull
+docker pull ghcr.io/oxsecurity/megalinter:v8
+```
+
+#### Platform Compatibility (Apple Silicon)
+```bash
+# Enable Rosetta for Intel containers
+softwareupdate --install-rosetta
+```
+
+#### Configuration Conflicts
+```bash
+# Validate configuration syntax
+docker run --rm -v $(pwd):/tmp/lint oxsecurity/megalinter:v8 --help
+
+# Test specific linter
+docker run --rm -v $(pwd):/tmp/lint oxsecurity/megalinter:v8 --linter TERRAFORM_TFLINT
+```
+
+#### Path Filtering Issues
+```bash
+# Check what files are included
+find . -type f \( -name "*.tf" -o -name "*.yaml" -o -name "*.md" \) | grep -E "(docs/|infrastructure/|ansible/|packer/)"
+```
+
+### Performance Optimization
+
+#### Expected Timings
+- **Local testing**: 30-60 seconds
+- **CI workflow**: 3-5 minutes (fast checks)
+- **MegaLinter PR**: 8-15 minutes (comprehensive)
+
+#### Speed Improvements
+```bash
+# Use terraform flavor for faster runs
+./scripts/run-megalinter-local.sh --flavor terraform
+
+# Skip slow linters in development
+DISABLE_LINTERS=TERRAFORM_TERRASCAN,MARKDOWN_MARKDOWN_LINK_CHECK ./scripts/run-megalinter-local.sh
+```
+
+### Integration Gotchas
+
+#### With CI Workflow
+- **MegaLinter runs AFTER CI** to avoid duplicate work
+- **CI handles fast validation** (format, basic linting)
+- **MegaLinter provides deep analysis** (all linters, security)
+
+#### With Pre-commit Hooks
+- **Pre-commit handles basic checks** (whitespace, syntax)
+- **MegaLinter handles advanced linting** (logic, security)
+- **No conflicts** - different scopes and triggers
+
+#### With Mise Tasks
+```bash
+# Fast CI simulation
+mise run act-ci
+
+# Comprehensive MegaLinter
+./scripts/run-megalinter-local.sh
+
+# Performance diagnostics
+./scripts/diagnose-megalinter.sh
+```
+
+### Error Recovery
+
+#### Configuration Errors
+```bash
+# Validate YAML syntax
+python3 -c "import yaml; yaml.safe_load(open('.mega-linter.yml'))"
+
+# Check linter rules
+docker run --rm -v $(pwd):/tmp/lint oxsecurity/megalinter:v8 --validate-config
+```
+
+#### Cache Issues
+```bash
+# Clear Docker caches
+docker system prune -a
+
+# Clear MegaLinter caches
+rm -rf report/ .mega-linter-cache/
+```
+
+#### Network Issues
+```bash
+# Force GHCR usage
+export MEGALINTER_DOCKER_IMAGE=ghcr.io/oxsecurity/megalinter:v8
+./scripts/run-megalinter-local.sh
+```
+
 ## Maintenance
 
 ### Regular Tasks
