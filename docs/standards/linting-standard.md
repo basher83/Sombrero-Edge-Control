@@ -118,12 +118,24 @@ Notes:
 Example rules folder:
 
 ```
+# Repository root (symlinks for compatibility)
+├── .yamllint → .github/linters/.yamllint.yaml 🔗
+├── .yamlfmt → .github/linters/.yamlfmt 🔗
+├── .markdownlint-cli2.jsonc → .github/linters/.markdownlint-cli2.jsonc 🔗
+├── .mega-linter.yml → .github/linters/.mega-linter.yml 🔗
+├── .ansible-lint → .github/linters/.ansible-lint 🔗
+├── .tflint.hcl → .github/linters/.tflint.hcl 🔗
+└── .terrascan.toml → .github/linters/.terrascan.toml 🔗
+
+# Organized configuration location
 .github/
   linters/
-    .markdownlint.json
+    .yamllint.yaml        # Consolidated YAML config
+    .yamlfmt             # YAML formatter config
+    .markdownlint-cli2.jsonc
     .markdown-link-check.json
+    .mega-linter.yml     # Main MegaLinter config
     .ansible-lint
-    .yamllint.yaml
     .tflint.hcl
     .terrascan.toml
 ```
@@ -157,12 +169,11 @@ Example .markdown-link-check.json:
 }
 ```
 
-
 ## Tool-specific Rule Pointers
 
 - Terraform: include .tflint.hcl and optionally enable terrascan via .terrascan.toml to catch IaC policy issues in the same run, managed by MegaLinter.[^8][^2]
 - Ansible: include a .ansible-lint file with skip_list/warn_list/exclude_paths for repo‑wide posture under MegaLinter's ANSIBLE_ANSIBLE_LINT.[^10][^2]
-- YAML/JSON/Shell: keep .yamllint.yaml, JSONC rules for eslint-plugin-jsonc, and shfmt formatting behavior under rules path for consistent enforcement.[^7][^6]
+- YAML/JSON/Shell: use consolidated `.yamllint.yaml` for linting and `.yamlfmt` for formatting, with JSONC rules for eslint-plugin-jsonc and shfmt formatting behavior under rules path for consistent enforcement.[^7][^6]
 
 ## Reports and Artifacts
 

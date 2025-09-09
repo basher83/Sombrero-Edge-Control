@@ -1,34 +1,60 @@
+# YAML Linting Configuration for Sombrero Edge Control
+# Consolidated configuration combining best practices from both configs
 extends: default
 
 rules:
+  # Line length - matches project standards (120 chars)
   line-length:
     max: 120
     level: warning
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
 
+  # Truthy values - allow 'on' for GitHub Actions
   truthy:
+    allowed-values: ['true', 'false', 'on', 'off']
     check-keys: false
 
+  # Comments configuration
   comments-indentation: disable
-
   comments:
     min-spaces-from-content: 1
+    require-starting-space: true
 
+  # Document start - flexible for config files
   document-start:
     present: false
 
+  # Empty lines - reasonable limits
   empty-lines:
+    max: 2
     max-start: 2
     max-end: 1
-    max: 2
 
+  # Indentation - 2 spaces standard
   indentation:
     spaces: 2
     indent-sequences: true
     check-multi-line-strings: false
 
+  # Enable duplicate key detection
   key-duplicates: enable
 
+  # Unix line endings
   new-lines:
     type: unix
 
+  # Require newlines at end of files
   new-line-at-end-of-file: enable
+
+  # Trailing spaces
+  trailing-spaces: enable
+
+# Ignore generated/vendor directories
+ignore: |
+  .terraform/
+  .venv/
+  venv/
+  node_modules/
+  vendor/
+  .terraform.lock.hcl

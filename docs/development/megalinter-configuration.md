@@ -29,6 +29,94 @@ This document covers MegaLinter setup, configuration, and optimizations for the 
 - **`scripts/test-megalinter.sh`** - Local validation testing
 - **`scripts/fix-markdown-issues.sh`** - Markdown formatting helper
 
+## Symlink Organization Strategy
+
+### Overview
+
+This project uses a **symlink-based organization strategy** for linter configurations to maintain **backward compatibility** while providing **professional organization**. All linter configuration files are stored in `.github/linters/` with symlinks in the repository root pointing to them.
+
+### Benefits
+
+**✅ Zero Breaking Changes:**
+
+- All tools (IDEs, pre-commit hooks, CI/CD) continue finding configs in expected locations
+- No changes required to existing workflows or tooling
+
+**✅ Single Source of Truth:**
+
+- Actual configuration files live in `.github/linters/`
+- Easy to maintain and version control
+- Clear organization structure
+
+**✅ Easy Maintenance:**
+
+- Edit files in `.github/linters/` and changes apply everywhere instantly
+- No risk of configuration drift between multiple copies
+- Clear separation between symlinks and actual files
+
+### How It Works
+
+1. **Tools look for configs** in the root directory (standard locations)
+2. **Symlinks transparently redirect** to `.github/linters/` directory
+3. **Actual files are maintained** in the organized location
+4. **Changes propagate instantly** through the symlink mechanism
+
+### Current Configuration Structure
+
+```bash
+# Repository root (symlinks for compatibility)
+├── .yamllint → .github/linters/.yamllint.yaml 🔗
+├── .yamlfmt → .github/linters/.yamlfmt 🔗
+├── .markdownlint-cli2.jsonc → .github/linters/.markdownlint-cli2.jsonc 🔗
+├── .mega-linter.yml → .github/linters/.mega-linter.yml 🔗
+├── .ansible-lint → .github/linters/.ansible-lint 🔗
+├── .tflint.hcl → .github/linters/.tflint.hcl 🔗
+└── .terrascan.toml → .github/linters/.terrascan.toml 🔗
+
+# Organized configuration location
+└── .github/
+    └── linters/
+        ├── .yamllint.yaml 📄     # Consolidated YAML config (61 lines)
+        ├── .yamlfmt 📄          # YAML formatter config
+        ├── .markdownlint-cli2.jsonc 📄
+        ├── .mega-linter.yml 📄  # Main MegaLinter config
+        ├── .ansible-lint 📄
+        ├── .tflint.hcl 📄
+        ├── .terrascan.toml 📄
+        └── .markdown-link-check.json 📄
+```
+
+### YAML Configuration Consolidation
+
+The project uses a single consolidated YAML linting configuration:
+
+- **`.yamllint.yaml`** - Comprehensive config combining best practices
+- **Line length**: 120 characters with non-breakable word support
+- **GitHub Actions support**: Allows `on`/`off` truthy values
+- **Security features**: Duplicate key detection, Unix line endings
+- **Ignore patterns**: Excludes `.terraform/`, `.venv/`, `node_modules/`
+
+### Maintenance Guidelines
+
+**Adding New Configurations:**
+
+1. Place actual config file in `.github/linters/`
+2. Create symlink from repository root
+3. Update this documentation
+
+**Modifying Configurations:**
+
+1. Edit files directly in `.github/linters/`
+2. Changes automatically apply through symlinks
+3. Test locally before committing
+
+**Best Practices:**
+
+- Keep `.github/linters/` as the single source of truth
+- Use descriptive comments in configuration files
+- Test configuration changes locally first
+- Document any custom rules or exceptions
+
 ## Integration with CI
 
 MegaLinter is configured to **complement** rather than duplicate your existing CI workflow:
@@ -290,6 +378,7 @@ mise run act-debug    # Maximum verbosity
 ### Common Issues
 
 #### Docker Hub Rate Limits
+
 ```bash
 # Use GHCR registry (recommended)
 ./scripts/run-megalinter-local.sh
@@ -299,12 +388,14 @@ docker pull ghcr.io/oxsecurity/megalinter:v8
 ```
 
 #### Platform Compatibility (Apple Silicon)
+
 ```bash
 # Enable Rosetta for Intel containers
 softwareupdate --install-rosetta
 ```
 
 #### Configuration Conflicts
+
 ```bash
 # Validate configuration syntax
 docker run --rm -v $(pwd):/tmp/lint oxsecurity/megalinter:v8 --help
@@ -314,6 +405,7 @@ docker run --rm -v $(pwd):/tmp/lint oxsecurity/megalinter:v8 --linter TERRAFORM_
 ```
 
 #### Path Filtering Issues
+
 ```bash
 # Check what files are included
 find . -type f \( -name "*.tf" -o -name "*.yaml" -o -name "*.md" \) | grep -E "(docs/|infrastructure/|ansible/|packer/)"
@@ -322,11 +414,13 @@ find . -type f \( -name "*.tf" -o -name "*.yaml" -o -name "*.md" \) | grep -E "(
 ### Performance Optimization
 
 #### Expected Timings
+
 - **Local testing**: 30-60 seconds
 - **CI workflow**: 3-5 minutes (fast checks)
 - **MegaLinter PR**: 8-15 minutes (comprehensive)
 
 #### Speed Improvements
+
 ```bash
 # Use terraform flavor for faster runs
 ./scripts/run-megalinter-local.sh --flavor terraform
@@ -338,16 +432,19 @@ DISABLE_LINTERS=TERRAFORM_TERRASCAN,MARKDOWN_MARKDOWN_LINK_CHECK ./scripts/run-m
 ### Integration Gotchas
 
 #### With CI Workflow
+
 - **MegaLinter runs AFTER CI** to avoid duplicate work
 - **CI handles fast validation** (format, basic linting)
 - **MegaLinter provides deep analysis** (all linters, security)
 
 #### With Pre-commit Hooks
+
 - **Pre-commit handles basic checks** (whitespace, syntax)
 - **MegaLinter handles advanced linting** (logic, security)
 - **No conflicts** - different scopes and triggers
 
 #### With Mise Tasks
+
 ```bash
 # Fast CI simulation
 mise run act-ci
@@ -362,6 +459,7 @@ mise run act-ci
 ### Error Recovery
 
 #### Configuration Errors
+
 ```bash
 # Validate YAML syntax
 python3 -c "import yaml; yaml.safe_load(open('.mega-linter.yml'))"
@@ -371,6 +469,7 @@ docker run --rm -v $(pwd):/tmp/lint oxsecurity/megalinter:v8 --validate-config
 ```
 
 #### Cache Issues
+
 ```bash
 # Clear Docker caches
 docker system prune -a
@@ -380,6 +479,7 @@ rm -rf report/ .mega-linter-cache/
 ```
 
 #### Network Issues
+
 ```bash
 # Force GHCR usage
 export MEGALINTER_DOCKER_IMAGE=ghcr.io/oxsecurity/megalinter:v8

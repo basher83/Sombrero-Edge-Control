@@ -30,6 +30,11 @@ kics-results/
 
 # MegaLinter reports
 report/
+megalinter-reports/
+
+# Generic log files
+*.log
+info.log
 
 # Ansible - centralized in ansible/ directory
 ansible/inventory/*
