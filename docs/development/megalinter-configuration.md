@@ -49,17 +49,33 @@ MegaLinter is configured to **complement** rather than duplicate your existing C
 
 ### When to Use Each
 
-| Scenario                | Use CI Workflow     | Use MegaLinter    |
-| ----------------------- | ------------------- | ----------------- |
-| **Pull request reviews**| ✅ Fast feedback    | ✅ Quality gate   |
-| **Pre-commit checks**   | ✅ Primary gate     | ❌ Too slow       |
-| **Local development**   | ❌ Individual tools | ✅ npx runner     |
-| **Comprehensive scan**  | ❌ Limited scope    | ✅ All linters    |
-| **Manual deep dive**    | ❌ Individual tools | ✅ Unified report |
+| Scenario                 | Use CI Workflow     | Use MegaLinter    |
+| ------------------------ | ------------------- | ----------------- |
+| **Pull request reviews** | ✅ Fast feedback    | ✅ Quality gate   |
+| **Pre-commit checks**    | ✅ Primary gate     | ❌ Too slow       |
+| **Local development**    | ❌ Individual tools | ✅ npx runner     |
+| **Comprehensive scan**   | ❌ Limited scope    | ✅ All linters    |
+| **Manual deep dive**     | ❌ Individual tools | ✅ Unified report |
 
 ## Local Usage
 
-### Primary: Local MegaLinter with npx
+### Primary: Local MegaLinter with efrecon runner
+
+```bash
+# Download and run the fast MegaLinter runner
+curl -s https://raw.githubusercontent.com/efrecon/mega-linter-runner/main/mega-linter-runner.sh -o /tmp/mega-linter-runner.sh && chmod +x /tmp/mega-linter-runner.sh
+
+# Run MegaLinter locally (matches CI configuration exactly)
+./tmp/mega-linter-runner.sh
+
+# Run with specific flavor for IaC projects
+./tmp/mega-linter-runner.sh --flavor terraform
+
+# Run with fixes applied automatically
+./tmp/mega-linter-runner.sh --fix
+```
+
+### Alternative: npx (slower, downloads dependencies)
 
 ```bash
 # Run MegaLinter locally (matches CI configuration exactly)
@@ -113,6 +129,7 @@ gh workflow run "MegaLinter"
 ### GitHub Actions Triggers
 
 MegaLinter runs automatically on:
+
 - **Pull Requests** - Comprehensive quality gate for all relevant file changes
 - **Manual Dispatch** - On-demand runs via GitHub Actions interface
 

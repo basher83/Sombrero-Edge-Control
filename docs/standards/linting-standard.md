@@ -157,9 +157,6 @@ Example .markdown-link-check.json:
 }
 ```
 
-Notes:
-
-- This removes alex and any "neutral/inclusive language" tools entirely from the pipeline as requested, keeping Markdown quality and link health without style enforcement beyond lint rules.[^4][^2]
 
 ## Tool-specific Rule Pointers
 
@@ -179,12 +176,17 @@ report/
 
 ## Local Usage
 
-- Developers can run MegaLinter locally via mega-linter-runner to pre‑flight changes with the same configuration as CI, then commit with confidence that the GitHub Action will pass.[^11][^3]
+- Developers can run MegaLinter locally via the efrecon/mega-linter-runner for faster execution without downloading Node.js dependencies, or fall back to npx mega-linter-runner.[^11][^3]
 
-Example local run:
+Example local runs:
 
-```
-npx mega-linter-runner
+```bash
+# Fast method (recommended) - uses GHCR, no Node.js deps
+curl -s https://raw.githubusercontent.com/efrecon/mega-linter-runner/main/mega-linter-runner.sh -o /tmp/mega-linter-runner.sh && chmod +x /tmp/mega-linter-runner.sh
+/tmp/mega-linter-runner.sh --flavor terraform
+
+# Alternative method (slower) - downloads Node.js deps first
+npx mega-linter-runner --flavor terraform
 ```
 
 ## Repo-specific Notes
@@ -206,3 +208,4 @@ If desired, this content can replace the prior linting and link‑check sections
 [^9]: https://www.npmjs.com/package/markdown-link-check
 [^10]: https://stackoverflow.com/questions/79540889/ansible-lint-is-there-a-way-to-ignore-errors-in-all-files-without-specifying-f
 [^11]: https://www.npmjs.com/package/mega-linter-runner
+[^12]: https://github.com/efrecon/mega-linter-runner
