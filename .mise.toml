@@ -325,6 +325,11 @@ description = "Check if Terraform documentation is up-to-date"
 dir = "infrastructure"
 run = "terraform-docs --config .terraform-docs.yml --output-check ."
 
+# Pre-commit hook for terraform-docs validation
+[tasks.pre-commit-docs]
+description = "Ensure terraform-docs are up-to-date before commit"
+run = "mise run docs-check"
+
 # ============================================================================
 # LINTING TASKS
 # ============================================================================

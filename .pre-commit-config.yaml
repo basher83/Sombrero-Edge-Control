@@ -25,6 +25,13 @@ repos:
         pass_filenames: false
         files: '\.tf$'
 
+      - id: terraform-docs-check
+        name: Check terraform documentation
+        entry: bash -c 'cd infrastructure && terraform-docs --config .terraform-docs.yml --output-check .'
+        language: system
+        pass_filenames: false
+        files: '(\.tf|\.terraform-docs\.yml)$'
+
   # GitHub Actions linting (useful for CI/CD workflows)
   # Uncomment if you want to validate GitHub Actions YAML files
   # - repo: https://github.com/rhysd/actionlint
