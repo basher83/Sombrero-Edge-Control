@@ -16,7 +16,6 @@ on:
       - "docs/**"
   workflow_dispatch:
 
-# Configure workflow permissions
 permissions:
   contents: read
   actions: read
@@ -35,42 +34,21 @@ jobs:
           fetch-depth: 0
 
       - name: MegaLinter
+        id: ml
         uses: oxsecurity/megalinter/flavors/terraform@v8
         env:
-          # Basic MegaLinter configuration
           MEGALINTER_FLAVOR: "terraform"
-
-          # Scope linting to this repo's layout
           FILTER_REGEX_INCLUDE: '(docs/|README.md|infrastructure/|ansible/|packer/)'
           FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
-
-          # Enable key linters for IaC and documentation
           ENABLE_LINTERS: "MARKDOWN_MARKDOWNLINT,TERRAFORM_TFLINT,TERRAFORM_TERRAFORM_FMT,YAML_YAMLLINT,JSON_ESLINT_PLUGIN_JSONC,BASH_SHFMT"
-
-          # Rules live under .github/linters
           LINTER_RULES_PATH: .github/linters
-
-          # Performance optimizations
-          MEGALINTER_MAX_TIMEOUT_MINUTES: "10"
-
-          # Disable slow linters
           DISABLE_LINTERS: "SPELL_CSPELL"
-          SKIP_CLI_LINT_MODES: "project" # Skip project-level linting
-
-          # Reporters and outputs
+          SKIP_CLI_LINT_MODES: "project"
           PRINT_ALPACA: "false"
           REPORT_OUTPUT_FOLDER: "${{ github.workspace }}/report"
           SARIF_REPORTER: "true"
           SHOW_ELAPSED_TIME: "true"
-
-          # Auto-fix settings (off by default for safety)
           APPLY_FIXES: "none"
-          APPLY_FIXES_EVENT: "pull_request"
-          APPLY_FIXES_MODE: "pull_request"
-
-          # Git settings for fixes
-          APPLY_FIXES_IF: "modified"
-          APPLY_FIXES_IF_SARIF: "error"
 
       - name: Upload SARIF results
         if: always()
@@ -91,17 +69,10 @@ jobs:
         if: failure()
         run: |
           echo "MegaLinter failed, running basic linting checks..."
-
-          # Install basic linting tools
           pip install yamllint
-
-          # Run yamllint with error tolerance
           echo "Running YAML linting..."
           yamllint . || echo "YAML linting found issues but continuing..."
-
-          # Check for basic file issues
           echo "Checking for trailing whitespace..."
           find . -name "*.yml" -o -name "*.yaml" -o -name "*.md" | \
             xargs grep -l "[[:space:]]$" || echo "No trailing whitespace found"
-
           echo "Fallback linting completed"
