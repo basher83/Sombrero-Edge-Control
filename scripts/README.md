@@ -15,18 +15,6 @@ Utility scripts for managing the Sombrero Edge Control jump host infrastructure.
 ./scripts/find-tags.sh FIXME    # Find only FIXME tags
 ```
 
-### 📋 `generate-ansible-inventory.sh`
-
-**Purpose**: Generate Ansible inventory files from Terraform outputs
-**Usage**:
-
-```bash
-./scripts/generate-ansible-inventory.sh              # Use production environment
-./scripts/generate-ansible-inventory.sh staging     # Use staging environment
-```
-
-**Output**: Creates inventory files in `ansible/inventories/`
-
 ### 🚀 `run-megalinter-local.sh`
 
 **Purpose**: Run MegaLinter locally for fast pre-commit quality checks
@@ -89,7 +77,7 @@ JUMP_HOST_USER=root ./scripts/smoke-test.sh                 # Custom user
 | Quick connectivity test  | `mise run smoke-test-quick`                                      |
 | Restart VM safely        | `./scripts/restart-vm-ssh.sh`                                    |
 | Generate docs            | `./scripts/generate-docs.sh`                                     |
-| Create Ansible inventory | `./scripts/generate-ansible-inventory.sh`                        |
+| Create Ansible inventory | `mise run prod-apply` (auto-generates from Terraform)            |
 | Find code TODOs          | `./scripts/find-tags.sh`                                         |
 
 ## Environment Variables
@@ -130,7 +118,6 @@ git add . && git commit -m "docs: update Terraform documentation"
 
 ```bash
 ./scripts/find-tags.sh
-./scripts/generate-ansible-inventory.sh
 mise run smoke-test
 ```
 
