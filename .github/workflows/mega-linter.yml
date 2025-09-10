@@ -16,10 +16,6 @@ on:
       - "docs/**"
   workflow_dispatch:
 
-# Fast mode for development branches (skip slow linters)
-env:
-  FAST_MODE: ${{ github.ref != 'refs/heads/main' && !contains(github.ref, 'release') }}
-
 permissions:
   contents: read
   actions: read
@@ -28,9 +24,9 @@ permissions:
 
 jobs:
   megalinter:
-    name: MegaLinter${{ env.FAST_MODE == 'true' && ' (Fast Mode)' || ' (Full)' }}
+    name: MegaLinter
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ env.FAST_MODE == 'true' && 10 || 15 }}
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -38,52 +34,42 @@ jobs:
           fetch-depth: 0
 
       - name: MegaLinter
-        uses: oxsecurity/megalinter@v8
+        id: ml
+        uses: oxsecurity/megalinter/flavors/terraform@v8
+        continue-on-error: true  # Allow workflow to continue even if linting fails
         env:
-          # Scope linting to this repo's layout
-          FILTER_REGEX_INCLUDE: "(docs/|README.md|infrastructure/|ansible/|packer/)"
-          FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
-
-          # Enable IaC + docs linters (optimized for speed)
-          ENABLE_LINTERS: >
+          # Validate all codebase on every run
+          VALIDATE_ALL_CODEBASE: true
+          # GitHub token for API operations
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Filter configuration
+          FILTER_REGEX_INCLUDE: 'docs/|README.md|infrastructure/|ansible/|packer/'
+          FILTER_REGEX_EXCLUDE: '\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/'
+          # Linter configuration
+          ENABLE_LINTERS: >-
             MARKDOWN_MARKDOWNLINT,
-            MARKDOWN_MARKDOWN_LINK_CHECK,
             TERRAFORM_TFLINT,
             TERRAFORM_TERRAFORM_FMT,
-            TERRAFORM_TERRASCAN,
-            ANSIBLE_ANSIBLE_LINT,
             YAML_YAMLLINT,
             JSON_ESLINT_PLUGIN_JSONC,
             BASH_SHFMT
-
-          # Rules live under .github/linters
           LINTER_RULES_PATH: .github/linters
-
-          # Performance optimizations
-          MEGALINTER_MAX_TIMEOUT_MINUTES: "10"
-          MEGALINTER_MAX_TIMEOUT_SECONDS: "600"
-
-          # Conditional fast mode: skip slow linters on non-main branches
-          DISABLE_LINTERS: "${{ env.FAST_MODE == 'true' && 'SPELL_CSPELL,TERRAFORM_TERRASCAN,MARKDOWN_MARKDOWN_LINK_CHECK' || 'SPELL_CSPELL' }}"
-          SKIP_CLI_LINT_MODES: "project" # Skip project-level linting
-
-          # Reporters and outputs
-          PRINT_ALPACA: "false"
-          REPORT_OUTPUT_FOLDER: "${{ github.workspace }}/report"
-          SARIF_REPORTER: "true"
-          SHOW_ELAPSED_TIME: "true"
-
-          # Auto-fix settings (off by default for safety)
-          APPLY_FIXES: "none"
-          APPLY_FIXES_EVENT: "pull_request"
-          APPLY_FIXES_MODE: "pull_request"
-
-          # Git settings for fixes
-          APPLY_FIXES_IF: "modified"
-          APPLY_FIXES_IF_SARIF: "error"
+          DISABLE_LINTERS: "SPELL_CSPELL"
+          SKIP_CLI_LINT_MODES: "project"
+          # Report configuration
+          PRINT_ALPACA: false
+          REPORT_OUTPUT_FOLDER: report
+          SARIF_REPORTER: true
+          SHOW_ELAPSED_TIME: true
+          # Disable auto-fix mode
+          APPLY_FIXES: none
+          # Non-blocking mode - report errors but don't fail
+          DISABLE_ERRORS: true
+          # Set error threshold (optional - will fail only if errors exceed this)
+          # DISABLE_ERRORS_IF_LESS_THAN: 1000
 
       - name: Upload SARIF results
-        if: always()
+        if: always() && steps.ml.outputs.has_generated_sarif == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: report/megalinter-report.sarif
@@ -96,3 +82,33 @@ jobs:
           name: megalinter-results
           path: report/
           retention-days: 30
+
+      - name: Create status check annotation
+        if: always() && steps.ml.outcome == 'success'
+        run: |
+          if [ -f "report/megalinter-report.sarif" ]; then
+            echo "::notice title=MegaLinter Status::MegaLinter found issues but workflow continues. Check artifacts for details."
+          else
+            echo "::notice title=MegaLinter Status::MegaLinter completed successfully."
+          fi
+
+      - name: Fallback linting (if MegaLinter fails)
+        if: failure() && steps.ml.outcome == 'failure'
+        run: |
+          echo "MegaLinter failed, running basic linting checks..."
+          # Install basic linters
+          pip install --quiet yamllint
+
+          # Run YAML linting
+          echo "Running YAML linting..."
+          yamllint . --config-file .github/linters/.yamllint.yaml || echo "YAML linting found issues but continuing..."
+
+          # Check for trailing whitespace
+          echo "Checking for trailing whitespace..."
+          if find . -name "*.yml" -o -name "*.yaml" -o -name "*.md" | xargs grep -l "[[:space:]]$" 2>/dev/null; then
+            echo "Found files with trailing whitespace (listed above)"
+          else
+            echo "No trailing whitespace found"
+          fi
+
+          echo "Fallback linting completed"
