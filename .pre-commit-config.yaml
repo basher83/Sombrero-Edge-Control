@@ -32,6 +32,19 @@ repos:
         pass_filenames: false
         files: '(\.tf|\.terraform-docs\.yml)$'
 
+      - id: prevent-thoughts-commit
+        name: Prevent thoughts directory commits
+        entry: |
+          bash -c '
+          if git diff --cached --name-only | grep -q "^thoughts/"; then
+            echo "❌ Error: thoughts/ directory should not be committed"
+            echo "Use docs/ for finalized documentation"
+            exit 1
+          fi'
+        language: system
+        pass_filenames: false
+        always_run: true
+
   # GitHub Actions linting (useful for CI/CD workflows)
   # Uncomment if you want to validate GitHub Actions YAML files
   # - repo: https://github.com/rhysd/actionlint
