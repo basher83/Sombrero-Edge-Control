@@ -1,6 +1,112 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
-  ]
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard",
+    "schedule:earlyMondays"
+  ],
+  "timezone": "UTC",
+  "prConcurrentLimit": 3,
+  "prCreation": "not-pending",
+  
+  "packageRules": [
+    {
+      "description": "Auto-merge Terraform provider patches",
+      "matchManagers": ["terraform"],
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group Ansible collection updates",
+      "matchManagers": ["ansible", "ansible-galaxy"],
+      "groupName": "ansible-collections",
+      "groupSlug": "ansible"
+    },
+    {
+      "description": "Pin infrastructure tools for stability",
+      "matchManagers": ["mise"],
+      "matchPackageNames": ["terraform", "packer", "ansible-core"],
+      "rangeStrategy": "pin"
+    },
+    {
+      "description": "Auto-merge GitHub Actions patches and minor updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Require approval for major Terraform updates",
+      "matchPackagePatterns": ["terraform"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Group all GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "groupSlug": "actions"
+    },
+    {
+      "description": "Group Python dependencies",
+      "matchManagers": ["pip_requirements"],
+      "groupName": "python-dependencies"
+    },
+    {
+      "description": "Require approval for Proxmox provider major updates",
+      "matchDatasources": ["terraform-provider"],
+      "matchPackageNames": ["bpg/proxmox"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    }
+  ],
+  
+  "regexManagers": [
+    {
+      "description": "Update mise tool versions",
+      "fileMatch": ["\\.mise\\.toml$"],
+      "matchStrings": [
+        "^(?<depName>terraform)\\s*=\\s*\"(?<currentValue>[^\"]+)\"",
+        "^(?<depName>packer)\\s*=\\s*\"(?<currentValue>[^\"]+)\"",
+        "^(?<depName>ansible-core)\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "lookupNameTemplate": "{{#if (equals depName \"terraform\")}}hashicorp/terraform{{/if}}{{#if (equals depName \"packer\")}}hashicorp/packer{{/if}}{{#if (equals depName \"ansible-core\")}}ansible/ansible{{/if}}"
+    },
+    {
+      "description": "Update Packer plugin versions",
+      "fileMatch": ["packer/.*\\.pkr\\.hcl$"],
+      "matchStrings": [
+        "source\\s*=\\s*\"github\\.com/(?<depName>[^\"]+)\"\\s*\\n\\s*version\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "github-releases"
+    }
+  ],
+  
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Ansible Galaxy requirements",
+      "fileMatch": ["ansible/requirements\\.yml$"],
+      "matchStrings": [
+        "- name:\\s+(?<depName>[^\\n]+)\\s+version:\\s+\"(?<currentValue>[^\"]+)\""
+      ],
+      "datasourceTemplate": "galaxy-collection",
+      "versioningTemplate": "semver"
+    }
+  ],
+  
+  "commitMessagePrefix": "chore(deps):",
+  "commitMessageAction": "update",
+  "commitMessageTopic": "{{depName}}",
+  "commitMessageExtra": "to {{newVersion}}",
+  
+  "labels": ["dependencies", "renovate"],
+  
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
 }

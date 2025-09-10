@@ -21,8 +21,7 @@ This document outlines the step-by-step strategy for migrating from the current 
 | smoke-test.sh | scripts/ | High | 1 |
 | Direct SSH in RUNBOOK | deployments/RUNBOOK.md | High | 2 |
 | restart-vm-ssh.sh | scripts/ | Medium | 3 |
-| generate-ansible-inventory.sh | scripts/ | Medium | 4 |
-| Inline SSH in mise tasks | .mise.toml | Low | 5 |
+| Inline SSH in mise tasks | .mise.toml | Low | 4 |
 
 ### Direct Commands to Replace
 

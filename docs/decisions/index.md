@@ -27,6 +27,7 @@ This knowledge base contains all Architecture Decision Records (ADRs) that guide
 
 - [Documentation Structure Reorganization](20250902-documentation-reorganization.md) - Information architecture
 - [Lightweight Ansible Collection Scoring](20250906-ansible-collection-scoring-system.md) - Evaluation methodology
+- [Thoughts Directory for Knowledge Management](20250110-thoughts-directory-knowledge-management.md) - Operational knowledge capture
 
 **🛠️ Meta-Decisions**
 

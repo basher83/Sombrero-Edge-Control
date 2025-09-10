@@ -282,8 +282,8 @@ Apply instance-specific configuration and security hardening that couldn't be in
 ### Deployment Commands
 
 ```bash
-# Generate Ansible inventory from Terraform outputs
-./scripts/generate-ansible-inventory.sh
+# Ansible inventory is auto-generated from Terraform outputs
+# via 'terraform output -raw ansible_inventory'
 
 # Run Ansible playbook
 cd ansible/
@@ -792,7 +792,6 @@ mise run docs
 - `docs/troubleshooting/` - Detailed troubleshooting guides
 
 ### Scripts
-- `scripts/generate-ansible-inventory.sh` - Create Ansible inventory
 - `scripts/smoke-test.sh` - Verification test suite
 - `scripts/restart-vm-ssh.sh` - SSH service restart utility
 

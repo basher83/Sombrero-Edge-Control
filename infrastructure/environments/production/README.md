@@ -272,28 +272,30 @@ Our infrastructure uses a sophisticated cloud-init setup:
 - Configure firewall rules to restrict access to Vault ports
 
 <!-- BEGIN_TF_DOCS -->
-
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0, < 2.0.0 |
 | <a name="requirement_proxmox"></a> [proxmox](#requirement\_proxmox) | >= 0.73.2 |
+
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_proxmox"></a> [proxmox](#provider\_proxmox) | >= 0.73.2 |
+| <a name="provider_proxmox"></a> [proxmox](#provider\_proxmox) | 0.83.0 |
+
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_jump_man"></a> [jump\_man](#module\_jump\_man) | ../../modules/vm | n/a |
+
 ## Resources
 
 | Name | Type |
 |------|------|
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -309,6 +311,7 @@ Our infrastructure uses a sophisticated cloud-init setup:
 | <a name="input_template_node"></a> [template\_node](#input\_template\_node) | Node where the template VM exists | `string` | `"lloyd"` | no |
 | <a name="input_vm_bridge_1"></a> [vm\_bridge\_1](#input\_vm\_bridge\_1) | Primary network bridge for VMs | `string` | `"vmbr0"` | no |
 | <a name="input_vm_datastore"></a> [vm\_datastore](#input\_vm\_datastore) | Proxmox datastore for VM disks | `string` | `"local-lvm"` | no |
+
 ## Outputs
 
 | Name | Description |
