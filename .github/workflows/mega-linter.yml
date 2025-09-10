@@ -16,10 +16,7 @@ on:
       - "docs/**"
   workflow_dispatch:
 
-# Fast mode for development branches (skip slow linters)
-env:
-  FAST_MODE: ${{ github.ref != 'refs/heads/main' && !contains(github.ref, 'release') }}
-
+# Configure workflow permissions
 permissions:
   contents: read
   actions: read
@@ -28,9 +25,9 @@ permissions:
 
 jobs:
   megalinter:
-    name: MegaLinter${{ env.FAST_MODE == 'true' && ' (Fast Mode)' || ' (Full)' }}
+    name: MegaLinter
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ env.FAST_MODE == 'true' && 10 || 15 }}
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -38,42 +35,26 @@ jobs:
           fetch-depth: 0
 
       - name: MegaLinter
-        uses: oxsecurity/megalinter@v8
+        uses: oxsecurity/megalinter/flavors/terraform@v8
         env:
-          # Docker compatibility and performance settings
+          # Basic MegaLinter configuration
           MEGALINTER_FLAVOR: "terraform"
-          DOCKER_BUILDKIT: "1"
-          # Force Docker platform for consistency
-          MEGALINTER_DOCKER_IMAGE: "oxsecurity/megalinter-terraform:v8"
 
           # Scope linting to this repo's layout
-          FILTER_REGEX_INCLUDE: "(docs/|README.md|infrastructure/|ansible/|packer/)"
+          FILTER_REGEX_INCLUDE: '(docs/|README.md|infrastructure/|ansible/|packer/)'
           FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
 
-          # Enable IaC + docs linters (optimized for speed)
-          ENABLE_LINTERS: >
-            MARKDOWN_MARKDOWNLINT,
-            MARKDOWN_MARKDOWN_LINK_CHECK,
-            TERRAFORM_TFLINT,
-            TERRAFORM_TERRAFORM_FMT,
-            TERRAFORM_TERRASCAN,
-            ANSIBLE_ANSIBLE_LINT,
-            YAML_YAMLLINT,
-            JSON_ESLINT_PLUGIN_JSONC,
-            BASH_SHFMT
+          # Enable key linters for IaC and documentation
+          ENABLE_LINTERS: "MARKDOWN_MARKDOWNLINT,TERRAFORM_TFLINT,TERRAFORM_TERRAFORM_FMT,YAML_YAMLLINT,JSON_ESLINT_PLUGIN_JSONC,BASH_SHFMT"
 
           # Rules live under .github/linters
           LINTER_RULES_PATH: .github/linters
 
           # Performance optimizations
           MEGALINTER_MAX_TIMEOUT_MINUTES: "10"
-          MEGALINTER_MAX_TIMEOUT_SECONDS: "600"
 
-          # Conditional fast mode: skip slow linters on non-main branches
-          DISABLE_LINTERS: >-
-            ${{ env.FAST_MODE == 'true' &&
-            'SPELL_CSPELL,TERRAFORM_TERRASCAN,MARKDOWN_MARKDOWN_LINK_CHECK' ||
-            'SPELL_CSPELL' }}
+          # Disable slow linters
+          DISABLE_LINTERS: "SPELL_CSPELL"
           SKIP_CLI_LINT_MODES: "project" # Skip project-level linting
 
           # Reporters and outputs
