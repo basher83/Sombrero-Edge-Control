@@ -40,6 +40,12 @@ jobs:
       - name: MegaLinter
         uses: oxsecurity/megalinter@v8
         env:
+          # Docker compatibility and performance settings
+          MEGALINTER_FLAVOR: "terraform"
+          DOCKER_BUILDKIT: "1"
+          # Force Docker platform for consistency
+          MEGALINTER_DOCKER_IMAGE: "oxsecurity/megalinter-terraform:v8"
+
           # Scope linting to this repo's layout
           FILTER_REGEX_INCLUDE: "(docs/|README.md|infrastructure/|ansible/|packer/)"
           FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
@@ -64,7 +70,10 @@ jobs:
           MEGALINTER_MAX_TIMEOUT_SECONDS: "600"
 
           # Conditional fast mode: skip slow linters on non-main branches
-          DISABLE_LINTERS: "${{ env.FAST_MODE == 'true' && 'SPELL_CSPELL,TERRAFORM_TERRASCAN,MARKDOWN_MARKDOWN_LINK_CHECK' || 'SPELL_CSPELL' }}"
+          DISABLE_LINTERS: >-
+            ${{ env.FAST_MODE == 'true' &&
+            'SPELL_CSPELL,TERRAFORM_TERRASCAN,MARKDOWN_MARKDOWN_LINK_CHECK' ||
+            'SPELL_CSPELL' }}
           SKIP_CLI_LINT_MODES: "project" # Skip project-level linting
 
           # Reporters and outputs
@@ -96,3 +105,22 @@ jobs:
           name: megalinter-results
           path: report/
           retention-days: 30
+
+      - name: Fallback linting (if MegaLinter fails)
+        if: failure()
+        run: |
+          echo "MegaLinter failed, running basic linting checks..."
+
+          # Install basic linting tools
+          pip install yamllint
+
+          # Run yamllint with error tolerance
+          echo "Running YAML linting..."
+          yamllint . || echo "YAML linting found issues but continuing..."
+
+          # Check for basic file issues
+          echo "Checking for trailing whitespace..."
+          find . -name "*.yml" -o -name "*.yaml" -o -name "*.md" | \
+            xargs grep -l "[[:space:]]$" || echo "No trailing whitespace found"
+
+          echo "Fallback linting completed"
