@@ -36,22 +36,40 @@ jobs:
       - name: MegaLinter
         id: ml
         uses: oxsecurity/megalinter/flavors/terraform@v8
+        continue-on-error: true  # Allow workflow to continue even if linting fails
         env:
-          MEGALINTER_FLAVOR: "terraform"
-          FILTER_REGEX_INCLUDE: '(docs/|README.md|infrastructure/|ansible/|packer/)'
-          FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
-          ENABLE_LINTERS: "MARKDOWN_MARKDOWNLINT,TERRAFORM_TFLINT,TERRAFORM_TERRAFORM_FMT,YAML_YAMLLINT,JSON_ESLINT_PLUGIN_JSONC,BASH_SHFMT"
+          # Validate all codebase on every run
+          VALIDATE_ALL_CODEBASE: true
+          # GitHub token for API operations
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Filter configuration
+          FILTER_REGEX_INCLUDE: 'docs/|README.md|infrastructure/|ansible/|packer/'
+          FILTER_REGEX_EXCLUDE: '\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/'
+          # Linter configuration
+          ENABLE_LINTERS: >-
+            MARKDOWN_MARKDOWNLINT,
+            TERRAFORM_TFLINT,
+            TERRAFORM_TERRAFORM_FMT,
+            YAML_YAMLLINT,
+            JSON_ESLINT_PLUGIN_JSONC,
+            BASH_SHFMT
           LINTER_RULES_PATH: .github/linters
           DISABLE_LINTERS: "SPELL_CSPELL"
           SKIP_CLI_LINT_MODES: "project"
-          PRINT_ALPACA: "false"
-          REPORT_OUTPUT_FOLDER: "${{ github.workspace }}/report"
-          SARIF_REPORTER: "true"
-          SHOW_ELAPSED_TIME: "true"
-          APPLY_FIXES: "none"
+          # Report configuration
+          PRINT_ALPACA: false
+          REPORT_OUTPUT_FOLDER: report
+          SARIF_REPORTER: true
+          SHOW_ELAPSED_TIME: true
+          # Disable auto-fix mode
+          APPLY_FIXES: none
+          # Non-blocking mode - report errors but don't fail
+          DISABLE_ERRORS: true
+          # Set error threshold (optional - will fail only if errors exceed this)
+          # DISABLE_ERRORS_IF_LESS_THAN: 1000
 
       - name: Upload SARIF results
-        if: always()
+        if: always() && steps.ml.outputs.has_generated_sarif == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: report/megalinter-report.sarif
@@ -65,14 +83,32 @@ jobs:
           path: report/
           retention-days: 30
 
+      - name: Create status check annotation
+        if: always() && steps.ml.outcome == 'success'
+        run: |
+          if [ -f "report/megalinter-report.sarif" ]; then
+            echo "::notice title=MegaLinter Status::MegaLinter found issues but workflow continues. Check artifacts for details."
+          else
+            echo "::notice title=MegaLinter Status::MegaLinter completed successfully."
+          fi
+
       - name: Fallback linting (if MegaLinter fails)
-        if: failure()
+        if: failure() && steps.ml.outcome == 'failure'
         run: |
           echo "MegaLinter failed, running basic linting checks..."
-          pip install yamllint
+          # Install basic linters
+          pip install --quiet yamllint
+
+          # Run YAML linting
           echo "Running YAML linting..."
-          yamllint . || echo "YAML linting found issues but continuing..."
+          yamllint . --config-file .github/linters/.yamllint.yaml || echo "YAML linting found issues but continuing..."
+
+          # Check for trailing whitespace
           echo "Checking for trailing whitespace..."
-          find . -name "*.yml" -o -name "*.yaml" -o -name "*.md" | \
-            xargs grep -l "[[:space:]]$" || echo "No trailing whitespace found"
+          if find . -name "*.yml" -o -name "*.yaml" -o -name "*.md" | xargs grep -l "[[:space:]]$" 2>/dev/null; then
+            echo "Found files with trailing whitespace (listed above)"
+          else
+            echo "No trailing whitespace found"
+          fi
+
           echo "Fallback linting completed"

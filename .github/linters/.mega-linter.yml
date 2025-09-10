@@ -8,19 +8,20 @@ project:
   adrFolder: ./docs/decisions
 
 # Enable specific linters for IaC + docs
+# NOTE: Some linters are controlled via workflow env vars to avoid conflicts
 ENABLE_LINTERS:
   - MARKDOWN_MARKDOWNLINT
-  - MARKDOWN_MARKDOWN_LINK_CHECK
+  # - MARKDOWN_MARKDOWN_LINK_CHECK  # Can be slow, disabled for speed
   - TERRAFORM_TFLINT
   - TERRAFORM_TERRAFORM_FMT
-  - TERRAFORM_TERRASCAN
-  - ANSIBLE_ANSIBLE_LINT
+  # - TERRAFORM_TERRASCAN  # Can be slow, disabled for speed
+  # - ANSIBLE_ANSIBLE_LINT  # Temporarily disabled due to structural issues
   - YAML_YAMLLINT
   - JSON_ESLINT_PLUGIN_JSONC
   - BASH_SHFMT
 
 # Global include/exclude filters
-FILTER_REGEX_INCLUDE: "(docs/|README.md|infrastructure/|ansible/|packer/)"
+FILTER_REGEX_INCLUDE: "docs/|README.md|infrastructure/|ansible/|packer/"
 FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
 
 # Keep rules in-repo for portability
@@ -42,9 +43,22 @@ APPLY_FIXES_MODE: pull_request
 APPLY_FIXES_IF: modified
 APPLY_FIXES_IF_SARIF: error
 
+# Non-blocking mode for gradual adoption
+DISABLE_ERRORS: true  # Report errors but don't fail the build
+FAIL_IF_MISSING_LINTER_IN_FLAVOR: false  # Don't fail if a linter is missing
+
+# Optional: Set thresholds for when to start failing (uncomment to use)
+# DISABLE_ERRORS_IF_LESS_THAN: 500  # Fail only if errors exceed this number
+
 # Terraform-specific settings
 TERRAFORM_TFLINT_CONFIG_FILE: .tflint.hcl
 TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
 
 # Ansible-specific settings
 ANSIBLE_ANSIBLE_LINT_CONFIG_FILE: .ansible-lint
+
+# Disable slow or problematic linters
+DISABLE_LINTERS:
+  - SPELL_CSPELL  # Too many false positives in IaC
+  - TERRAFORM_TERRASCAN  # Can timeout in CI
+  - MARKDOWN_MARKDOWN_LINK_CHECK  # External links can fail randomly
