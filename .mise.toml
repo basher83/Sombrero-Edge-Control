@@ -24,7 +24,7 @@ truncate = true
 
 [tools]
 # Core tools
-terraform = "1.13.1"    # Pin to Terraform >=1.10 for Ephemeral Resources support
+terraform = "1.13.2"    # Pin to Terraform >=1.10 for Ephemeral Resources support
 packer = "1.14.1"
 ansible-core = "2.19.1"
 
