@@ -52,6 +52,7 @@ FAIL_IF_MISSING_LINTER_IN_FLAVOR: false  # Don't fail if a linter is missing
 # Terraform-specific settings
 TERRAFORM_TFLINT_CONFIG_FILE: .tflint.hcl
 TERRAFORM_TERRASCAN_CONFIG_FILE: .terrascan.toml
+TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES: GITHUB_TOKEN
 
 # Ansible-specific settings
 ANSIBLE_ANSIBLE_LINT_CONFIG_FILE: .ansible-lint
