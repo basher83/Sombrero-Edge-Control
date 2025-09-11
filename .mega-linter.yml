@@ -20,7 +20,7 @@ ENABLE_LINTERS:
   - BASH_SHFMT
 
 # Global include/exclude filters
-FILTER_REGEX_INCLUDE: "docs/|README.md|infrastructure/|ansible/|packer/"
+FILTER_REGEX_INCLUDE: "docs/|README.md|CHANGELOG.md|infrastructure/|ansible/|packer/|scripts/deployments/"
 FILTER_REGEX_EXCLUDE: '(\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/)'
 
 # Keep rules in-repo for portability
