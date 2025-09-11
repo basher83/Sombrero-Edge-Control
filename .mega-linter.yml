@@ -16,7 +16,7 @@ ENABLE_LINTERS:
   - BASH_SHELLCHECK
 
 # Global include/exclude filters
-FILTER_REGEX_INCLUDE: "docs/|README.md|CHANGELOG.md|infrastructure/|ansible/|packer/|scripts/deployments/"
+FILTER_REGEX_INCLUDE: "docs/|README.md|CHANGELOG.md|infrastructure/|ansible/|packer/|scripts/deployments/|\\.github/workflows/"
 FILTER_REGEX_EXCLUDE: '(\.git/|node_modules/|build/|dist/|vendor/|\.terraform/)'
 # Keep rules in-repo for portability
 LINTER_RULES_PATH: .github/linters
