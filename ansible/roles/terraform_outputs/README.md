@@ -14,6 +14,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 ## Features
 
 ### Output Parsing
+
 - JSON output parsing from Terraform
 - Output validation and type checking
 - Sensitive output handling
@@ -22,6 +23,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 - Output filtering and transformation
 
 ### Inventory Generation
+
 - Dynamic Ansible inventory creation
 - Host group organization
 - Variable assignment to hosts and groups
@@ -30,6 +32,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 - Inventory caching and optimization
 
 ### Variable Integration
+
 - Terraform outputs to Ansible facts conversion
 - Variable scoping and namespacing
 - Type-safe variable mapping
@@ -38,6 +41,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 - Environment-specific variable handling
 
 ### State Validation
+
 - Terraform state consistency checking
 - Output drift detection
 - Resource state validation
@@ -48,6 +52,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 ## Usage
 
 ### Basic Output Parsing
+
 ```yaml
 - name: Terraform Outputs Integration
   hosts: localhost
@@ -58,6 +63,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 ```
 
 ### Advanced Configuration
+
 ```yaml
 - name: Comprehensive Terraform Integration
   hosts: localhost
@@ -90,6 +96,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 ```
 
 ### Multi-Environment Support
+
 ```yaml
 - name: Multi-Environment Terraform Integration
   hosts: localhost
@@ -113,6 +120,7 @@ This role implements comprehensive Terraform output parsing and integration acro
 ## Variables
 
 See `defaults/main.yml` for all configurable variables including:
+
 - Terraform project configuration
 - Output parsing settings
 - Inventory generation options
@@ -143,6 +151,7 @@ molecule converge -s state-validation
 ## Integration
 
 Designed to integrate with:
+
 - Terraform/OpenTofu infrastructure projects
 - Ansible automation workflows
 - CI/CD pipelines for infrastructure automation

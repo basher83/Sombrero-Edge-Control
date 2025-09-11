@@ -111,6 +111,7 @@ docker --version
 ### Post-Deployment
 
 Additional configuration will be applied via Ansible:
+
 - Security hardening with stricter nftables rules
 - Installation of Node.js, npm, mise, uv tools
 - Custom DevOps tooling and configurations
@@ -161,6 +162,7 @@ The project uses environment variables for sensitive configuration. Set these in
 | **TF_VAR_proxmox_insecure** | bool | No | `true` (for self-signed certs) |
 
 Example `.mise.local.toml`:
+
 ```toml
 [env]
 TF_VAR_pve_api_token = "terraform@pve!token=your-token"

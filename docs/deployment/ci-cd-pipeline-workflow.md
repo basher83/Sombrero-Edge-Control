@@ -27,12 +27,14 @@ graph TB
 ### **Stage 1: Golden Image Building (Packer)**
 
 **Triggers:**
+
 - Changes to `packer/` directory
 - Changes to `ansible/playbooks/packer-provision.yml`
 - Manual trigger for security updates
 - Scheduled monthly rebuilds
 
 **Actions:**
+
 ```bash
 # Validate Packer template
 packer validate packer/ubuntu-server-numbat-docker.pkr.hcl
@@ -45,11 +47,13 @@ packer build packer/ubuntu-server-numbat-docker.pkr.hcl
 ```
 
 **Outputs:**
+
 - New VM template with timestamp
 - Template metadata (ID, build time, installed software versions)
 - Build logs and artifacts
 
 **Success Criteria:**
+
 - ✅ Packer build completes successfully
 - ✅ All Ansible tasks execute without errors
 - ✅ Golden image contains expected software (Docker, nvm, mise, uv)
@@ -58,11 +62,13 @@ packer build packer/ubuntu-server-numbat-docker.pkr.hcl
 ### **Stage 2: Infrastructure Planning (Terraform)**
 
 **Triggers:**
+
 - Changes to `infrastructure/` directory
 - New Packer golden image available
 - Manual deployment requests
 
 **Actions:**
+
 ```bash
 # Initialize and plan infrastructure changes
 terraform init
@@ -74,11 +80,13 @@ terraform show -json tfplan | jq '.planned_values.root_module.resources'
 ```
 
 **Outputs:**
+
 - Terraform plan file
 - Infrastructure change summary
 - Template selection confirmation (latest vs. fallback)
 
 **Success Criteria:**
+
 - ✅ Terraform plan completes without errors
 - ✅ Plan shows expected resource changes
 - ✅ Dynamic template selection working correctly
@@ -89,6 +97,7 @@ terraform show -json tfplan | jq '.planned_values.root_module.resources'
 **Purpose:** Human oversight for production changes
 
 **Review Checklist:**
+
 - [ ] Infrastructure changes are expected and documented
 - [ ] Golden image is recent and tested
 - [ ] No security vulnerabilities in planned deployment
@@ -96,6 +105,7 @@ terraform show -json tfplan | jq '.planned_values.root_module.resources'
 - [ ] Maintenance window approved (if required)
 
 **Approval Process:**
+
 - Technical lead review required for production
 - Automated approval for development/staging environments
 - Emergency override process documented
@@ -103,6 +113,7 @@ terraform show -json tfplan | jq '.planned_values.root_module.resources'
 ### **Stage 4: Infrastructure Deployment (Terraform)**
 
 **Actions:**
+
 ```bash
 # Apply approved infrastructure changes
 terraform apply tfplan
@@ -115,12 +126,14 @@ terraform output -raw ansible_inventory > ../ansible/inventory/hosts.yml
 ```
 
 **Outputs:**
+
 - Deployed infrastructure (VMs, networks, etc.)
 - Ansible inventory file
 - Deployment metadata
 - Infrastructure state updates
 
 **Success Criteria:**
+
 - ✅ Terraform apply completes successfully
 - ✅ VM boots from golden image correctly
 - ✅ SSH connectivity established
@@ -129,6 +142,7 @@ terraform output -raw ansible_inventory > ../ansible/inventory/hosts.yml
 ### **Stage 5: Configuration Management (Ansible)**
 
 **Actions:**
+
 ```bash
 # Wait for VM to be fully ready
 ansible all -i inventory/hosts.yml -m wait_for_connection
@@ -141,11 +155,13 @@ ansible all -i inventory/hosts.yml -m setup
 ```
 
 **Outputs:**
+
 - Configuration status and logs
 - Service verification results
 - Deployment completion markers
 
 **Success Criteria:**
+
 - ✅ Ansible connectivity successful
 - ✅ Post-deployment tasks complete
 - ✅ All services running and healthy
@@ -154,6 +170,7 @@ ansible all -i inventory/hosts.yml -m setup
 ### **Stage 6: Smoke Testing & Validation**
 
 **Actions:**
+
 ```bash
 # Run comprehensive smoke tests
 ./scripts/smoke-test.sh
@@ -165,12 +182,14 @@ mise run deploy-verify
 ```
 
 **Test Categories:**
+
 - **Connectivity Tests:** SSH, network access
 - **Service Tests:** Docker, development tools
 - **Security Tests:** SSH hardening, firewall rules
 - **Functionality Tests:** Tool availability, user permissions
 
 **Success Criteria:**
+
 - ✅ All smoke tests pass
 - ✅ Services respond correctly
 - ✅ Security posture verified
@@ -179,12 +198,14 @@ mise run deploy-verify
 ## 🔀 **Branching Strategy**
 
 ### **Branch Protection Rules**
+
 - `main` branch requires PR review
 - No direct pushes to `main`
 - All CI checks must pass before merge
 - Signed commits recommended
 
 ### **Development Workflow**
+
 ```bash
 # Feature development
 git checkout -b feature/packer-enhancement
@@ -195,6 +216,7 @@ git push origin feature/packer-enhancement
 ```
 
 ### **Hotfix Workflow**
+
 ```bash
 # Emergency fixes
 git checkout -b hotfix/security-patch
@@ -206,6 +228,7 @@ git commit -s -m "fix(security): update base packages"
 ## 🚨 **Rollback Procedures**
 
 ### **Infrastructure Rollback (Terraform)**
+
 ```bash
 # Emergency rollback
 mise run deploy-rollback
@@ -216,6 +239,7 @@ terraform destroy -auto-approve
 ```
 
 ### **Golden Image Rollback (Packer)**
+
 ```bash
 # Revert to previous template in Terraform
 # Update template_id variable to previous known-good image
@@ -226,12 +250,14 @@ terraform apply
 ## 🔍 **Monitoring & Alerting**
 
 ### **Pipeline Health Monitoring**
+
 - Build success/failure rates
 - Deployment frequency and duration
 - Error patterns and trending
 - Resource utilization during builds
 
 ### **Alert Conditions**
+
 - ❌ Packer build failures
 - ❌ Terraform plan errors
 - ❌ Ansible connectivity issues
@@ -240,6 +266,7 @@ terraform apply
 - ⚠️  Resource quota approaching limits
 
 ### **Notification Channels**
+
 - Slack/Teams for team notifications
 - Email for critical failures
 - Dashboard for real-time status
@@ -248,18 +275,21 @@ terraform apply
 ## 🔐 **Security Considerations**
 
 ### **Secrets Management**
+
 - Use cloud-native secret managers
 - Never commit secrets to version control
 - Rotate secrets regularly
 - Audit secret access patterns
 
 ### **Access Control**
+
 - Role-based access to CI/CD systems
 - Least privilege for service accounts
 - Multi-factor authentication required
 - Regular access reviews
 
 ### **Security Scanning**
+
 - Vulnerability scanning in pipeline
 - Container image security checks
 - Infrastructure security validation
@@ -268,18 +298,21 @@ terraform apply
 ## 📊 **Metrics & KPIs**
 
 ### **Performance Metrics**
+
 - **Pipeline Duration:** Target < 30 minutes end-to-end
 - **Success Rate:** Target > 95% for main branch
 - **Recovery Time:** Target < 15 minutes for rollbacks
 - **Lead Time:** Code commit to production deployment
 
 ### **Quality Metrics**
+
 - **Test Coverage:** Infrastructure and configuration tests
 - **Security Score:** Based on security scanning results
 - **Compliance:** Regulatory and internal standard adherence
 - **Documentation Coverage:** Process and runbook completeness
 
 ### **Business Metrics**
+
 - **Deployment Frequency:** How often we deploy
 - **Change Failure Rate:** Percentage of deployments causing issues
 - **Mean Time to Recovery:** Average time to resolve deployment issues
@@ -288,24 +321,28 @@ terraform apply
 ## 🎯 **Implementation Phases**
 
 ### **Phase 1: Foundation (Current)**
+
 - [x] Manual pipeline with mise tasks
 - [x] Packer + Ansible integration
 - [x] Terraform dynamic template selection
 - [x] Basic smoke testing
 
 ### **Phase 2: Automation**
+
 - [ ] GitHub Actions workflow implementation
 - [ ] Automated testing and validation
 - [ ] Slack/Teams notifications
 - [ ] Basic monitoring setup
 
 ### **Phase 3: Enhancement**
+
 - [ ] Advanced security scanning
 - [ ] Performance optimization
 - [ ] Multi-environment support
 - [ ] Automated rollback triggers
 
 ### **Phase 4: Maturity**
+
 - [ ] Canary deployments
 - [ ] Blue-green infrastructure
 - [ ] Comprehensive observability
@@ -314,18 +351,21 @@ terraform apply
 ## 📖 **Documentation Requirements**
 
 ### **Runbooks**
+
 - Emergency response procedures
 - Common troubleshooting guides
 - Rollback procedures
 - Contact information and escalation
 
 ### **Architecture Documentation**
+
 - Infrastructure diagrams
 - Data flow documentation
 - Security architecture
 - Disaster recovery plans
 
 ### **Process Documentation**
+
 - Deployment checklists
 - Change management procedures
 - Testing protocols
@@ -351,6 +391,7 @@ terraform apply
 ---
 
 **This workflow follows DevOps best practices for:**
+
 - Immutable infrastructure
 - Infrastructure as Code
 - Continuous integration/deployment

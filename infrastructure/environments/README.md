@@ -6,14 +6,16 @@ This directory contains the Terraform configuration for the production environme
 
 The production environment deploys the jump host VM ("jump-man") to the Proxmox cluster.
 
-### Key Features:
+### Key Features
+
 - Ubuntu 24.04 LTS jump host
 - Static IP: 192.168.10.250/24
 - Docker CE and essential DevOps tools
 - Memory ballooning for efficiency
 - Cloud-init automated configuration
 
-### Deployment:
+### Deployment
+
 ```bash
 cd production
 terraform init
@@ -21,7 +23,8 @@ terraform plan
 terraform apply
 ```
 
-### Access:
+### Access
+
 ```bash
 ssh ansible@192.168.10.250
 ```

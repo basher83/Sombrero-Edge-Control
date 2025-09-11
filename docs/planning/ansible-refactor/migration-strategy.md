@@ -42,12 +42,14 @@ ssh root@proxmox-host "qm list"
 **Objective**: Create Ansible role structure without disrupting current operations
 
 **Actions**:
+
 1. Create role directory structure
 2. Implement basic role templates
 3. Set up Molecule testing framework
 4. Create development inventory
 
 **Deliverables**:
+
 ```
 ansible/
 ├── roles/           # New
@@ -69,6 +71,7 @@ ansible/
 #### 2.1 Smoke Tests Migration
 
 **Current State**:
+
 ```bash
 # scripts/smoke-test.sh
 run_test "SSH connectivity" "ssh $SSH_OPTS $JUMP_HOST_USER@$JUMP_HOST_IP 'exit 0'"
@@ -76,6 +79,7 @@ run_test "Docker service running" "ssh $SSH_OPTS $JUMP_HOST_USER@$JUMP_HOST_IP '
 ```
 
 **Target State**:
+
 ```yaml
 # ansible/playbooks/smoke-test.yml
 - name: Run smoke tests
@@ -85,6 +89,7 @@ run_test "Docker service running" "ssh $SSH_OPTS $JUMP_HOST_USER@$JUMP_HOST_IP '
 ```
 
 **Migration Steps**:
+
 1. Implement vm_smoke_tests role
 2. Create playbook wrapper
 3. Add mise task for Ansible version
@@ -95,6 +100,7 @@ run_test "Docker service running" "ssh $SSH_OPTS $JUMP_HOST_USER@$JUMP_HOST_IP '
 #### 2.2 Proxmox Validation Migration
 
 **Current State**:
+
 ```bash
 # In RUNBOOK.md
 curl -k ${TF_VAR_pve_api_url}/version
@@ -102,6 +108,7 @@ ssh root@proxmox-host "qm list | grep 1001"
 ```
 
 **Target State**:
+
 ```yaml
 # ansible/playbooks/validate-infrastructure.yml
 - name: Validate Proxmox infrastructure
@@ -111,6 +118,7 @@ ssh root@proxmox-host "qm list | grep 1001"
 ```
 
 **Migration Steps**:
+
 1. Implement proxmox_validation role
 2. Use Proxmox API modules
 3. Test against development Proxmox
@@ -123,6 +131,7 @@ ssh root@proxmox-host "qm list | grep 1001"
 #### 3.1 mise Task Migration
 
 **Current Tasks**:
+
 ```toml
 [tasks.smoke-test]
 run = "./scripts/smoke-test.sh"
@@ -132,6 +141,7 @@ run = "ssh ansible@192.168.10.250 'hostname'"
 ```
 
 **New Tasks**:
+
 ```toml
 # Ensure Ansible tools are available
 [tools]
@@ -200,12 +210,14 @@ fi
 #### 4.2 Cutover Plan
 
 **Day 1-2: Staging Validation**
+
 ```bash
 # Run full pipeline with Ansible roles in staging
 ENV=staging USE_ANSIBLE_ROLES=true mise run deploy-full
 ```
 
 **Day 3: Production Parallel Run**
+
 ```bash
 # Run both implementations
 mise run smoke-test-legacy > /tmp/legacy.out
@@ -214,6 +226,7 @@ diff /tmp/legacy.out /tmp/ansible.out
 ```
 
 **Day 4: Switch Default**
+
 ```toml
 # .mise.toml
 [env]
@@ -221,6 +234,7 @@ USE_ANSIBLE_ROLES = "true"  # Make Ansible default
 ```
 
 **Day 5: Monitor & Adjust**
+
 - Monitor for issues
 - Quick rollback if needed
 - Document lessons learned
@@ -251,6 +265,7 @@ run = "ansible-playbook playbooks/validate.yml"  # Keep Ansible
 ### Risk 1: Ansible Module Compatibility
 
 **Mitigation**:
+
 - Test all modules in development first
 - Have fallback shell modules ready
 - Document module version requirements
@@ -258,6 +273,7 @@ run = "ansible-playbook playbooks/validate.yml"  # Keep Ansible
 ### Risk 2: Performance Degradation
 
 **Mitigation**:
+
 - Benchmark both implementations
 - Optimize with fact caching
 - Use async tasks where appropriate
@@ -265,6 +281,7 @@ run = "ansible-playbook playbooks/validate.yml"  # Keep Ansible
 ### Risk 3: Team Knowledge Gap
 
 **Mitigation**:
+
 - Create comprehensive documentation
 - Provide hands-on training sessions
 - Pair programming during implementation
@@ -290,21 +307,25 @@ run = "ansible-playbook playbooks/validate.yml"  # Keep Ansible
 ## Communication Plan
 
 ### Week 1: Announcement
+
 - Email to team about upcoming changes
 - Overview presentation in team meeting
 - Share planning documents
 
 ### Week 2: Progress Updates
+
 - Daily standups include migration status
 - Slack channel for questions
 - Demo sessions for completed roles
 
 ### Week 3: Training
+
 - Hands-on workshop for Ansible roles
 - Documentation walkthrough
 - Q&A session
 
 ### Week 4: Cutover Communication
+
 - Cutover schedule announcement
 - Real-time status updates
 - Post-cutover retrospective

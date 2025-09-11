@@ -7,6 +7,7 @@ This directory contains the configuration for a **bias-free, category-aware scor
 ## Purpose
 
 The scoring system addresses key problems with traditional collection evaluation:
+
 - **Popularity bias**: Small, high-quality collections scored poorly
 - **Category unfairness**: Niche collections compared to community giants
 - **Linear scaling**: More stars/contributors always meant higher scores
@@ -15,18 +16,22 @@ The scoring system addresses key problems with traditional collection evaluation
 ## Files
 
 ### Core Configuration
+
 - **`scoring-config.yaml`** - Main configuration and tier definitions
 - **`categories.yaml`** - Collection category definitions with adjusted thresholds
 - **`scoring-rules.yaml`** - Detailed scoring rules and evaluation criteria
 - **`evaluation-examples.yaml`** - Real-world scoring examples and comparisons
 
 ### Supporting Files
+
 - **`README.md`** - This documentation file
 
 ## How It Works
 
 ### 1. Category Detection
+
 Collections are first categorized into one of five types:
+
 - **Official**: Ansible-maintained collections
 - **Community**: Large community projects
 - **Specialized**: Niche technology-specific collections
@@ -38,17 +43,20 @@ Collections are first categorized into one of five types:
 The system evaluates three main dimensions (100 points total):
 
 #### Technical Quality (60 points)
+
 - Testing infrastructure (15 pts)
 - Code quality (15 pts)
 - Documentation (15 pts)
 - Architecture & design (15 pts)
 
 #### Sustainability (25 points)
+
 - Maintenance activity (10 pts)
 - Bus factor (10 pts)
 - Responsiveness (5 pts)
 
 #### Fitness for Purpose (15 points)
+
 - Technology match (7 pts)
 - Integration ease (5 pts)
 - Unique value (3 pts)
@@ -56,6 +64,7 @@ The system evaluates three main dimensions (100 points total):
 ### 3. Category Adjustments
 
 Each category has:
+
 - **Adjusted thresholds**: Different expectations for activity, contributors, etc.
 - **Weight multipliers**: Emphasize relevant dimensions for that category
 - **Bonus opportunities**: Extra points for unique solutions
@@ -63,6 +72,7 @@ Each category has:
 ### 4. Quality Tiers
 
 Collections are classified into four tiers:
+
 - **Tier 1 (80-100)**: Production-ready, use directly
 - **Tier 2 (60-79)**: Good quality, test thoroughly
 - **Tier 3 (40-59)**: Use with caution, may need customization
@@ -81,11 +91,13 @@ Collections are classified into four tiers:
 ### Example Impact
 
 **Specialized Collection (netbox.netbox)**:
+
 - Old System: 55/100 (penalized for few stars)
 - New System: 95/100 (recognized for quality & uniqueness)
 - Improvement: +40 points
 
 **Large Community Collection (community.docker)**:
+
 - Old System: 95/100 (inflated by popularity)
 - New System: 88/100 (accurate quality assessment)
 - Adjustment: -7 points
@@ -119,6 +131,7 @@ def score_collection(repo_data):
 ### Adding New Categories
 
 Edit `categories.yaml` to add new collection types:
+
 ```yaml
 categories:
   new_category:
@@ -131,6 +144,7 @@ categories:
 ### Adjusting Scoring Rules
 
 Edit `scoring-rules.yaml` to modify evaluation criteria:
+
 ```yaml
 scoring_dimensions:
   technical_quality:
@@ -178,6 +192,7 @@ When Terraform module scoring becomes necessary, we'll create a **separate speci
 ```
 
 This "sibling pattern" approach:
+
 - Takes ~8 hours to implement (vs 40+ for abstraction)
 - Maintains 95% accuracy for each tool
 - Allows independent evolution

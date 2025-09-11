@@ -5,6 +5,7 @@ Comprehensive security hardening role for Ubuntu servers following CIS benchmark
 ## Overview
 
 This role implements multiple layers of security hardening including:
+
 - SSH configuration hardening
 - Kernel parameter tuning (sysctl)
 - Fail2ban intrusion prevention
@@ -165,6 +166,7 @@ None. This role is self-contained.
 ## Security Features
 
 ### 1. SSH Hardening
+
 - Disables root login
 - Enforces key-based authentication
 - Configures secure ciphers and algorithms
@@ -172,6 +174,7 @@ None. This role is self-contained.
 - Creates login banner
 
 ### 2. Kernel Hardening
+
 - Disables IP forwarding
 - Enables SYN flood protection
 - Configures ASLR (Address Space Layout Randomization)
@@ -179,6 +182,7 @@ None. This role is self-contained.
 - Sets network security parameters
 
 ### 3. Fail2ban Protection
+
 - Monitors SSH attempts
 - Configurable ban times and thresholds
 - DDoS protection
@@ -186,6 +190,7 @@ None. This role is self-contained.
 - Persistent ban database
 
 ### 4. Audit Logging
+
 - Tracks authentication events
 - Monitors privileged commands
 - File integrity monitoring
@@ -193,6 +198,7 @@ None. This role is self-contained.
 - Kernel module loading tracking
 
 ### 5. System Hardening
+
 - Password quality enforcement
 - Account lockout policies
 - Automatic security updates
@@ -203,6 +209,7 @@ None. This role is self-contained.
 ## Files Created/Modified
 
 ### Configuration Files
+
 - `/etc/ssh/sshd_config` - SSH daemon configuration
 - `/etc/sysctl.d/99-security-hardening.conf` - Kernel parameters
 - `/etc/fail2ban/jail.local` - Fail2ban configuration
@@ -212,6 +219,7 @@ None. This role is self-contained.
 - `/etc/login.defs` - Login definitions
 
 ### Log Files
+
 - `/var/log/auth.log` - Authentication logs
 - `/var/log/audit/audit.log` - Audit logs
 - `/var/log/fail2ban.log` - Fail2ban activity
@@ -220,6 +228,7 @@ None. This role is self-contained.
 ## Validation
 
 The role includes comprehensive validation tasks that check:
+
 - SSH configuration syntax
 - Service status (SSH, fail2ban, auditd)
 - Kernel parameter application
@@ -228,6 +237,7 @@ The role includes comprehensive validation tasks that check:
 - Automatic updates configuration
 
 Run validation separately:
+
 ```bash
 ansible-playbook -i inventory site.yml --tags validation
 ```
@@ -244,6 +254,7 @@ ansible-playbook -i inventory site.yml --tags validation
 - `report` - Generate security report
 
 Example:
+
 ```bash
 # Only configure SSH and fail2ban
 ansible-playbook -i inventory site.yml --tags ssh,fail2ban
@@ -255,6 +266,7 @@ ansible-playbook -i inventory site.yml --tags validation
 ## Security Report
 
 A comprehensive security report is generated at `/var/log/security-hardening-report.txt` containing:
+
 - Configuration summary
 - Applied settings
 - Validation results
@@ -264,10 +276,13 @@ A comprehensive security report is generated at `/var/log/security-hardening-rep
 ## Compatibility
 
 ### Docker Compatibility
+
 This role detects Docker presence and adjusts firewall rules accordingly to maintain container networking.
 
 ### Cloud Environments
+
 Tested on:
+
 - AWS EC2
 - DigitalOcean Droplets
 - Proxmox VMs
@@ -277,12 +292,14 @@ Tested on:
 ## Testing
 
 ### Local Testing with Molecule
+
 ```bash
 cd ansible/roles/security
 molecule test
 ```
 
 ### Manual Testing
+
 ```bash
 # Dry run
 ansible-playbook -i inventory site.yml --check
@@ -297,20 +314,26 @@ ansible-playbook -i inventory site.yml --limit jump-man
 ## Troubleshooting
 
 ### SSH Access Issues
+
 If locked out after hardening:
+
 1. Use console access
 2. Check `/etc/ssh/sshd_config.backup.*`
 3. Restore: `cp /etc/ssh/sshd_config.backup.<timestamp> /etc/ssh/sshd_config`
 4. Restart SSH: `systemctl restart sshd`
 
 ### Fail2ban False Positives
+
 Whitelist IPs:
+
 ```yaml
 security_fail2ban_ignoreip: "127.0.0.1/8 ::1 192.168.1.0/24"
 ```
 
 ### Performance Impact
+
 If experiencing performance issues:
+
 - Reduce audit rules
 - Disable process accounting
 - Adjust fail2ban findtime/bantime

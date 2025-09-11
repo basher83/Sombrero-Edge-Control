@@ -9,6 +9,7 @@ This document provides advanced integration patterns and best practices for the 
 ### Current Implementation Analysis
 
 The current pipeline uses a **Decoupled Dynamic Inventory Pattern** with these strengths:
+
 - ✅ Clear separation of concerns (Packer → Terraform → Ansible)
 - ✅ Dynamic inventory generation from Terraform outputs
 - ✅ Immutable golden images with Packer + Ansible
@@ -19,6 +20,7 @@ The current pipeline uses a **Decoupled Dynamic Inventory Pattern** with these s
 #### 1. Terraform Provisioners (Local-exec)
 
 **When to Consider:**
+
 ```hcl
 resource "null_resource" "ansible_provision" {
   depends_on = [module.jump_man]
@@ -37,11 +39,13 @@ resource "null_resource" "ansible_provision" {
 ```
 
 **Pros:**
+
 - Simple implementation for basic scenarios
 - Immediate configuration after resource creation
 - Single execution context
 
 **Cons:**
+
 - Tightly couples tools (Ansible failures affect Terraform)
 - Increases Terraform apply duration
 - Complex SSH key management
@@ -50,6 +54,7 @@ resource "null_resource" "ansible_provision" {
 #### 2. Red Hat Ansible Certified Collection
 
 **Implementation:**
+
 ```yaml
 # ansible/inventory.yml
 plugin: cloud.terraform.terraform_state
@@ -63,11 +68,13 @@ groups:
 ```
 
 **Pros:**
+
 - Official Red Hat support
 - Standardized integration
 - Rich filtering and grouping capabilities
 
 **Cons:**
+
 - Additional dependency management
 - May require Ansible Automation Platform for full features
 
@@ -76,6 +83,7 @@ groups:
 ### 1. Ansible Generating Terraform Code
 
 **❌ Anti-Pattern:**
+
 ```yaml
 # DON'T DO THIS
 - name: Generate Terraform config
@@ -90,6 +98,7 @@ Keep Terraform code declarative and version-controlled directly.
 ### 2. Overusing Terraform Provisioners
 
 **❌ Anti-Pattern:**
+
 ```hcl
 # DON'T DO THIS - Complex config in provisioners
 provisioner "remote-exec" {
@@ -108,6 +117,7 @@ Use provisioners only for bootstrap, delegate complex configuration to Ansible.
 ### 3. Ignoring Idempotency
 
 **❌ Anti-Pattern:**
+
 ```yaml
 # DON'T DO THIS
 - name: Add user
@@ -115,6 +125,7 @@ Use provisioners only for bootstrap, delegate complex configuration to Ansible.
 ```
 
 **✅ Better Approach:**
+
 ```yaml
 - name: Add user
   user:
@@ -127,6 +138,7 @@ Use provisioners only for bootstrap, delegate complex configuration to Ansible.
 ### Dynamic Template Selection with Metadata
 
 **Enhanced Implementation:**
+
 ```hcl
 # infrastructure/environments/production/main.tf
 data "proxmox_virtual_environment_vms" "golden_images" {
@@ -168,6 +180,7 @@ locals {
 ### Enhanced Ansible Inventory with Metadata
 
 **Advanced Inventory Generation:**
+
 ```hcl
 # infrastructure/environments/production/outputs.tf
 output "ansible_inventory" {
@@ -211,6 +224,7 @@ output "ansible_inventory" {
 ### Secrets Management Strategy
 
 **Recommended Approach:**
+
 ```hcl
 # Use external secrets management
 data "aws_secretsmanager_secret_version" "ansible_vault_password" {
@@ -237,6 +251,7 @@ data "aws_secretsmanager_secret_version" "ansible_vault_password" {
 ### Pipeline Performance Metrics
 
 **Target Metrics:**
+
 - **End-to-End Deployment**: < 10 minutes
 - **Packer Build**: < 5 minutes
 - **Terraform Apply**: < 2 minutes
@@ -245,6 +260,7 @@ data "aws_secretsmanager_secret_version" "ansible_vault_password" {
 ### Optimization Strategies
 
 #### 1. Parallel Execution
+
 ```hcl
 # Enable parallel resource creation
 terraform {
@@ -258,6 +274,7 @@ provider "proxmox" {
 ```
 
 #### 2. Caching and Optimization
+
 ```bash
 # .mise.toml - Add caching tasks
 [tasks.cache-packer]
@@ -273,6 +290,7 @@ terraform providers mirror /tmp/terraform-cache
 ```
 
 #### 3. Selective Testing
+
 ```bash
 # scripts/smoke-test.sh - Add selective testing
 case "$TEST_LEVEL" in
@@ -306,6 +324,7 @@ esac
 ### Training Recommendations
 
 **Learning Path:**
+
 1. **Foundation**: Terraform Associate certification
 2. **Intermediate**: Ansible Automation Platform certification
 3. **Advanced**: Packer and immutable infrastructure patterns
@@ -314,6 +333,7 @@ esac
 ### Change Management Process
 
 **Implementation Phases:**
+
 1. **Assessment**: Current state analysis and gap identification
 2. **Pilot**: Small-scale implementation with monitoring
 3. **Expansion**: Gradual rollout with feedback loops
@@ -325,12 +345,14 @@ esac
 ### Metrics and KPIs
 
 **Technical Metrics:**
+
 - Deployment success rate (> 95%)
 - Mean time to deploy (< 15 minutes)
 - Infrastructure drift detection (< 5% drift)
 - Security scan pass rate (100%)
 
 **Business Metrics:**
+
 - Developer productivity improvement
 - Time to market reduction
 - Infrastructure cost optimization
@@ -339,6 +361,7 @@ esac
 ### Feedback Loops
 
 **Implementation:**
+
 ```yaml
 # .github/workflows/feedback.yml
 name: Deployment Feedback Collection
@@ -360,16 +383,19 @@ jobs:
 ## 📚 Additional Resources
 
 ### Industry Standards
+
 - [Terraform Best Practices](https://www.terraform-best-practices.com/)
 - [Ansible Best Practices](https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html)
 - [Packer Best Practices](https://developer.hashicorp.com/packer/docs/best-practices)
 
 ### Community Resources
+
 - [Terraform Registry](https://registry.terraform.io/)
 - [Ansible Galaxy](https://galaxy.ansible.com/)
 - [HashiCorp Discuss](https://discuss.hashicorp.com/)
 
 ### Training and Certification
+
 - [Terraform Associate Certification](https://www.hashicorp.com/certification/terraform-associate)
 - [Red Hat Ansible Automation](https://www.redhat.com/en/services/certification/rhce)
 
@@ -378,16 +404,19 @@ jobs:
 ## 🎯 Implementation Priority
 
 **Phase 1 (Immediate):**
+
 - [ ] Document current integration patterns
 - [ ] Add anti-patterns section to existing docs
 - [ ] Implement enhanced inventory metadata
 
 **Phase 2 (Short-term):**
+
 - [ ] Add performance monitoring
 - [ ] Implement security hardening guidelines
 - [ ] Create skills assessment framework
 
 **Phase 3 (Long-term):**
+
 - [ ] Advanced multi-environment support
 - [ ] Automated compliance checking
 - [ ] AI-assisted optimization

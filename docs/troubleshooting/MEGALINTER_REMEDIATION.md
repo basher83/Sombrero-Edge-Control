@@ -7,6 +7,7 @@ This document provides detailed remediation steps for the MegaLinter workflow fa
 ### 1. ✅ Docker Runtime Compatibility Issues
 
 **Problem**: Docker container startup failures with error:
+
 ```
 docker: Error response from daemon: failed to create task for container: failed to create shim task: OCI runtime create failed
 ```
@@ -14,6 +15,7 @@ docker: Error response from daemon: failed to create task for container: failed 
 **Root Cause**: Container runtime compatibility and resource allocation issues in GitHub Actions environment.
 
 **Remediation Applied**:
+
 - Added explicit Docker configuration with `DOCKER_BUILDKIT: "1"`
 - Specified exact MegaLinter image: `oxsecurity/megalinter-terraform:v8`
 - Improved environment variable configuration
@@ -24,6 +26,7 @@ docker: Error response from daemon: failed to create task for container: failed 
 **Problem**: Workflow file exceeded 120-character line length limit.
 
 **Remediation Applied**:
+
 - Reformatted long lines using YAML folding (`>-`)
 - Removed trailing whitespace
 - Validated with yamllint
@@ -31,11 +34,13 @@ docker: Error response from daemon: failed to create task for container: failed 
 ### 3. ✅ YAML Configuration Issues
 
 **Problem**: yamllint configuration was too restrictive for Ansible files:
+
 - Document start markers (`---`) were forbidden but required for Ansible
 - Truthy values (`yes/no`) were not allowed
 - Comments formatting was too strict
 
 **Remediation Applied**:
+
 - Temporarily excluded `ansible/` directory from yamllint checks
 - Updated configuration to allow standard YAML boolean representations
 - Added overrides for Ansible-specific patterns (for future use)
@@ -45,6 +50,7 @@ docker: Error response from daemon: failed to create task for container: failed 
 **Problem**: No fallback when MegaLinter fails completely.
 
 **Remediation Applied**:
+
 - Added fallback linting step that runs basic tools if MegaLinter fails
 - Includes yamllint and basic file checks
 - Ensures some level of quality checking even with Docker issues
@@ -52,6 +58,7 @@ docker: Error response from daemon: failed to create task for container: failed 
 ## Current Status
 
 ### Working ✅
+
 - ✅ Workflow syntax is valid
 - ✅ Line length violations fixed
 - ✅ Trailing whitespace removed
@@ -59,6 +66,7 @@ docker: Error response from daemon: failed to create task for container: failed 
 - ✅ Docker configuration improved
 
 ### Remaining Work 🔄
+
 - 🔄 Ansible YAML files need formatting improvements (temporarily ignored)
 - 🔄 Docker runtime issues may persist in some environments
 - 🔄 Long-term solution needed for comprehensive Ansible linting
@@ -79,6 +87,7 @@ yamllint .github/workflows/mega-linter.yml
 ```
 
 ### Expected Results
+
 - YAML linting should pass without errors on non-Ansible files
 - Workflow should run (may still fail due to Docker, but will run fallback)
 - Fallback linting should provide basic quality checks
@@ -86,16 +95,19 @@ yamllint .github/workflows/mega-linter.yml
 ## Recommended Next Steps
 
 ### Immediate (Priority 1)
+
 1. **Test in CI**: Push changes and verify improved workflow behavior
 2. **Monitor Docker**: Check if Docker runtime issues persist
 3. **Validate Fallback**: Ensure fallback linting works when MegaLinter fails
 
 ### Short-term (Priority 2)
+
 1. **Ansible Cleanup**: Gradually fix Ansible YAML formatting issues
 2. **Docker Alternative**: Consider alternative Docker configuration or runner
 3. **Local Development**: Improve local testing setup
 
 ### Long-term (Priority 3)
+
 1. **Progressive Enhancement**: Re-enable Ansible linting with appropriate configuration
 2. **Performance Optimization**: Optimize MegaLinter for faster CI runs
 3. **Documentation**: Update troubleshooting guides
@@ -105,11 +117,13 @@ yamllint .github/workflows/mega-linter.yml
 If Docker issues persist, try these alternatives:
 
 ### Alternative 1: Use Different Runner
+
 ```yaml
 runs-on: ubuntu-22.04  # Instead of ubuntu-latest
 ```
 
 ### Alternative 2: Use mega-linter-runner
+
 ```yaml
 - name: Install mega-linter-runner
   run: npm install -g mega-linter-runner@latest
@@ -119,7 +133,9 @@ runs-on: ubuntu-22.04  # Instead of ubuntu-latest
 ```
 
 ### Alternative 3: Manual Linter Installation
+
 Install individual linters instead of using the Docker container:
+
 ```yaml
 - name: Install linters
   run: |
@@ -131,12 +147,14 @@ Install individual linters instead of using the Docker container:
 ## Configuration Files Modified
 
 ### `.github/workflows/mega-linter.yml`
+
 - Fixed line length violations
 - Added Docker configuration
 - Added fallback linting strategy
 - Improved error handling
 
 ### `.github/linters/.yamllint.yaml`
+
 - Temporarily excluded Ansible files
 - Improved truthy value configuration
 - Added comments about future overrides

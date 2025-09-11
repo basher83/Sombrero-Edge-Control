@@ -7,13 +7,16 @@ This role provides comprehensive VM diagnostics and troubleshooting capabilities
 Based on comprehensive research of Ansible collections for VM diagnostics:
 
 ### Primary Collections Used
+
 - **nodiscc.xsrv v1.27.0** (Score: 92/100) - Complete monitoring and diagnostic infrastructure
 - **deltabg.extended_facts v1.0.6** (Score: 78/100) - Advanced hardware and system fact gathering
 - **community.general v11.2.1** (Score: 75/100) - General system management and diagnostic utilities
 - **ansible.posix v3.0.0** (Score: 70/100) - POSIX system diagnostics and configuration analysis
 
 ### Collection Quality Assessment
+
 Research conducted using ansible-research subagent with 100-point scoring system evaluating:
+
 - Diagnostic and troubleshooting capabilities
 - Log collection and analysis modules
 - System information gathering tools
@@ -34,6 +37,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 ## Features
 
 ### System Diagnostics
+
 - Hardware information gathering (CPU, memory, disk, RAID)
 - System resource analysis and utilization monitoring
 - Kernel configuration and parameter validation
@@ -42,6 +46,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 - SMART disk diagnostics and health checking
 
 ### Log Collection & Analysis
+
 - Centralized log collection from multiple sources
 - Cloud-init and provisioning log analysis
 - System log parsing and error pattern detection
@@ -50,6 +55,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 - Interactive log exploration with advanced tools
 
 ### Network Diagnostics
+
 - Network connectivity troubleshooting and validation
 - DNS resolution and routing analysis
 - Firewall configuration diagnostics
@@ -58,6 +64,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 - Network interface diagnostics
 
 ### Service Diagnostics
+
 - Service status and dependency analysis
 - Configuration validation and troubleshooting
 - Performance monitoring and bottleneck detection
@@ -66,6 +73,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 - Inter-service communication validation
 
 ### Performance Analysis
+
 - Resource utilization trend analysis over time
 - Performance bottleneck identification and reporting
 - I/O performance testing and validation
@@ -74,6 +82,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 - Historical performance data collection
 
 ### Troubleshooting Automation
+
 - Automated diagnostic workflow execution
 - Common issue detection and remediation
 - Comprehensive diagnostic report generation
@@ -84,6 +93,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 ## Usage
 
 ### Basic Usage
+
 ```yaml
 - name: VM Diagnostics
   hosts: problem_vms
@@ -92,6 +102,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 ```
 
 ### Advanced Configuration
+
 ```yaml
 - name: Comprehensive VM Diagnostics
   hosts: problem_vms
@@ -125,6 +136,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 ```
 
 ### Targeted Diagnostics
+
 ```yaml
 - name: Network-Specific Diagnostics
   hosts: network_issues
@@ -147,6 +159,7 @@ This role implements comprehensive VM diagnostics across six key areas:
 ## Variables
 
 See `defaults/main.yml` for all configurable variables including:
+
 - Diagnostic categories and depth settings
 - Log collection paths and retention policies
 - Performance testing parameters
@@ -180,6 +193,7 @@ molecule converge -s performance-analysis
 ## Integration
 
 Designed to integrate with:
+
 - VM deployment and provisioning workflows
 - Monitoring systems (Prometheus, Grafana, Netdata)
 - Alerting and incident response systems
@@ -189,6 +203,7 @@ Designed to integrate with:
 ## Migration Notes
 
 This role replaces the following manual operations:
+
 - Direct SSH commands for system diagnostics
 - Manual log file analysis and collection
 - Shell-based network troubleshooting
@@ -196,6 +211,7 @@ This role replaces the following manual operations:
 - Ad-hoc performance testing
 
 All operations are now:
+
 - ✅ **Systematic**: Comprehensive diagnostic workflows
 - ✅ **Automated**: Repeatable diagnostic procedures
 - ✅ **Structured**: JSON/YAML output for analysis
@@ -205,6 +221,7 @@ All operations are now:
 ## Diagnostic Categories
 
 ### System Category
+
 - Hardware inventory and health
 - Resource utilization analysis
 - Kernel configuration validation
@@ -212,6 +229,7 @@ All operations are now:
 - File system health checking
 
 ### Network Category
+
 - Connectivity testing
 - DNS resolution validation
 - Routing table analysis
@@ -219,6 +237,7 @@ All operations are now:
 - Bandwidth and latency testing
 
 ### Services Category
+
 - Service status monitoring
 - Configuration file validation
 - Dependency analysis
@@ -226,6 +245,7 @@ All operations are now:
 - Error log analysis
 
 ### Logs Category
+
 - Multi-source log collection
 - Error pattern detection
 - Historical trend analysis
@@ -233,6 +253,7 @@ All operations are now:
 - Cloud-init diagnostics
 
 ### Performance Category
+
 - CPU, memory, and I/O analysis
 - Resource trend monitoring
 - Bottleneck identification
@@ -240,6 +261,7 @@ All operations are now:
 - Capacity planning data
 
 ### Troubleshooting Category
+
 - Automated issue detection
 - Common problem remediation
 - Diagnostic report generation

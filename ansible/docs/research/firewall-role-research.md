@@ -18,7 +18,8 @@
 ### Tier 1: Production-Ready (80-100 points)
 
 **geerlingguy.firewall** - Score: 88/100
-- Repository: https://github.com/geerlingguy/ansible-role-firewall
+
+- Repository: <https://github.com/geerlingguy/ansible-role-firewall>
 - Namespace: geerlingguy.firewall (individual role)
 - Category: Personal/Community (high-profile maintainer)
 - Strengths:
@@ -30,6 +31,7 @@
 - Use Case: General-purpose iptables management
 - Docker Compatibility: **Major Issue** - `firewall_flush_rules_and_chains: true` breaks Docker networking
 - Example:
+
   ```yaml
   - role: geerlingguy.firewall
     vars:
@@ -43,7 +45,8 @@
   ```
 
 **mikegleasonjr.firewall** - Score: 85/100
-- Repository: https://github.com/mikegleasonjr/ansible-role-firewall
+
+- Repository: <https://github.com/mikegleasonjr/ansible-role-firewall>
 - Namespace: mikegleasonjr.firewall (individual role)
 - Category: Personal (experienced maintainer)
 - Strengths:
@@ -55,6 +58,7 @@
 - Use Case: Advanced iptables management with complex rule hierarchies
 - Docker Compatibility: **Good** - configurable flush rules, explicit rule control
 - Example:
+
   ```yaml
   firewall_v4_group_rules:
     150 docker support:
@@ -67,7 +71,8 @@
 ### Tier 2: Good Quality (60-79 points)
 
 **MichaelsJP.ansible-role-firewall** - Score: 72/100
-- Repository: https://github.com/MichaelsJP/ansible-role-firewall
+
+- Repository: <https://github.com/MichaelsJP/ansible-role-firewall>
 - Namespace: michaelsjp.firewall
 - Category: Personal (Docker-focused)
 - Strengths:
@@ -78,6 +83,7 @@
 - Use Case: Docker-specific firewall hardening
 - Docker Compatibility: **Excellent** - designed specifically for Docker security
 - Example:
+
   ```yaml
   bootstrap_firewall_docker_secure: true
   bootstrap_firewall_tcp_ports_internal: "80,443,8080"
@@ -85,7 +91,8 @@
   ```
 
 **rolehippie.firewall** - Score: 68/100
-- Repository: https://github.com/rolehippie/firewall
+
+- Repository: <https://github.com/rolehippie/firewall>
 - Namespace: rolehippie.firewall
 - Category: Personal/Organization
 - Strengths:
@@ -96,6 +103,7 @@
 - Use Case: Simple UFW-based firewall management
 - Docker Compatibility: **Unknown** - UFW and Docker have known interaction issues
 - Example:
+
   ```yaml
   firewall_rules_general:
     - { rule: "allow", port: "80", proto: "tcp" }
@@ -103,7 +111,8 @@
   ```
 
 **nofusscomputing.firewall** - Score: 65/100
-- Repository: https://github.com/nofusscomputing/ansible_collection_firewall
+
+- Repository: <https://github.com/nofusscomputing/ansible_collection_firewall>
 - Namespace: nofusscomputing.firewall
 - Category: Community collection
 - Strengths:
@@ -113,6 +122,7 @@
 - Use Case: Collection-based firewall management
 - Docker Compatibility: **Unknown** - insufficient documentation
 - Example:
+
   ```yaml
   collections:
     - nofusscomputing.firewall
@@ -121,7 +131,8 @@
 ### Tier 3: Use with Caution (40-59 points)
 
 **debops.ferm** - Score: 58/100
-- Repository: https://github.com/debops/ansible-ferm
+
+- Repository: <https://github.com/debops/ansible-ferm>
 - Namespace: debops.ferm
 - Category: Community (DebOps ecosystem)
 - Strengths:
@@ -135,11 +146,13 @@
 ### Tier 4: Not Recommended (Below 40 points)
 
 **nickjj.ansible-iptables** - Score: 35/100
-- Repository: https://github.com/nickjj/ansible-iptables
+
+- Repository: <https://github.com/nickjj/ansible-iptables>
 - Last activity: 2019, minimal features
 
 **AerisCloud.ansible-firewall** - Score: 28/100
-- Repository: https://github.com/AerisCloud/ansible-firewall
+
+- Repository: <https://github.com/AerisCloud/ansible-firewall>
 - Last activity: 2017, archived project
 
 ## Integration Recommendations
@@ -193,24 +206,29 @@ firewall_v4_flush_rules:
 ### Technical Risks
 
 **Docker Integration Issues**:
+
 - **Risk**: Most firewall roles can break Docker networking
 - **Mitigation**: Use roles with configurable flush behavior, explicit Docker rules
 
 **Rule Order Dependencies**:
+
 - **Risk**: Incorrect rule ordering breaks connectivity
 - **Mitigation**: Use mikegleasonjr's ordered rule system
 
 **IPv6 Compatibility**:
+
 - **Risk**: Many roles have incomplete IPv6 support
 - **Mitigation**: Test IPv6 rules separately, consider disabling if not needed
 
 ### Maintenance Risks
 
 **Single Maintainer Dependency**:
+
 - **Risk**: Most quality roles are maintained by individuals
 - **Mitigation**: Fork critical roles, contribute back improvements
 
 **Docker Evolution**:
+
 - **Risk**: Docker networking changes may break firewall integration
 - **Mitigation**: Pin Docker versions, test firewall changes in staging
 
@@ -270,6 +288,7 @@ The ansible-research agent uses a bias-free scoring system evaluating:
    - Configuration flexibility
 
 ### Scoring Tiers
+
 - **Tier 1** (80-100): Production-ready
 - **Tier 2** (60-79): Good quality
 - **Tier 3** (40-59): Use with caution
@@ -299,6 +318,7 @@ The firewall automation landscape lacks mature collections specifically designed
 ## Implementation Result
 
 Based on this research, we created a custom firewall role that:
+
 - **Exceeds** the Docker compatibility of all researched roles
 - Implements the numbered priority system inspired by mikegleasonjr.firewall
 - Includes unique DOCKER-USER chain management not found in any researched role

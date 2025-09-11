@@ -304,7 +304,7 @@ Full Mode (main): ~12-15 minutes (comprehensive linting)
 ### Markdown Formatting
 
 1. **Ordered Lists**: Use `1.` for all items (not continuation numbering)
-2. **Code Blocks**: Always specify language (e.g., `bash, `yaml)
+2. **Code Blocks**: Always specify language (e.g., `bash,`yaml)
 3. **Line Length**: 120 characters maximum for readability
 4. **Table Formatting**: Proper spacing and alignment required
 

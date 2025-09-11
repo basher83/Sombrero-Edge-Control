@@ -14,6 +14,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 ## Features
 
 ### Rollback Operations
+
 - Safe VM destruction with confirmation prompts
 - Terraform state management and cleanup
 - SSH known_hosts cleanup
@@ -22,6 +23,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 - Rollback to previous infrastructure states
 
 ### Cleanup Operations
+
 - Terraform artifact cleanup
 - Ansible cache cleanup
 - SSH configuration cleanup
@@ -30,6 +32,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 - Network resource cleanup
 
 ### Reset Operations
+
 - VM reset to clean state
 - Configuration reset to defaults
 - Service restart and reconfiguration
@@ -37,6 +40,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 - Package and configuration restoration
 
 ### State Management
+
 - Terraform state validation
 - Infrastructure state backup
 - State restoration capabilities
@@ -47,6 +51,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 ## Usage
 
 ### Basic Rollback Operation
+
 ```yaml
 - name: VM Lifecycle Management
   hosts: localhost
@@ -58,6 +63,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 ```
 
 ### Advanced Configuration
+
 ```yaml
 - name: Comprehensive VM Lifecycle Management
   hosts: localhost
@@ -84,6 +90,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 ```
 
 ### State Management Operations
+
 ```yaml
 - name: Infrastructure State Management
   hosts: localhost
@@ -106,6 +113,7 @@ This role implements comprehensive VM lifecycle management across four key areas
 ## Variables
 
 See `defaults/main.yml` for all configurable variables including:
+
 - Lifecycle operation settings
 - Terraform project configuration
 - Cleanup and preservation options
@@ -145,6 +153,7 @@ molecule converge -s reset-test
 ## Integration
 
 Designed to integrate with:
+
 - Terraform/OpenTofu infrastructure projects
 - Ansible automation workflows
 - CI/CD pipelines for infrastructure management

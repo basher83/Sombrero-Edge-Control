@@ -7,12 +7,15 @@ This role provides comprehensive Docker environment validation for production de
 Based on comprehensive research of Ansible collections for Docker validation:
 
 ### Primary Collections Used
+
 - **community.docker v4.7.0** (Score: 92/100) - Official Docker lifecycle management and validation
 - **prometheus.community v87/100** (Score: 87/100) - Container monitoring and metrics collection
 - **community.general v11.2.1** (Score: 85/100) - System-level validation and support functions
 
 ### Collection Quality Assessment
+
 Research conducted using ansible-research subagent with 100-point scoring system evaluating:
+
 - Docker-specific functionality coverage
 - Production deployment readiness
 - Security and compliance features
@@ -33,6 +36,7 @@ This role implements comprehensive Docker validation across six key areas:
 ## Features
 
 ### Docker Engine Validation
+
 - Docker daemon health and version compatibility checks
 - Docker service status and configuration validation
 - Storage driver validation and disk space monitoring
@@ -40,6 +44,7 @@ This role implements comprehensive Docker validation across six key areas:
 - Docker API connectivity and authentication testing
 
 ### Container Management
+
 - Container state validation (running, healthy, stopped, exited)
 - Container resource usage monitoring (CPU, memory, network, storage)
 - Container log analysis and error detection
@@ -47,6 +52,7 @@ This role implements comprehensive Docker validation across six key areas:
 - Multi-container application orchestration verification
 
 ### Image Security & Integrity
+
 - Image availability and pull capability testing
 - Image layer integrity and size validation
 - Container registry connectivity and authentication
@@ -54,6 +60,7 @@ This role implements comprehensive Docker validation across six key areas:
 - Base image vulnerability assessment
 
 ### Docker Compose Integration
+
 - Service stack health checking and validation
 - Multi-container application dependency verification
 - Volume and network dependency validation
@@ -61,6 +68,7 @@ This role implements comprehensive Docker validation across six key areas:
 - Docker Compose v2 compatibility validation
 
 ### Security Validation
+
 - Container security posture and configuration assessment
 - User namespace and privilege escalation validation
 - Secret and environment variable security verification
@@ -68,6 +76,7 @@ This role implements comprehensive Docker validation across six key areas:
 - Container isolation and resource limit validation
 
 ### Performance Monitoring
+
 - Container resource utilization metrics collection
 - Docker engine performance monitoring and alerting
 - Storage and network I/O performance validation
@@ -77,6 +86,7 @@ This role implements comprehensive Docker validation across six key areas:
 ## Usage
 
 ### Basic Usage
+
 ```yaml
 - name: Docker Environment Validation
   hosts: docker_hosts
@@ -85,6 +95,7 @@ This role implements comprehensive Docker validation across six key areas:
 ```
 
 ### Advanced Configuration
+
 ```yaml
 - name: Comprehensive Docker Validation
   hosts: docker_hosts
@@ -125,6 +136,7 @@ This role implements comprehensive Docker validation across six key areas:
 ## Variables
 
 See `defaults/main.yml` for all configurable variables including:
+
 - Docker engine requirements and thresholds
 - Container validation criteria
 - Image management settings
@@ -158,6 +170,7 @@ molecule converge -s security-validation
 ## Integration
 
 Designed to integrate with:
+
 - VM deployment and provisioning workflows
 - Container orchestration platforms
 - Monitoring and alerting systems (Prometheus, Grafana)
@@ -167,6 +180,7 @@ Designed to integrate with:
 ## Migration Notes
 
 This role replaces the following manual operations:
+
 - Direct `docker` command execution for validation
 - Manual container health checking
 - Shell-based Docker daemon monitoring
@@ -174,6 +188,7 @@ This role replaces the following manual operations:
 - Direct Docker Compose stack validation
 
 All operations are now:
+
 - ✅ **Idempotent**: Consistent validation results across runs
 - ✅ **Comprehensive**: Full coverage of Docker environment validation
 - ✅ **Structured**: JSON/YAML output for integration with monitoring

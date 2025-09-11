@@ -7,6 +7,7 @@ Comprehensive development tools installation role based on research-driven appro
 This role was built following the ansible-research strategy, evaluating existing collections:
 
 ### Research Findings
+
 - **Tier 1**: `community.general` (95/100) - Production-ready for standard tools
 - **Custom Implementation**: Required for modern tools (mise, uv) - no quality collections exist
 - **Hybrid Approach**: Best balance of reliability and modern tool support
@@ -14,6 +15,7 @@ This role was built following the ansible-research strategy, evaluating existing
 ## Overview
 
 Installs and configures a comprehensive development environment including:
+
 - **Standard Tools**: Node.js, Python, git, vim, tmux, curl, wget, jq
 - **Modern Tools**: mise (version manager), uv (Python package manager)
 - **DevOps Tools**: Docker Compose, lazygit, delta, ripgrep, bat, fd
@@ -199,33 +201,39 @@ None. This role manages its own dependencies through `community.general`.
 ## Features
 
 ### 1. Standard Development Tools
+
 - Node.js with npm package manager
 - Python 3 with pip and virtual environments
 - Essential CLI tools (git, vim, tmux, curl, wget, jq)
 - Build tools for compiling native packages
 
 ### 2. Modern Version Management
+
 - **mise**: Multi-language version manager (replaces nvm, pyenv, rbenv)
 - Automatic activation in shell
 - Support for .mise.toml project configurations
 
 ### 3. Fast Python Package Management
+
 - **uv**: Ultra-fast Python package installer
 - Drop-in replacement for pip with better performance
 - Proper configuration for user installations
 
 ### 4. Enhanced Shell Environment
+
 - Custom bash prompt with git branch display
 - Comprehensive aliases for development workflows
 - Better history management and search
 - Readline configuration for improved command editing
 
 ### 5. Editor and Terminal Configuration
+
 - vim setup with development-friendly defaults
 - tmux configuration with better keybindings
 - Modern CLI tools (bat, fd, ripgrep, fzf)
 
 ### 6. Development Workspace
+
 - Organized directory structure
 - Development environment setup script
 - Proper user permissions and ownership
@@ -233,6 +241,7 @@ None. This role manages its own dependencies through `community.general`.
 ## Files Created/Modified
 
 ### Configuration Files
+
 - `/home/{user}/.bashrc` - Shell environment and aliases
 - `/home/{user}/.vimrc` - vim editor configuration
 - `/home/{user}/.tmux.conf` - tmux terminal multiplexer
@@ -243,6 +252,7 @@ None. This role manages its own dependencies through `community.general`.
 - `/home/{user}/.config/uv/uv.toml` - uv configuration
 
 ### Directories Created
+
 - `/home/{user}/workspace` - Main workspace
 - `/home/{user}/projects` - Project directory
 - `/home/{user}/scripts` - Custom scripts
@@ -251,6 +261,7 @@ None. This role manages its own dependencies through `community.general`.
 - `/home/{user}/.cache/uv` - uv cache
 
 ### Scripts and Tools
+
 - `/home/{user}/setup-dev-env.sh` - Environment setup script
 - `/usr/local/bin/mise` - mise version manager
 - `/usr/local/bin/uv` - uv package manager
@@ -259,20 +270,25 @@ None. This role manages its own dependencies through `community.general`.
 ## Usage After Installation
 
 ### Shell Environment
+
 Log out and back in to load the new shell configuration:
+
 ```bash
 # Or source manually
 source ~/.bashrc
 ```
 
 ### Project Setup
+
 Use the development environment script in project directories:
+
 ```bash
 cd my-project
 source ~/setup-dev-env.sh
 ```
 
 ### Version Management with mise
+
 ```bash
 # Install and use Node.js 18
 mise use node@18
@@ -285,6 +301,7 @@ mise ls-remote node
 ```
 
 ### Fast Python Packages with uv
+
 ```bash
 # Install packages (much faster than pip)
 uv pip install django fastapi
@@ -297,12 +314,14 @@ uv pip install -r requirements.txt
 ## Validation
 
 The role includes comprehensive validation:
+
 - Tool version checks
 - Package installation verification
 - Shell configuration testing
 - Functionality tests for modern tools
 
 Run validation separately:
+
 ```bash
 ansible-playbook -i inventory site.yml --tags validation
 ```
@@ -321,6 +340,7 @@ ansible-playbook -i inventory site.yml --tags validation
 - `summary` - Generate summary report
 
 Examples:
+
 ```bash
 # Only install Node.js and Python
 ansible-playbook -i inventory site.yml --tags nodejs,python
@@ -335,9 +355,11 @@ ansible-playbook -i inventory site.yml --skip-tags validation
 ## Generated Reports
 
 A comprehensive installation summary is generated at:
+
 - `/var/log/development-tools-summary.txt`
 
 Contains:
+
 - Installed tool versions
 - Package counts and lists
 - Configuration locations
@@ -347,10 +369,12 @@ Contains:
 ## Research Documentation
 
 This role was built using the research-first approach documented in:
+
 - `../../../docs/planning/ansible-refactor/research-strategy.md`
 - Complete research findings in `.claude/research-reports/`
 
 ### Why This Approach?
+
 1. **Quality**: Uses production-ready community.general for standard tools
 2. **Modern**: Custom implementation for tools without quality collections
 3. **Reliable**: Avoids abandoned or low-quality community collections
@@ -359,11 +383,13 @@ This role was built using the research-first approach documented in:
 ## Compatibility
 
 ### Operating Systems
+
 - Ubuntu 20.04 LTS (Focal)
 - Ubuntu 22.04 LTS (Jammy)
 - Ubuntu 24.04 LTS (Noble)
 
 ### Integration
+
 - Works with existing security and firewall roles
 - Compatible with Docker environments
 - Integrates with CI/CD pipelines
@@ -371,6 +397,7 @@ This role was built using the research-first approach documented in:
 ## Troubleshooting
 
 ### Tools Not in PATH
+
 ```bash
 # Check PATH
 echo $PATH
@@ -383,6 +410,7 @@ which node npm python3 pip3 mise uv
 ```
 
 ### mise Issues
+
 ```bash
 # Check mise status
 mise doctor
@@ -395,6 +423,7 @@ mise uninstall node@18 && mise install node@18
 ```
 
 ### uv Issues
+
 ```bash
 # Check uv configuration
 uv pip --help

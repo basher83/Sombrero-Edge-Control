@@ -38,6 +38,7 @@ Our enhanced cloud-init configuration (`vendor-data.yaml`) automatically:
 ### Ready-to-Use Features
 
 After deployment, each VM has:
+
 - 📍 **Vault Binary**: `/usr/bin/vault`
 - ⚙️ **Configuration**: `/etc/vault.d/vault.hcl`
 - 💾 **Data Storage**: `/opt/vault/data/`
@@ -163,6 +164,7 @@ vault status  # Should show "Vault is sealed"
 ## High Availability
 
 VMs are distributed across Proxmox nodes for fault tolerance:
+
 - vault-master: lloyd
 - vault-prod-1: holly
 - vault-prod-2: mable
@@ -171,6 +173,7 @@ VMs are distributed across Proxmox nodes for fault tolerance:
 ## Outputs
 
 After deployment, Terraform provides:
+
 - Individual VM details (IPs, IDs, node assignments)
 - Vault API endpoints
 - Ansible inventory for configuration management

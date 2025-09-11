@@ -57,24 +57,28 @@ ansible_collections/
 ## Benefits
 
 ### 1. **Enhanced Linting Compliance**
+
 - ansible-lint properly validates collection structure
 - Automatic detection of role dependencies
 - Better enforcement of naming conventions
 - Cleaner separation of concerns
 
 ### 2. **Improved Modularity**
+
 - Self-contained, distributable unit
 - Versioned releases possible
 - Can be published to Ansible Galaxy (private or public)
 - Clear namespace: `sombrero.edge_control`
 
 ### 3. **Better Testing**
+
 - Standardized test structure
 - Molecule tests can be integrated per role
 - Collection-level testing possible
 - CI/CD improvements
 
 ### 4. **Professional Standards**
+
 - Aligns with Ansible community best practices
 - Easier onboarding for new team members
 - Better documentation structure
@@ -83,24 +87,28 @@ ansible_collections/
 ## Migration Strategy
 
 ### Phase 1: Preparation (Week 1)
+
 1. Create collection structure alongside existing
 2. Set up galaxy.yml with metadata
 3. Configure runtime.yml for Python/Ansible requirements
 4. Update .ansible-lint configuration
 
 ### Phase 2: Migration (Week 2)
+
 1. Move roles to collection structure
 2. Update playbook imports to use FQCN (Fully Qualified Collection Names)
 3. Migrate inventory structure
 4. Update variable references
 
 ### Phase 3: Validation (Week 3)
+
 1. Run comprehensive ansible-lint checks
 2. Execute all playbooks in test environment
 3. Validate Terraform → Ansible integration
 4. Update CI/CD pipelines
 
 ### Phase 4: Cutover (Week 4)
+
 1. Archive old ansible/ directory
 2. Update all documentation
 3. Update mise tasks
@@ -109,6 +117,7 @@ ansible_collections/
 ## Technical Requirements
 
 ### galaxy.yml Content
+
 ```yaml
 namespace: sombrero
 name: edge_control
@@ -135,6 +144,7 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 ### Playbook Updates Required
 
 **Before:**
+
 ```yaml
 - name: Configure jump host
   hosts: jump_hosts
@@ -144,6 +154,7 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 ```
 
 **After:**
+
 ```yaml
 - name: Configure jump host
   hosts: jump_hosts
@@ -155,6 +166,7 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 ## Impact Analysis
 
 ### Positive Impacts
+
 - ✅ 100% ansible-lint compliance achievable
 - ✅ Reduced technical debt
 - ✅ Improved maintainability
@@ -162,6 +174,7 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 - ✅ Professional structure
 
 ### Risks & Mitigations
+
 - ⚠️ **Risk**: Breaking existing automation
   - **Mitigation**: Parallel structure during migration
 - ⚠️ **Risk**: Learning curve for team

@@ -126,6 +126,7 @@ thoughts/
 ```
 
 Protection mechanisms:
+
 - Added to `.gitignore` to prevent repository commits
 - Pre-commit hook configured in `.pre-commit-config.yaml`
 - CLAUDE.md provides AI assistant context and usage guidelines

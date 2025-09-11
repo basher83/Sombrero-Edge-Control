@@ -76,12 +76,14 @@ module "jump_host" {
 ### Memory Ballooning
 
 When `memory_floating` is set to a value > 0, the VM can release unused memory back to the host:
+
 - `memory`: Dedicated memory that's always allocated
 - `memory_floating`: Additional memory that can be reclaimed by the host when not in use
 
 ### Vendor Data
 
 The module supports optional vendor_data for cloud-init:
+
 - Set `enable_vendor_data = true` to enable
 - Provide content via `vendor_data_content`
 - Useful for software installation and configuration
@@ -89,6 +91,7 @@ The module supports optional vendor_data for cloud-init:
 ### Dual Network Support
 
 Configure two network interfaces:
+
 - Set `enable_dual_network = true`
 - Configure `vm_ip_secondary` and `vm_bridge_2`
 - Useful for management/application network separation
@@ -98,8 +101,10 @@ Configure two network interfaces:
 This module currently uses static IP configuration by default. To enable DHCP support:
 
 **Required Changes:**
+
 1. Add a `use_dhcp` boolean variable to control the network mode
 2. Modify the `initialization` block in `main.tf` to use dynamic blocks:
+
    ```hcl
    dynamic "ip_config" {
      for_each = var.use_dhcp ? [1] : []
@@ -108,6 +113,7 @@ This module currently uses static IP configuration by default. To enable DHCP su
      }
    }
    ```
+
 3. Make IP-related variables optional when DHCP is enabled
 4. Consider adding a `dhcp_hostname` variable for DHCP hostname requests
 
@@ -121,14 +127,17 @@ This module currently uses static IP configuration by default. To enable DHCP su
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
 | <a name="requirement_proxmox"></a> [proxmox](#requirement\_proxmox) | >= 0.73.2 |
+
 ## Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_proxmox"></a> [proxmox](#provider\_proxmox) | >= 0.73.2 |
+
 ## Modules
 
 No modules.
+
 ## Resources
 
 | Name | Type |
@@ -136,6 +145,7 @@ No modules.
 | [proxmox_virtual_environment_file.user_data](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_file) | resource |
 | [proxmox_virtual_environment_file.vendor_data](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_file) | resource |
 | [proxmox_virtual_environment_vm.vm](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_vm) | resource |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -165,6 +175,7 @@ No modules.
 | <a name="input_vm_name"></a> [vm\_name](#input\_vm\_name) | Name of the VM | `string` | n/a | yes |
 | <a name="input_vm_node_name"></a> [vm\_node\_name](#input\_vm\_node\_name) | Proxmox node to place the VM on | `string` | n/a | yes |
 | <a name="input_vm_tags"></a> [vm\_tags](#input\_vm\_tags) | List of tags to apply to the VM | `list(string)` | `[]` | no |
+
 ## Outputs
 
 | Name | Description |

@@ -7,6 +7,7 @@ A comprehensive iptables-based firewall role with full Docker compatibility, des
 **This role is specifically designed to work with Docker's iptables management.**
 
 Key Docker compatibility features:
+
 - Never flushes all iptables rules (would break Docker networking)
 - Preserves Docker's automatic chains (DOCKER, DOCKER-ISOLATION)
 - Configures DOCKER-USER chain for container access control
@@ -335,6 +336,7 @@ curl localhost:8080  # Should work
 ### Issue: Docker containers unreachable
 
 **Solution**: Check DOCKER-USER chain isn't blocking traffic:
+
 ```bash
 iptables -L DOCKER-USER -n -v
 ```
@@ -342,6 +344,7 @@ iptables -L DOCKER-USER -n -v
 ### Issue: iptables rules lost on reboot
 
 **Solution**: Ensure netfilter-persistent is enabled:
+
 ```bash
 systemctl enable netfilter-persistent
 ```
@@ -349,6 +352,7 @@ systemctl enable netfilter-persistent
 ### Issue: UFW conflicts
 
 **Solution**: Uninstall UFW when using Docker:
+
 ```bash
 apt-get remove --purge ufw
 ```

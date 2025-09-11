@@ -7,18 +7,21 @@ Adapting the HumanLayer thoughts system for infrastructure-as-code repositories 
 ## Key Benefits for Infrastructure Workflows
 
 ### 1. Operational Knowledge Management
+
 - **Deployment logs**: Track deployment decisions and outcomes without cluttering Terraform code
 - **Incident notes**: Document troubleshooting sessions and resolutions
 - **Research findings**: Keep infrastructure research (new Proxmox features, Ansible patterns) accessible but separate
 - **Personal experiments**: Test configurations and ideas without affecting team's codebase
 
 ### 2. Team Collaboration
+
 - **Shared runbooks**: Collaborative operational procedures
 - **Architecture decisions**: Draft ADRs before formalizing them
 - **Post-mortems**: Incident analysis and lessons learned
 - **Migration plans**: Document infrastructure migration strategies
 
 ### 3. AI-Enhanced Operations
+
 - **Context for AI assistants**: Structured thoughts help Claude/other AI understand infrastructure decisions
 - **Searchable knowledge base**: Quick access to past solutions and patterns
 - **Automated documentation**: Generate deployment summaries from thoughts
@@ -57,6 +60,7 @@ thoughts/
 ## Implementation Plan
 
 ### Phase 1: Basic Structure (Minimal MVP)
+
 ```bash
 #!/bin/bash
 # Simple init script for thoughts directory
@@ -90,6 +94,7 @@ EOF
 ```
 
 ### Phase 2: Git Hooks Integration
+
 ```bash
 # Pre-commit hook to prevent thoughts/ commits
 #!/bin/bash
@@ -102,6 +107,7 @@ fi
 ```
 
 ### Phase 3: Enhanced Features
+
 - Separate git repository for thoughts
 - Symlink management
 - Auto-sync functionality
@@ -110,6 +116,7 @@ fi
 ## Use Cases for Infrastructure
 
 ### 1. Deployment Tracking
+
 ```markdown
 # thoughts/shared/deployments/2025-01-10_production-deploy.md
 
@@ -136,6 +143,7 @@ Operator: basher8383
 ```
 
 ### 2. Incident Documentation
+
 ```markdown
 # thoughts/shared/incidents/2025-01-09_vm-boot-failure.md
 
@@ -164,6 +172,7 @@ Cloud-init vendor-data corrupted GRUB configuration
 ```
 
 ### 3. Architecture Research
+
 ```markdown
 # thoughts/shared/architecture/ansible-vault-migration.md
 
@@ -193,7 +202,9 @@ Cloud-init vendor-data corrupted GRUB configuration
 ## Integration with Existing Workflows
 
 ### 1. Deployment Checklist Enhancement
+
 Modify `deployment-start` task to create both checklist and thoughts entry:
+
 ```bash
 # Create deployment thought
 THOUGHT_FILE="thoughts/shared/deployments/$(date +%Y-%m-%d-%H-%M)-deployment.md"
@@ -212,7 +223,9 @@ EOF
 ```
 
 ### 2. Smoke Test Integration
+
 Capture smoke test results in thoughts:
+
 ```bash
 # After smoke tests
 if [ "$SMOKE_TEST_RESULT" = "success" ]; then
@@ -224,7 +237,9 @@ fi
 ```
 
 ### 3. AI Assistant Context
+
 Update CLAUDE.md to reference thoughts:
+
 ```markdown
 ## Available Context
 - Infrastructure code in `infrastructure/`

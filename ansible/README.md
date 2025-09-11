@@ -83,21 +83,27 @@ ansible-playbook -i inventory/hosts.yml playbooks/hardening.yml
 ## Playbooks
 
 ### site.yml
+
 Main playbook that includes all configuration:
+
 - Base system configuration
 - Docker installation
 - Security settings
 - Monitoring setup
 
 ### jump-man.yml
+
 Jump host specific configuration:
+
 - Docker CE installation
 - Developer tools
 - Vault integration
 - SSH hardening
 
 ### hardening.yml
+
 Security hardening based on CIS benchmarks:
+
 - Firewall configuration (iptables)
 - SSH hardening
 - Kernel parameters

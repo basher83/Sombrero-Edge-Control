@@ -55,6 +55,7 @@ Packer (Build) → Terraform (Deploy) → Ansible Only (Configure/Validate/Opera
 **Status**: In Progress
 
 **Deliverables**:
+
 - [x] Planning directory structure
 - [ ] This refactor plan document
 - [ ] Role specifications
@@ -79,6 +80,7 @@ Before creating any role, invoke the **ansible-research subagent** to:
    - Build custom with learnings (Tier 3 or below)
 
 Example research invocations:
+
 ```
 # For proxmox_validation role
 "Use ansible-research to discover proxmox ansible collections"
@@ -156,6 +158,7 @@ ansible/playbooks/
 **Updates Required**:
 
 1. **mise Configuration**:
+
    ```toml
    # Note: ansible-core is already in .mise.toml [tools] section
    # Python packages (ansible-lint, molecule) are installed via uv
@@ -205,6 +208,7 @@ ansible/playbooks/
 **Status**: Not Started
 
 **Activities**:
+
 1. Deprecate shell-based scripts
 2. Parallel run for validation
 3. Performance comparison
@@ -260,16 +264,19 @@ ansible/playbooks/
 ### Technical Dependencies
 
 Tools managed via mise:
+
 - ansible-core 2.19.1 (already in .mise.toml)
 - Python 3.8+ (system requirement for Ansible)
 - Docker (for Molecule test containers)
 
 Python packages managed via uv:
+
 - ansible-lint 6.22.2 (Python package for linting)
 - molecule[docker]>=4.0 (Python package for testing)
 - pytest-testinfra (for test assertions)
 
 Installation in project-local venv:
+
 ```bash
 uv venv
 source .venv/bin/activate
@@ -333,11 +340,13 @@ If the refactor encounters critical issues:
 ### B. Command Conversion Examples
 
 **Before**:
+
 ```bash
 ssh ansible@192.168.10.250 'docker --version'
 ```
 
 **After**:
+
 ```bash
 ansible-playbook -i inventory/production playbooks/smoke-test.yml --tags docker
 ```
