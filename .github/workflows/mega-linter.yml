@@ -43,19 +43,8 @@ jobs:
           # GitHub token for API operations
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Filter configuration
-          FILTER_REGEX_INCLUDE: "docs/|README.md|infrastructure/|ansible/|packer/"
-          FILTER_REGEX_EXCLUDE: '\.git/|\.github/|node_modules/|build/|dist/|vendor/|\.terraform/'
-          # Linter configuration
-          ENABLE_LINTERS: >-
-            MARKDOWN_MARKDOWNLINT,
-            TERRAFORM_TFLINT,
-            TERRAFORM_TERRAFORM_FMT,
-            YAML_YAMLLINT,
-            JSON_ESLINT_PLUGIN_JSONC,
-            BASH_SHFMT
+          # Linter configuration is centralized in .mega-linter.yml
           LINTER_RULES_PATH: .github/linters
-          DISABLE_LINTERS: "SPELL_CSPELL"
           SKIP_CLI_LINT_MODES: "project"
           # Report configuration
           PRINT_ALPACA: false
@@ -70,11 +59,12 @@ jobs:
           # DISABLE_ERRORS_IF_LESS_THAN: 1000
 
       - name: Upload SARIF results
-        if: always() && steps.ml.outputs.has_generated_sarif == 'true'
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: report/megalinter-report.sarif
           category: code-quality
+        continue-on-error: true
 
       - name: Upload MegaLinter results
         if: always()
@@ -88,7 +78,7 @@ jobs:
         if: always() && steps.ml.outcome == 'success'
         run: |
           if [ -f "report/megalinter-report.sarif" ]; then
-            echo "::notice title=MegaLinter Status::MegaLinter found issues but workflow continues. Check artifacts for details."
+            echo "::notice title=MegaLinter Status::MegaLinter found issues but workflow continues. Check artifacts."
           else
             echo "::notice title=MegaLinter Status::MegaLinter completed successfully."
           fi

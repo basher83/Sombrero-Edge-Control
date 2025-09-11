@@ -1,27 +1,29 @@
-[defaults]
-profile = production
+---
+# Ansible-lint configuration for Sombrero Edge Control
+# Modern YAML format for ansible-lint 6.x+
 
-[exclude_paths]
-./.git/
-./.terraform/
-./kics-results/
+profile: production
 
-[rules]
-# Allow skipping of tasks
-skip_list = []
+exclude_paths:
+  - .git/
+  - .terraform/
+  - kics-results/
+  - .venv/
+  - node_modules/
 
-# Warn list for less critical rules
-warn_list = [
-  "no-changed-when",
-  "unnamed-task"
-]
+# Rules to skip completely
+skip_list: []
 
-# Custom rule configurations
-var-naming = {"pattern": "^[a-z_][a-z0-9_]*$"}
+# Rules that should only produce warnings
+warn_list:
+  - no-changed-when
+  - unnamed-task
 
-[rules:retry]
-max_attempts = 3
+# Enable offline mode to avoid external dependencies during linting
+offline: false
 
-[rules:task-name]
-# Allow short task names for simple operations
-min_length = 10
+# Mock modules for syntax checking (if needed)
+mock_modules: []
+
+# Mock roles for syntax checking (if needed)
+mock_roles: []
