@@ -789,9 +789,10 @@ ansible-playbook site.yml --tags consul
 
 ### Internal Documentation
 
-- [Dynamic Inventory Guide](../implementation/infisical/infisical-setup.md)
-- [Repository Structure](../getting-started/repository-structure.md)
-- [uv with Ansible](../getting-started/uv-ansible-notes.md)
+- [Dynamic Inventory Guide](../infrastructure/infisical-setup.md)
+<!-- TODO: Create getting-started documentation -->
+- Repository Structure (see project README.md for overview)
+- uv with Ansible (documentation pending)
 
 ### External Resources
 

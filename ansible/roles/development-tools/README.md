@@ -347,7 +347,7 @@ Contains:
 ## Research Documentation
 
 This role was built using the research-first approach documented in:
-- `docs/planning/ansible-refactor/research-strategy.md`
+- `../../../docs/planning/ansible-refactor/research-strategy.md`
 - Complete research findings in `.claude/research-reports/`
 
 ### Why This Approach?
@@ -420,7 +420,7 @@ DevOps Team - Sombrero Edge Control
 
 ## References
 
-- [Research Strategy Documentation](docs/planning/ansible-refactor/research-strategy.md)
+- [Research Strategy Documentation](../../../docs/planning/ansible-refactor/research-strategy.md)
 - [mise Documentation](https://mise.jdx.dev/)
 - [uv Documentation](https://github.com/astral-sh/uv)
 - [community.general Collection](https://docs.ansible.com/ansible/latest/collections/community/general/)

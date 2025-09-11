@@ -337,7 +337,8 @@ To meet these standards:
 
 ## References
 
-- [Repository Structure](../getting-started/repository-structure.md)
+<!-- TODO: Create getting-started/repository-structure.md -->
+- Repository Structure (see README.md for overview)
 - [Project README](../../README.md)
 - CommonMark Specification
 - Write the Docs principles

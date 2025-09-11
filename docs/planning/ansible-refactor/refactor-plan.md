@@ -354,7 +354,7 @@ ansible-playbook -i inventory/production playbooks/smoke-test.yml --tags docker
 
 **Document Status**: DRAFT
 **Version**: 1.0.0
-**Last Updated**: January 6, 2025
+**Last Updated**: September 11, 2025
 **Author**: AI IDE Agent
 **Reviewer**: [Pending]
 **Approved By**: [Pending]

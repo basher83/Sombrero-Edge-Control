@@ -81,7 +81,7 @@ Every IaC repository must contain these core documentation files:
 .
 ├── README.md                    # Primary entry point
 ├── CHANGELOG.md                 # Version history and changes
-├── CONTRIBUTING.md              # Contribution guidelines
+├── CONTRIBUTING.md              # Contribution guidelines (TODO)
 ├── SECURITY.md                  # Security policies and reporting
 ├── docs/                        # Detailed documentation
 │   ├── architecture/            # High-level design documents
@@ -804,7 +804,8 @@ No modules.
 
 ## Contributing
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for contribution guidelines.
+<!-- TODO: Create CONTRIBUTING.md file -->
+See the project README and documentation standards for contribution guidelines.
 
 ## License
 

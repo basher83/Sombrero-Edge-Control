@@ -7,7 +7,39 @@ All notable changes to the Jump Host Infrastructure project will be documented i
 _This changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
-## [1.1.0] - 2025-01-02
+## [Unreleased]
+
+### Added
+
+- **Ansible Collection Migration**: Comprehensive migration strategy and documentation for transitioning to Ansible collections structure
+- **ADR System**: Architectural Decision Records for tracking important technical decisions
+- **MegaLinter Integration**: Enhanced linting and code quality checks with MegaLinter runner script
+- **Claude Code Commands**: ADR creation slash command and other Claude Code integrations
+- **Thoughts Directory**: Knowledge management system for tracking project insights and decisions
+- **Renovate Configuration**: Enhanced dependency management with Renovate bot configuration
+- **Terraform Docs Validation**: Pre-commit hooks for automatic Terraform documentation generation
+- **CI/CD Enhancements**: Thoughts directory protection system and improved workflow configurations
+
+### Changed
+
+- **MegaLinter Configuration**: Optimized performance with fast mode and non-blocking errors
+- **Documentation Structure**: Added comprehensive guides for Ansible collection migration
+- **CI Workflows**: Simplified and fixed workflow syntax issues
+
+### Fixed
+
+- **CI/CD Issues**: Resolved MegaLinter workflow failures and duplicate workflow files
+- **Terraform Configuration**: Removed duplicate version requirements
+- **DevContainer**: Improved structure and property ordering
+
+### Documentation
+
+- **Ansible Collection Migration Guide**: Comprehensive guide for transitioning to collection-based architecture
+- **ADRs**: Multiple architectural decision records for Ansible collections, Renovate, and MegaLinter
+- **Thoughts System**: Knowledge management documentation and adaptation strategy
+- **MegaLinter Fixes**: Quick reference guide for resolving MegaLinter issues
+
+## [1.1.0] - 2025-09-02
 
 ### Added
 

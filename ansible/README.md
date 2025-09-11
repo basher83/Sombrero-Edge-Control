@@ -27,7 +27,7 @@ ansible/
 
 ## Purpose
 
-As documented in [ADR-2025-01-02](../docs/decisions/ADR-2025-01-02-ansible-post-deployment-config.md), Ansible handles post-deployment configuration that cloud-init cannot manage effectively:
+As documented in [ADR-2025-09-02](../docs/decisions/20250902-ansible-post-deployment-config.md), Ansible handles post-deployment configuration that cloud-init cannot manage effectively:
 
 - Complex software configurations
 - Multi-step installations

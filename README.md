@@ -161,5 +161,5 @@ This is a production infrastructure repository. Changes should be:
 ## 📚 Documentation
 
 - [Infrastructure Documentation](infrastructure/README.md)
-- [Product Requirements](docs/PRP.md)
+- [Product Requirements](docs/project/PRP/Project-PRP.md)
 - [Change Log](CHANGELOG.md)

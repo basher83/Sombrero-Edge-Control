@@ -344,9 +344,9 @@ terraform apply
 
 - [Deployment Process](deployment-process.md)
 - [Smoke Testing Implementation](smoke-testing-implementation.md)
-- [Packer Configuration](../packer/README.md)
-- [Terraform Modules](../infrastructure/README.md)
-- [Ansible Playbooks](../ansible/README.md)
+- [Packer Configuration](../../packer/README.md)
+- [Terraform Modules](../../infrastructure/README.md)
+- [Ansible Playbooks](../../ansible/README.md)
 
 ---
 

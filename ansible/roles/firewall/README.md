@@ -372,4 +372,4 @@ Created for the Sombrero-Edge-Control infrastructure project.
 ## References
 
 - [Docker and iptables](https://docs.docker.com/network/packet-filtering-firewalls/)
-- [ADR-2024-08-31: Docker iptables compatibility](../../docs/decisions/ADR-2024-08-31-docker-iptables-firewall.md)
+- [ADR-2024-08-31: Docker iptables compatibility](../../docs/decisions/20240831-docker-iptables-firewall.md)
