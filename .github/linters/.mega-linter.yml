@@ -62,3 +62,9 @@ DISABLE_LINTERS:
   - SPELL_CSPELL  # Too many false positives in IaC
   - TERRAFORM_TERRASCAN  # Can timeout in CI
   - MARKDOWN_MARKDOWN_LINK_CHECK  # External links can fail randomly
+
+LLM_ADVISOR_ENABLED: true
+LLM_PROVIDER: anthropic
+LLM_MODEL_NAME: claude-3-7-sonnet-latest
+LLM_MAX_TOKENS: 1000
+LLM_TEMPERATURE: 0.1

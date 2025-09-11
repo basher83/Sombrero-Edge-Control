@@ -31,6 +31,7 @@ Development workflow, tooling, and local development setup.
 - **[act-configuration.md](./development/act-configuration.md)** - GitHub Actions local testing with ACT
 - **[ci-local-testing.md](./development/ci-local-testing.md)** - Local CI testing procedures
 - **[code-formatting-and-linting.md](./development/code-formatting-and-linting.md)** - Code quality standards and tools
+- **[megalinter-configuration.md](./development/megalinter-configuration.md)** - MegaLinter configuration and setup
 - **[mise-configuration.md](./development/mise-configuration.md)** - Mise tool version manager setup
 
 ### [infrastructure/](./infrastructure/)
@@ -44,22 +45,40 @@ Infrastructure-specific configuration and optimization guides.
 
 Architectural Decision Records (ADRs) documenting important technical decisions.
 
-- **[ADR-2024-08-30-separate-files-terraform-injection.md](./decisions/ADR-2024-08-30-separate-files-terraform-injection.md)**
+- **[20240830-separate-files-terraform-injection.md](./decisions/20240830-separate-files-terraform-injection.md)**
   - Decision about separate files for Terraform injection
-- **[ADR-2024-08-31-docker-iptables-firewall.md](./decisions/ADR-2024-08-31-docker-iptables-firewall.md)**
+- **[20240831-docker-iptables-firewall.md](./decisions/20240831-docker-iptables-firewall.md)**
   - Docker iptables firewall configuration decision
-- **[ADR-2025-01-02-ansible-post-deployment-config.md](./decisions/ADR-2025-01-02-ansible-post-deployment-config.md)**
-
+- **[20241231-megalinter-configuration-optimization.md](./decisions/20241231-megalinter-configuration-optimization.md)**
+  - MegaLinter configuration optimization decisions
+- **[20250110-thoughts-directory-knowledge-management.md](./decisions/20250110-thoughts-directory-knowledge-management.md)**
+  - Thoughts directory knowledge management strategy
+- **[20250902-ansible-post-deployment-config.md](./decisions/20250902-ansible-post-deployment-config.md)**
   - Ansible post-deployment configuration approach
-
-- **[ADR-2025-01-02-documentation-reorganization.md](./decisions/ADR-2025-01-02-documentation-reorganization.md)**
+- **[20250902-documentation-reorganization.md](./decisions/20250902-documentation-reorganization.md)**
   - Documentation directory structure reorganization
-- **[ADR-TEMPLATE.md](./decisions/ADR-TEMPLATE.md)** - Template for creating new ADRs
+- **[20250906-ansible-collection-scoring-system.md](./decisions/20250906-ansible-collection-scoring-system.md)**
+  - Ansible collection scoring system design
+- **[20250906-ansible-roles.md](./decisions/20250906-ansible-roles.md)**
+  - Ansible roles architecture and implementation
+- **[20250908-use-log4brains-to-manage-the-adrs.md](./decisions/20250908-use-log4brains-to-manage-the-adrs.md)**
+  - Using Log4brains for ADR management
+- **[20250908-use-markdown-architectural-decision-records.md](./decisions/20250908-use-markdown-architectural-decision-records.md)**
+  - Markdown-based ADR system implementation
+- **[20250910-ansible-collection-structure.md](./decisions/20250910-ansible-collection-structure.md)**
+  - Ansible collection structure and organization
+- **[20250910-renovate-configuration-enhancement.md](./decisions/20250910-renovate-configuration-enhancement.md)**
+  - Renovate configuration enhancement decisions
+- **[index.md](./decisions/index.md)** - Index of all architectural decisions
+- **[README.md](./decisions/README.md)** - Decisions directory overview
+- **[template.md](./decisions/template.md)** - Template for creating new ADRs
 
 ### [troubleshooting/](./troubleshooting/)
 
 Troubleshooting guides and known issue resolutions.
 
+- **[MEGALINTER_REMEDIATION.md](./troubleshooting/MEGALINTER_REMEDIATION.md)**
+  - MegaLinter error remediation and fixes
 - **[ssh-cloud-init-issues.md](./troubleshooting/ssh-cloud-init-issues.md)**
   - SSH and cloud-init related issues
 - **[terraform-proxmox-ssh-issues.md](./troubleshooting/terraform-proxmox-ssh-issues.md)**
@@ -84,13 +103,12 @@ Project planning, architecture decisions, and strategic documentation.
     - Research approach for Ansible improvements
   - **[role-specifications.md](./planning/ansible-refactor/role-specifications.md)**
     - Detailed specifications for Ansible roles
+- **[thoughts-system-adaptation.md](./planning/thoughts-system-adaptation.md)**
+  - Thoughts system adaptation and knowledge management
 - **[tooling-migrations/](./planning/tooling-migrations/)** - Tooling migration planning and documentation
   - **[README.md](./planning/tooling-migrations/README.md)** - Overview of tooling migrations
   - **[MEGALINTER_MIGRATION.md](./planning/tooling-migrations/MEGALINTER_MIGRATION.md)**
     - MegaLinter migration guide and implementation
-- **[architecture-decisions/](./planning/architecture-decisions/)** - Architecture decision records and planning
-  - **[ADR-2025-01-06-ansible-roles.md](./planning/architecture-decisions/ADR-2025-01-06-ansible-roles.md)**
-    - Ansible roles architecture decision
 
 ### [ai_docs/](./ai_docs/)
 
@@ -106,10 +124,22 @@ Project planning, requirements, and management documentation.
   - **[Project-PRP.md](./project/PRP/Project-PRP.md)** - Main project requirements document
   - **[PRP-CLAUDE.md](./project/PRP/PRP-CLAUDE.md)** - CLAUDE-specific project planning
 
+### [standards/](./standards/)
+
+Coding standards, documentation guidelines, and quality assurance standards.
+
+- **[ansible-standards.md](./standards/ansible-standards.md)** - Ansible coding and structure standards
+- **[documentation-standards.md](./standards/documentation-standards.md)** - Documentation writing and formatting standards
+- **[git-standards.md](./standards/git-standards.md)** - Git workflow and commit standards
+- **[iac-documentation-standards.md](./standards/iac-documentation-standards.md)** - Infrastructure as Code documentation standards
+- **[iac-smoke-testing-theory.md](./standards/iac-smoke-testing-theory.md)** - Infrastructure smoke testing theory and standards
+- **[linting-standard.md](./standards/linting-standard.md)** - Code linting and formatting standards
+
 ## 🚀 Quick Start
 
 For new team members or those setting up the project:
 
+1. **Standards**: Review [standards/](./standards/) for coding guidelines and best practices
 1. **Deployment**: Start with [deployment-process.md](./deployment/deployment-process.md) and [deployment-checklist.md](./deployment/deployment-checklist.md)
 1. **Development Setup**: Review [mise-configuration.md](./development/mise-configuration.md) and [code-formatting-and-linting.md](./development/code-formatting-and-linting.md)
 1. **CI/CD**: Check [ci-cd-pipeline-workflow.md](./deployment/ci-cd-pipeline-workflow.md) and [act-configuration.md](./development/act-configuration.md)
@@ -131,4 +161,4 @@ For new team members or those setting up the project:
 
 ---
 
-**Last updated**: 2025-09-08
+**Last updated**: 2025-09-11
