@@ -21,6 +21,10 @@ FILTER_REGEX_EXCLUDE: '(\.git/|node_modules/|build/|dist/|vendor/|\.terraform/)'
 # Keep rules in-repo for portability
 LINTER_RULES_PATH: .github/linters
 
+TERRAFORM_TFLINT_PRE_COMMANDS:
+  - cd infrastructure/environments/production
+  - tflint --init
+
 MARKDOWN_SUMMARY_REPORTER: true
 SHOW_ELAPSED_TIME: true
 SARIF_REPORTER: true
