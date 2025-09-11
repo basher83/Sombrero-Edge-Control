@@ -331,7 +331,7 @@ Task 6: Runtime validation
 
 - Ansible:
   - Hardening and post-provisioning will be handled via Ansible later
-  - Inventory generation may leverage `scripts/generate-ansible-inventory.sh` [TODO: integrate]
+  - Inventory generation is handled automatically via Terraform outputs (`terraform output -raw ansible_inventory`)
 
 ## Validation Loop
 

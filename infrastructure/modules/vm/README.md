@@ -119,12 +119,13 @@ This module currently uses static IP configuration by default. To enable DHCP su
 
 | Name | Version |
 |------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
 | <a name="requirement_proxmox"></a> [proxmox](#requirement\_proxmox) | >= 0.73.2 |
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_proxmox"></a> [proxmox](#provider\_proxmox) | 0.82.1 |
+| <a name="provider_proxmox"></a> [proxmox](#provider\_proxmox) | >= 0.73.2 |
 ## Modules
 
 No modules.
@@ -132,6 +133,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [proxmox_virtual_environment_file.user_data](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_file) | resource |
 | [proxmox_virtual_environment_file.vendor_data](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_file) | resource |
 | [proxmox_virtual_environment_vm.vm](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_vm) | resource |
 ## Inputs
@@ -139,16 +141,16 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_ci_ssh_key"></a> [ci\_ssh\_key](#input\_ci\_ssh\_key) | SSH public key for cloud-init | `string` | n/a | yes |
-| <a name="input_cloud_init_username"></a> [cloud\_init\_username](#input\_cloud\_init\_username) | Username for cloud-init | `string` | `"ubuntu"` | no |
-| <a name="input_dhcp_hostname"></a> [dhcp\_hostname](#input\_dhcp\_hostname) | Hostname to request from DHCP server | `string` | `""` | no |
+| <a name="input_cloud_init_username"></a> [cloud\_init\_username](#input\_cloud\_init\_username) | Username for cloud-init | `string` | `"ansible"` | no |
 | <a name="input_dns_servers"></a> [dns\_servers](#input\_dns\_servers) | List of DNS servers for the VM | `list(string)` | <pre>[<br/>  "8.8.8.8",<br/>  "8.8.4.4"<br/>]</pre> | no |
 | <a name="input_enable_dual_network"></a> [enable\_dual\_network](#input\_enable\_dual\_network) | Enable dual network configuration with secondary NIC | `bool` | `true` | no |
+| <a name="input_enable_user_data"></a> [enable\_user\_data](#input\_enable\_user\_data) | Enable user data for cloud-init (for packages and basic config) | `bool` | `false` | no |
 | <a name="input_enable_vendor_data"></a> [enable\_vendor\_data](#input\_enable\_vendor\_data) | Enable vendor data for cloud-init | `bool` | `false` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | RAM in MB | `number` | `2048` | no |
 | <a name="input_memory_floating"></a> [memory\_floating](#input\_memory\_floating) | Amount of floating memory in MB for ballooning (0 disables ballooning) | `number` | `0` | no |
 | <a name="input_template_id"></a> [template\_id](#input\_template\_id) | Template VM ID to clone from | `number` | n/a | yes |
 | <a name="input_template_node"></a> [template\_node](#input\_template\_node) | Source node where the template VM exists (e.g., 'lloyd') | `string` | n/a | yes |
-| <a name="input_use_dhcp"></a> [use\_dhcp](#input\_use\_dhcp) | Use DHCP instead of static IP assignment | `bool` | `false` | no |
+| <a name="input_user_data_content"></a> [user\_data\_content](#input\_user\_data\_content) | Content for cloud-init user data (YAML format) | `string` | `""` | no |
 | <a name="input_vcpu"></a> [vcpu](#input\_vcpu) | Number of vCPUs | `number` | `2` | no |
 | <a name="input_vcpu_type"></a> [vcpu\_type](#input\_vcpu\_type) | CPU type (host, kvm64, etc.) | `string` | `"host"` | no |
 | <a name="input_vendor_data_content"></a> [vendor\_data\_content](#input\_vendor\_data\_content) | Content for cloud-init vendor data | `string` | `""` | no |

@@ -62,7 +62,7 @@ Thumbs.db
 
 
 .mcp.json
-
+.mcp.backup.json
 
 .envrc
 infrastructure/environments/production/terraform.tfvars.local
@@ -78,3 +78,7 @@ packer/*.pkrvars.hcl
 packer/packer_cache/
 packer/output-*/
 *.box
+
+# Thoughts directory (operational knowledge base)
+# This directory contains personal and team notes that should not be in the main repo
+thoughts/

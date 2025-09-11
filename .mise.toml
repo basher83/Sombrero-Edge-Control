@@ -24,8 +24,8 @@ truncate = true
 
 [tools]
 # Core tools
-terraform = "1.13.1"    # Pin to Terraform >=1.10 for Ephemeral Resources support
-packer = "1.14.1"
+packer = "1.14.2"
+terraform = "1.13.2"    # Pin to Terraform >=1.10 for Ephemeral Resources support
 ansible-core = "2.19.1"
 
 terraform-docs = "0.20.0" # Documentation generation
@@ -324,6 +324,11 @@ run = "./scripts/generate-docs.sh"
 description = "Check if Terraform documentation is up-to-date"
 dir = "infrastructure"
 run = "terraform-docs --config .terraform-docs.yml --output-check ."
+
+# Pre-commit hook for terraform-docs validation
+[tasks.pre-commit-docs]
+description = "Ensure terraform-docs are up-to-date before commit"
+run = "mise run docs-check"
 
 # ============================================================================
 # LINTING TASKS
