@@ -958,6 +958,7 @@ echo "📋 Pipeline ready for Packer → Terraform → Ansible deployment"
 description = "Build VM template with Packer and capture outputs"
 depends = ["deploy-init"]
 run = """
+START_TIME=$(date +%s)
 echo "🏗️ Stage 1: Building VM template with Packer..."
 
 # Build with Packer
@@ -978,6 +979,11 @@ EOF
 
 echo "✅ Packer build completed and outputs saved"
 echo "📄 Outputs: deployments/outputs/packer-outputs.json"
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "Task completed in ${DURATION} seconds"
+echo "$(date): deploy-packer completed in ${DURATION}s" >> deployment-metrics.log
 """
 
 # Stage 2: Terraform Deploy with Output Capture
@@ -986,6 +992,7 @@ description = "Deploy infrastructure with Terraform using Packer outputs"
 depends = ["deploy-init"]
 dir = "infrastructure/environments/production"
 run = """
+START_TIME=$(date +%s)
 echo "🚀 Stage 2: Deploying infrastructure with Terraform..."
 
 # Check for Packer outputs
@@ -1013,6 +1020,11 @@ terraform output -raw ansible_inventory > ../../../ansible/inventory/hosts.yml
 echo "✅ Terraform deployment completed and inventory generated"
 echo "📄 Outputs: deployments/outputs/terraform-outputs.json"
 echo "📋 Inventory: ansible/inventory/hosts.yml"
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "Task completed in ${DURATION} seconds"
+echo "$(date): deploy-terraform completed in ${DURATION}s" >> ../../../deployment-metrics.log
 """
 
 # Stage 3: Ansible Configuration with Output Capture
@@ -1021,6 +1033,7 @@ description = "Configure VM with Ansible using Terraform outputs"
 depends = ["deploy-init"]
 dir = "ansible"
 run = """
+START_TIME=$(date +%s)
 echo "⚙️ Stage 3: Configuring VM with Ansible..."
 
 # Check for Terraform outputs
@@ -1081,6 +1094,11 @@ EOF
 
 echo "✅ Ansible configuration completed"
 echo "📄 Results: deployments/outputs/ansible-results.json"
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "Task completed in ${DURATION} seconds"
+echo "$(date): deploy-ansible completed in ${DURATION}s" >> ../deployment-metrics.log
 """
 
 # Complete Pipeline: Packer → Terraform → Ansible
@@ -1088,6 +1106,7 @@ echo "📄 Results: deployments/outputs/ansible-results.json"
 description = "Run complete deployment pipeline: Packer → Terraform → Ansible"
 depends = ["deploy-packer", "deploy-terraform", "deploy-ansible"]
 run = """
+START_TIME=$(date +%s)
 echo "🎉 Complete deployment pipeline finished!"
 echo ""
 echo "📊 Pipeline Summary:"
@@ -1098,12 +1117,18 @@ echo "⚙️  Ansible: $(jq -r '.deployment_status' deployments/outputs/ansible-
 echo ""
 echo "🔍 Run smoke tests: mise run smoke-test"
 echo "📋 View outputs: ls -la deployments/outputs/"
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "Task completed in ${DURATION} seconds"
+echo "$(date): deploy-full completed in ${DURATION}s" >> deployment-metrics.log
 """
 
 # Pipeline with deployment tracking
 [tasks.deploy-full-tracked]
 description = "Run full pipeline with deployment tracking and analytics"
 run = """
+START_TIME=$(date +%s)
 echo "📋 Starting tracked deployment pipeline..."
 
 # Start deployment tracking
@@ -1126,6 +1151,11 @@ mise run smoke-test
 mise run deployment-finish
 
 echo "🎉 Tracked deployment pipeline completed!"
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+echo "Task completed in ${DURATION} seconds"
+echo "$(date): deploy-full-tracked completed in ${DURATION}s" >> deployment-metrics.log
 """
 
 # Verify deployment pipeline integrity
