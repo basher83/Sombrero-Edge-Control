@@ -74,7 +74,7 @@ jobs:
         if: success() || failure()
         uses: github/codeql-action/upload-sarif@v3
         with:
-            sarif_file: 'megalinter-reports/megalinter-report.sarif'
+          sarif_file: 'megalinter-reports/megalinter-report.sarif'
         continue-on-error: true
 
       # Create pull request if applicable
