@@ -14,6 +14,7 @@ ENABLE_LINTERS:
   - YAML_YAMLLINT
   - JSON_ESLINT_PLUGIN_JSONC
   - BASH_SHELLCHECK
+  - BASH_SHFMT
 
 # Global include/exclude filters
 FILTER_REGEX_INCLUDE: "docs/|README.md|CHANGELOG.md|infrastructure/|ansible/|packer/|scripts/deployments/|\\.github/workflows/"
