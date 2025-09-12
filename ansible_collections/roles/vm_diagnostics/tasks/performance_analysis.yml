@@ -136,15 +136,19 @@
       changed_when: false
       failed_when: false
 
+    - name: Select root mount
+      set_fact:
+        _root_mount: "{{ (ansible_mounts | selectattr('mount','equalto','/') | first) | default({}) }}"
+      when: ansible_mounts is defined
+
     - name: Calculate disk usage metrics
       set_fact:
-        root_disk_usage: "{{ (ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | default(1) - ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | default(0)) / ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | default(1) * 100 if ansible_mounts is defined else 0 }}"
-      when: ansible_mounts is defined
+        root_disk_usage: "{{ (((_root_mount.size_total | default(1)) - (_root_mount.size_available | default(0))) / (_root_mount.size_total | default(1)) * 100) | float | round(2) }}"
+      when: _root_mount is defined and _root_mount
 
     - name: Analyze disk performance
       set_fact:
         disk_status: "{{ 'CRITICAL' if root_disk_usage > 95 else ('WARN' if root_disk_usage > performance_thresholds.disk_usage_warning else 'PASS') if ansible_mounts is defined else 'SKIP' }}"
-
     - name: Record disk performance results
       set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
