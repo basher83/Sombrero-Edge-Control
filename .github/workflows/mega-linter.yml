@@ -44,7 +44,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v5
         with:
-          token: ${{ secrets.PAT != '' && secrets.PAT || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           # fetch-depth: 0 # If you use VALIDATE_ALL_CODEBASE = true, you can remove this line to improve performances
 
       - name: MegaLinter
@@ -74,7 +74,7 @@ jobs:
         if: success() || failure()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: 'megalinter-reports/megalinter-report.sarif'
+          sarif_file: "megalinter-reports/megalinter-report.sarif"
         continue-on-error: true
 
       # Create pull request if applicable
@@ -93,9 +93,9 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          !contains((github.event.head_commit.message || github.event.pull_request.title || ''), 'skip fix')
+          true
         with:
-          token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "[MegaLinter] Apply linters automatic fixes"
           title: "[MegaLinter] Apply linters automatic fixes"
           labels: bot
@@ -112,7 +112,7 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          !contains(github.event.head_commit.message, 'skip fix')
+          true
         run: |
           echo "PR Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "PR URL - ${{ steps.cpr.outputs.pull-request-url }}"
@@ -132,7 +132,7 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          !contains(github.event.head_commit.message, 'skip fix')
+          true
         run: sudo chown -Rc $UID .git/
 
       - name: Commit and push applied linter fixes
@@ -149,7 +149,7 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          !contains(github.event.head_commit.message, 'skip fix')
+          true
         with:
           branch: >-
             ${{

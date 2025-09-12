@@ -19,22 +19,24 @@ ENABLE_LINTERS:
 # Global include/exclude filters
 FILTER_REGEX_INCLUDE: "docs/|README.md|CHANGELOG.md|infrastructure/|ansible/|packer/|scripts/deployments/|\\.github/workflows/"
 FILTER_REGEX_EXCLUDE: '(\.git/|node_modules/|build/|dist/|vendor/|\.terraform/)'
-# Keep rules in-repo for portability
-LINTER_RULES_PATH: .github/linters
 
+
+# TFLint configuration - separate commands and allow GitHub token access
 TERRAFORM_TFLINT_PRE_COMMANDS:
-  - cd infrastructure/environments/production
-  - tflint --init
+  - command: "cd infrastructure/environments/production && tflint --init"
+    cwd: "root"
+TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
+  - "GITHUB_TOKEN"
 
 MARKDOWN_SUMMARY_REPORTER: true
 SHOW_ELAPSED_TIME: true
 SARIF_REPORTER: true
 
 # Auto-fix settings (disabled by default for safety)
-APPLY_FIXES: all
+APPLY_FIXES: "all"
 
-LLM_ADVISOR_ENABLED: true
-LLM_PROVIDER: anthropic
-LLM_MODEL_NAME: claude-3-7-sonnet-latest
-LLM_MAX_TOKENS: 1000
-LLM_TEMPERATURE: 0.1
+LLM_ADVISOR_ENABLED: "true"
+LLM_PROVIDER: "anthropic"
+LLM_MODEL_NAME: "claude-3-7-sonnet-latest"
+LLM_MAX_TOKENS: "1000"
+LLM_TEMPERATURE: "0.1"
