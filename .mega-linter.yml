@@ -20,11 +20,7 @@ ENABLE_LINTERS:
 FILTER_REGEX_INCLUDE: "docs/|README.md|CHANGELOG.md|infrastructure/|ansible/|packer/|scripts/deployments/|\\.github/workflows/"
 FILTER_REGEX_EXCLUDE: '(\.git/|node_modules/|build/|dist/|vendor/|\.terraform/)'
 
-
-# TFLint configuration - separate commands and allow GitHub token access
-TERRAFORM_TFLINT_PRE_COMMANDS:
-  - command: "cd infrastructure/environments/production && tflint --init"
-    cwd: "root"
+TERRAFORM_TFLINT_ARGUMENTS: --chdir=infrastructure/environments/production
 TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
   - "GITHUB_TOKEN"
 
