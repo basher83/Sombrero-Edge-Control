@@ -1,0 +1,166 @@
+---
+# Additional development and DevOps tools installation
+
+- name: Install additional development tools
+  ansible.builtin.package:
+    name: "{{ item.package }}"
+    state: present
+  loop: "{{ devtools_additional_tools }}"
+  register: additional_tools_install
+
+- name: Display installed additional tools
+  ansible.builtin.debug:
+    msg: "Installed {{ item.item.name }}: {{ item.item.description }}"
+  loop: "{{ additional_tools_install.results }}"
+  when: item.changed
+
+- name: Install Docker Compose
+  block:
+    - name: Download Docker Compose binary
+      ansible.builtin.get_url:
+        url: "https://github.com/docker/compose/releases/download/v{{ devtools_docker_compose_version }}/docker-compose-linux-x86_64"
+        dest: "/usr/local/bin/docker-compose"
+        mode: '0755'
+        owner: root
+        group: root
+      register: docker_compose_install
+
+    - name: Create docker-compose symlink for compatibility
+      ansible.builtin.file:
+        src: "/usr/local/bin/docker-compose"
+        dest: "/usr/bin/docker-compose"
+        state: link
+        force: true
+
+  when: devtools_docker_compose_enabled
+
+- name: Install modern CLI tools from GitHub releases
+  block:
+    - name: Download and install lazygit
+      ansible.builtin.shell: |
+        LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+        tar xf lazygit.tar.gz lazygit
+        install lazygit /usr/local/bin
+        rm -f lazygit.tar.gz lazygit
+      args:
+        creates: "/usr/local/bin/lazygit"
+      register: lazygit_install
+
+    - name: Download and install delta (better diff)
+      ansible.builtin.shell: |
+        DELTA_VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
+        curl -Lo delta.deb "https://github.com/dandavison/delta/releases/latest/download/git-delta_${DELTA_VERSION}_amd64.deb"
+        dpkg -i delta.deb || apt-get install -f -y
+        rm -f delta.deb
+      args:
+        creates: "/usr/bin/delta"
+      register: delta_install
+      failed_when: false
+
+  rescue:
+    - name: Log additional tools installation issues
+      ansible.builtin.debug:
+        msg: "Some additional tools failed to install - continuing with core functionality"
+
+- name: Configure git with better defaults
+  ansible.builtin.shell: |
+    git config --global init.defaultBranch main
+    git config --global pull.rebase false
+    git config --global user.name "{{ devtools_user }}"
+    git config --global user.email "{{ devtools_user }}@{{ ansible_hostname }}.local"
+
+    # Configure delta if installed
+    if command -v delta >/dev/null 2>&1; then
+      git config --global core.pager delta
+      git config --global interactive.diffFilter "delta --color-only"
+      git config --global delta.navigate true
+    fi
+  become_user: "{{ devtools_user }}"
+  changed_when: false
+  failed_when: false
+
+- name: Create useful development aliases
+  ansible.builtin.blockinfile:
+    path: "/home/{{ devtools_user }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Development aliases"
+    block: |
+      # Development tool aliases
+      alias ll='ls -alF'
+      alias la='ls -A'
+      alias l='ls -CF'
+      alias ..='cd ..'
+      alias ...='cd ../..'
+      alias grep='grep --color=auto'
+      alias fgrep='fgrep --color=auto'
+      alias egrep='egrep --color=auto'
+
+      # Git aliases
+      alias gs='git status'
+      alias ga='git add'
+      alias gc='git commit'
+      alias gp='git push'
+      alias gl='git log --oneline'
+      alias gd='git diff'
+
+      # Docker aliases
+      alias dc='docker-compose'
+      alias dps='docker ps'
+      alias di='docker images'
+
+      # Python aliases
+      alias py='python3'
+      alias ipy='ipython3'
+
+      # Modern tool aliases
+      if command -v bat >/dev/null 2>&1; then
+        alias cat='bat'
+      fi
+
+      if command -v fd >/dev/null 2>&1; then
+        alias find='fd'
+      fi
+
+      if command -v rg >/dev/null 2>&1; then
+        alias grep='rg'
+      fi
+    create: true
+  become_user: "{{ devtools_user }}"
+
+- name: Create development environment script
+  ansible.builtin.copy:
+    content: |
+      #!/bin/bash
+      # Development environment setup script
+      # Source this file to set up your development environment
+
+      echo "🔧 Setting up development environment..."
+
+      # Load mise if available
+      if command -v mise >/dev/null 2>&1; then
+        eval "$(mise activate bash)"
+        echo "✓ Mise activated"
+      fi
+
+      # Set up Python virtual environment if in project directory
+      if [ -f "requirements.txt" ] && [ ! -d "venv" ]; then
+        echo "📦 Creating Python virtual environment..."
+        python3 -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+      elif [ -d "venv" ]; then
+        source venv/bin/activate
+        echo "✓ Python virtual environment activated"
+      fi
+
+      # Set up Node.js environment if package.json exists
+      if [ -f "package.json" ] && [ ! -d "node_modules" ]; then
+        echo "📦 Installing Node.js dependencies..."
+        npm install
+      fi
+
+      echo "🚀 Development environment ready!"
+    dest: "/home/{{ devtools_user }}/setup-dev-env.sh"
+    owner: "{{ devtools_user }}"
+    group: "{{ devtools_user }}"
+    mode: '0755'

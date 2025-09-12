@@ -1,0 +1,363 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Performance Analysis Tasks
+
+- name: CPU Performance Analysis
+  block:
+    - name: Get CPU usage and load averages
+      shell: |
+        echo "=== CPU Information ==="
+        echo "Load Averages: $(uptime | awk -F'load average:' '{print $2}')"
+        echo "CPU Count: $(nproc)"
+        echo "=== Current CPU Usage ==="
+        top -bn1 | grep "Cpu(s)" || echo "top output not available"
+        echo "=== Top CPU Consuming Processes ==="
+        ps aux --sort=-%cpu | head -6
+      register: cpu_analysis
+      changed_when: false
+      failed_when: false
+
+    - name: Calculate CPU metrics
+      set_fact:
+        current_load_1min: "{{ ansible_loadavg[0] | default(ansible_loadavg['1min']) | default(0) | float }}"
+        cpu_core_count: "{{ ansible_processor_cores | default(ansible_processor_count) | default(1) | int }}"
+
+    - name: Analyze CPU performance
+      set_fact:
+        cpu_load_per_core: "{{ (current_load_1min / cpu_core_count) | round(2) }}"
+        cpu_status: "{{ 'CRITICAL' if (current_load_1min / cpu_core_count) > 2.0 else ('WARN' if (current_load_1min / cpu_core_count) > 1.0 else 'PASS') }}"
+
+    - name: Record CPU performance results
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'cpu_performance_analysis': {
+            'status': cpu_status,
+            'load_average_1min': current_load_1min,
+            'cpu_cores': cpu_core_count,
+            'load_per_core': cpu_load_per_core,
+            'cpu_model': ansible_processor | first | default('Unknown'),
+            'detailed_analysis': cpu_analysis.stdout_lines | default([]),
+            'performance_threshold': performance_thresholds.load_average_warning
+          }
+        }) }}"
+
+    - name: Update diagnostic counters for CPU
+      set_fact:
+        vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + (1 if cpu_status == 'PASS' else 0) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + (1 if cpu_status == 'CRITICAL' else 0) }}"
+
+  rescue:
+    - name: Record CPU performance failure
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'cpu_performance_analysis': {
+            'status': 'FAIL',
+            'error': ansible_failed_result.msg | default('CPU performance analysis failed')
+          }
+        }) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + 1 }}"
+
+  when: performance_analysis.resource_trends | bool
+
+- name: Memory Performance Analysis
+  block:
+    - name: Get detailed memory information
+      shell: |
+        echo "=== Memory Usage Summary ==="
+        free -h
+        echo "=== Memory Details ==="
+        cat /proc/meminfo | head -10
+        echo "=== Top Memory Consuming Processes ==="
+        ps aux --sort=-%mem | head -6
+      register: memory_analysis
+      changed_when: false
+      failed_when: false
+
+    - name: Calculate memory metrics
+      set_fact:
+        total_memory_mb: "{{ ansible_memtotal_mb | default(0) }}"
+        free_memory_mb: "{{ ansible_memfree_mb | default(0) }}"
+        used_memory_mb: "{{ (ansible_memtotal_mb | default(0)) - (ansible_memfree_mb | default(0)) }}"
+        memory_usage_percent: "{{ ((used_memory_mb / total_memory_mb) * 100) | round(2) if total_memory_mb > 0 else 0 }}"
+
+    - name: Analyze memory performance
+      set_fact:
+        memory_status: "{{ 'CRITICAL' if memory_usage_percent > 95 else ('WARN' if memory_usage_percent > performance_thresholds.memory_usage_warning else 'PASS') }}"
+
+    - name: Record memory performance results
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'memory_performance_analysis': {
+            'status': memory_status,
+            'total_memory_mb': total_memory_mb,
+            'used_memory_mb': used_memory_mb,
+            'free_memory_mb': free_memory_mb,
+            'usage_percentage': memory_usage_percent,
+            'swap_total_mb': ansible_swaptotal_mb | default(0),
+            'swap_free_mb': ansible_swapfree_mb | default(0),
+            'detailed_analysis': memory_analysis.stdout_lines | default([]),
+            'warning_threshold': performance_thresholds.memory_usage_warning
+          }
+        }) }}"
+
+    - name: Update diagnostic counters for memory
+      set_fact:
+        vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + (1 if memory_status == 'PASS' else 0) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + (1 if memory_status == 'CRITICAL' else 0) }}"
+
+  rescue:
+    - name: Record memory performance failure
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'memory_performance_analysis': {
+            'status': 'FAIL',
+            'error': ansible_failed_result.msg | default('Memory performance analysis failed')
+          }
+        }) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + 1 }}"
+
+  when: performance_analysis.resource_trends | bool
+
+- name: Disk I/O Performance Analysis
+  block:
+    - name: Get disk usage and I/O statistics
+      shell: |
+        echo "=== Disk Usage ==="
+        df -h
+        echo "=== Disk I/O Statistics (if available) ==="
+        if command -v iostat >/dev/null 2>&1; then
+          iostat -x 1 1 2>/dev/null | tail -n +4
+        else
+          echo "iostat not available"
+        fi
+        echo "=== Disk Space by Directory ==="
+        du -sh /var/log /tmp /home 2>/dev/null | head -5 || echo "Directory analysis not available"
+      register: disk_analysis
+      changed_when: false
+      failed_when: false
+
+    - name: Calculate disk usage metrics
+      set_fact:
+        root_disk_usage: "{{ (ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | default(1) - ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | default(0)) / ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | default(1) * 100 if ansible_mounts is defined else 0 }}"
+      when: ansible_mounts is defined
+
+    - name: Analyze disk performance
+      set_fact:
+        disk_status: "{{ 'CRITICAL' if root_disk_usage > 95 else ('WARN' if root_disk_usage > performance_thresholds.disk_usage_warning else 'PASS') if ansible_mounts is defined else 'SKIP' }}"
+
+    - name: Record disk performance results
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'disk_performance_analysis': {
+            'status': disk_status,
+            'root_disk_usage_percent': root_disk_usage | default('N/A'),
+            'mount_points': ansible_mounts | length if ansible_mounts is defined else 0,
+            'detailed_analysis': disk_analysis.stdout_lines | default([]),
+            'warning_threshold': performance_thresholds.disk_usage_warning,
+            'iostat_available': disk_analysis.stdout | search('iostat not available') | ternary(false, true) if disk_analysis is defined else false
+          }
+        }) }}"
+
+    - name: Update diagnostic counters for disk
+      set_fact:
+        vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + (1 if disk_status in ['PASS', 'SKIP'] else 0) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + (1 if disk_status == 'CRITICAL' else 0) }}"
+        vm_diagnostic_skipped_count: "{{ vm_diagnostic_skipped_count + (1 if disk_status == 'SKIP' else 0) }}"
+
+  rescue:
+    - name: Record disk performance failure
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'disk_performance_analysis': {
+            'status': 'FAIL',
+            'error': ansible_failed_result.msg | default('Disk performance analysis failed')
+          }
+        }) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + 1 }}"
+
+  when: performance_analysis.resource_trends | bool
+
+- name: Process and Resource Analysis
+  block:
+    - name: Get process information and resource usage
+      shell: |
+        echo "=== Process Count and Overview ==="
+        echo "Total processes: $(ps aux | wc -l)"
+        echo "Running processes: $(ps aux | grep -v ' Z ' | wc -l)"
+        echo "Zombie processes: $(ps aux | grep ' Z ' | wc -l)"
+        echo "=== Top Resource Consumers ==="
+        echo "--- Top CPU ---"
+        ps aux --sort=-%cpu | head -4
+        echo "--- Top Memory ---"
+        ps aux --sort=-%mem | head -4
+        echo "=== System Resource Summary ==="
+        uptime
+        if command -v vmstat >/dev/null 2>&1; then
+          vmstat 1 1 | tail -1
+        else
+          echo "vmstat not available"
+        fi
+      register: process_analysis
+      changed_when: false
+      failed_when: false
+
+    - name: Analyze process metrics
+      set_fact:
+        process_info: "{{ process_analysis.stdout_lines | default([]) }}"
+        zombie_count: "{{ process_analysis.stdout | regex_search('Zombie processes: (\\d+)', '\\1') | first | default(0) | int }}"
+
+    - name: Evaluate process health
+      set_fact:
+        process_status: "{{ 'WARN' if zombie_count > 5 else 'PASS' }}"
+
+    - name: Record process analysis results
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'process_resource_analysis': {
+            'status': process_status,
+            'zombie_processes': zombie_count,
+            'detailed_analysis': process_info,
+            'vmstat_available': process_analysis.stdout | search('vmstat not available') | ternary(false, true) if process_analysis is defined else false,
+            'analysis_note': 'Process and resource utilization snapshot'
+          }
+        }) }}"
+        vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + 1 }}"
+
+  rescue:
+    - name: Record process analysis failure
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'process_resource_analysis': {
+            'status': 'FAIL',
+            'error': ansible_failed_result.msg | default('Process analysis failed')
+          }
+        }) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + 1 }}"
+
+  when: advanced_diagnostics.process_tree_analysis | bool
+
+- name: Performance Bottleneck Detection
+  block:
+    - name: Identify potential performance bottlenecks
+      set_fact:
+        bottlenecks_detected: []
+
+    - name: Check for CPU bottlenecks
+      set_fact:
+        bottlenecks_detected: "{{ bottlenecks_detected + ['High CPU load per core detected'] }}"
+      when:
+        - cpu_load_per_core is defined
+        - cpu_load_per_core | float > 1.5
+
+    - name: Check for memory bottlenecks
+      set_fact:
+        bottlenecks_detected: "{{ bottlenecks_detected + ['High memory usage detected'] }}"
+      when:
+        - memory_usage_percent is defined
+        - memory_usage_percent | float > performance_thresholds.memory_usage_warning
+
+    - name: Check for disk space bottlenecks
+      set_fact:
+        bottlenecks_detected: "{{ bottlenecks_detected + ['Low disk space detected'] }}"
+      when:
+        - root_disk_usage is defined
+        - root_disk_usage | float > performance_thresholds.disk_usage_warning
+
+    - name: Check for zombie process issues
+      set_fact:
+        bottlenecks_detected: "{{ bottlenecks_detected + ['Excessive zombie processes detected'] }}"
+      when:
+        - zombie_count is defined
+        - zombie_count | int > 5
+
+    - name: Record bottleneck detection results
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'performance_bottleneck_detection': {
+            'status': 'PASS' if bottlenecks_detected | length == 0 else 'WARN',
+            'bottlenecks_detected': bottlenecks_detected | length,
+            'bottleneck_list': bottlenecks_detected,
+            'performance_summary': {
+              'cpu_load_per_core': cpu_load_per_core | default('N/A'),
+              'memory_usage_percent': memory_usage_percent | default('N/A'),
+              'disk_usage_percent': root_disk_usage | default('N/A'),
+              'zombie_processes': zombie_count | default('N/A')
+            }
+          }
+        }) }}"
+        vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + 1 }}"
+
+  rescue:
+    - name: Record bottleneck detection failure
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'performance_bottleneck_detection': {
+            'status': 'FAIL',
+            'error': ansible_failed_result.msg | default('Bottleneck detection failed')
+          }
+        }) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + 1 }}"
+
+  when: performance_analysis.bottleneck_detection | bool
+
+- name: Performance Recommendations
+  block:
+    - name: Generate performance recommendations
+      set_fact:
+        performance_recommendations: []
+
+    - name: Add CPU recommendations
+      set_fact:
+        performance_recommendations: "{{ performance_recommendations + ['Consider reducing CPU load or adding more CPU cores'] }}"
+      when:
+        - cpu_load_per_core is defined
+        - cpu_load_per_core | float > 1.0
+
+    - name: Add memory recommendations
+      set_fact:
+        performance_recommendations: "{{ performance_recommendations + ['Consider increasing available memory or optimizing memory usage'] }}"
+      when:
+        - memory_usage_percent is defined
+        - memory_usage_percent | float > 80
+
+    - name: Add disk recommendations
+      set_fact:
+        performance_recommendations: "{{ performance_recommendations + ['Consider cleaning up disk space or expanding storage'] }}"
+      when:
+        - root_disk_usage is defined
+        - root_disk_usage | float > 80
+
+    - name: Add general recommendations
+      set_fact:
+        performance_recommendations: "{{ performance_recommendations + ['System performance appears healthy'] }}"
+      when: performance_recommendations | length == 0
+
+    - name: Record performance recommendations
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'performance_recommendations': {
+            'status': 'PASS',
+            'recommendation_count': performance_recommendations | length,
+            'recommendations': performance_recommendations,
+            'analysis_basis': 'Based on current resource utilization metrics'
+          }
+        }) }}"
+        vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + 1 }}"
+
+  rescue:
+    - name: Record performance recommendations failure
+      set_fact:
+        vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+          'performance_recommendations': {
+            'status': 'FAIL',
+            'error': ansible_failed_result.msg | default('Performance recommendations failed')
+          }
+        }) }}"
+        vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + 1 }}"
+
+- name: Write performance diagnostics to file
+  copy:
+    content: "{{ vm_diagnostic_results | selectattr('match', '^(cpu|memory|disk|process|performance)_') | dict2items | to_nice_json }}"
+    dest: "{{ diagnostic_output_dir }}/performance_diagnostics.json"
+    mode: '0644'
+  when: vm_diagnostic_results | selectattr('match', '^(cpu|memory|disk|process|performance)_') | list | length > 0

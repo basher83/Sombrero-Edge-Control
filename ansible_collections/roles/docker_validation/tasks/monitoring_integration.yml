@@ -1,0 +1,266 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Docker monitoring integration tasks
+
+- name: Validate monitoring endpoints
+  block:
+    - name: Test monitoring endpoint availability
+      uri:
+        url: "{{ item.url }}"
+        method: GET
+        status_code: "{{ item.expected_status | default(200) }}"
+        timeout: "{{ item.timeout | default(30) }}"
+        return_content: false
+      loop: "{{ monitoring_integration.monitoring_endpoints }}"
+      register: monitoring_endpoint_results
+      when: monitoring_integration.monitoring_endpoints | length > 0
+
+    - name: Record monitoring endpoint validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'monitoring_endpoints': {'status': 'PASS', 'endpoints_tested': monitoring_integration.monitoring_endpoints | length, 'endpoints': monitoring_integration.monitoring_endpoints | map(attribute='url') | list}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when: monitoring_integration.monitoring_endpoints | length > 0
+
+    - name: Skip monitoring endpoint validation if none configured
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'monitoring_endpoints': {'status': 'SKIP', 'reason': 'No monitoring endpoints configured'}}) }}"
+      when: monitoring_integration.monitoring_endpoints | length == 0
+
+  rescue:
+    - name: Record monitoring endpoint validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'monitoring_endpoints': {'status': 'FAIL', 'endpoints': monitoring_integration.monitoring_endpoints, 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug monitoring endpoint validation failure
+      debug:
+        msg: "Monitoring endpoint validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate Prometheus metrics availability
+  block:
+    - name: Check Prometheus metrics endpoint
+      uri:
+        url: "http://localhost:{{ monitoring_integration.prometheus_port }}/metrics"
+        method: GET
+        status_code: 200
+        timeout: 30
+      register: prometheus_metrics_result
+      when: monitoring_integration.enable_prometheus | default(false)
+
+    - name: Validate Prometheus is collecting Docker metrics
+      uri:
+        url: "http://localhost:{{ monitoring_integration.prometheus_port }}/api/v1/query?query=up"
+        method: GET
+        status_code: 200
+        timeout: 30
+      register: prometheus_query_result
+      when: monitoring_integration.enable_prometheus | default(false)
+
+    - name: Record Prometheus validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'prometheus_integration': {'status': 'PASS', 'metrics_endpoint': 'http://localhost:' + (monitoring_integration.prometheus_port | string) + '/metrics', 'query_endpoint_working': prometheus_query_result.status == 200}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when: monitoring_integration.enable_prometheus | default(false)
+
+    - name: Skip Prometheus validation if disabled
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'prometheus_integration': {'status': 'SKIP', 'reason': 'Prometheus integration disabled'}}) }}"
+      when: not (monitoring_integration.enable_prometheus | default(false))
+
+  rescue:
+    - name: Record Prometheus validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'prometheus_integration': {'status': 'FAIL', 'prometheus_port': monitoring_integration.prometheus_port, 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug Prometheus validation failure
+      debug:
+        msg: "Prometheus validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate cAdvisor container metrics
+  block:
+    - name: Check cAdvisor metrics endpoint
+      uri:
+        url: "http://localhost:{{ monitoring_integration.cadvisor_port }}/metrics"
+        method: GET
+        status_code: 200
+        timeout: 30
+      register: cadvisor_metrics_result
+      when: monitoring_integration.enable_cadvisor | default(false)
+
+    - name: Validate cAdvisor container metrics
+      uri:
+        url: "http://localhost:{{ monitoring_integration.cadvisor_port }}/api/v1.3/docker"
+        method: GET
+        status_code: 200
+        timeout: 30
+      register: cadvisor_api_result
+      when: monitoring_integration.enable_cadvisor | default(false)
+
+    - name: Record cAdvisor validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'cadvisor_integration': {'status': 'PASS', 'metrics_endpoint': 'http://localhost:' + (monitoring_integration.cadvisor_port | string) + '/metrics', 'api_endpoint_working': cadvisor_api_result.status == 200}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when: monitoring_integration.enable_cadvisor | default(false)
+
+    - name: Skip cAdvisor validation if disabled
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'cadvisor_integration': {'status': 'SKIP', 'reason': 'cAdvisor integration disabled'}}) }}"
+      when: not (monitoring_integration.enable_cadvisor | default(false))
+
+  rescue:
+    - name: Record cAdvisor validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'cadvisor_integration': {'status': 'FAIL', 'cadvisor_port': monitoring_integration.cadvisor_port, 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug cAdvisor validation failure
+      debug:
+        msg: "cAdvisor validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate Docker engine metrics
+  block:
+    - name: Check Docker daemon metrics endpoint
+      uri:
+        url: "http://localhost:9323/metrics"
+        method: GET
+        status_code: 200
+        timeout: 30
+      register: docker_daemon_metrics_result
+      failed_when: false
+
+    - name: Record Docker daemon metrics validation
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'docker_daemon_metrics': {'status': 'PASS' if docker_daemon_metrics_result.status == 200 else 'FAIL', 'metrics_enabled': docker_daemon_metrics_result.status == 200}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + (1 if docker_daemon_metrics_result.status == 200 else 0) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + (0 if docker_daemon_metrics_result.status == 200 else 1) }}"
+
+    - name: Debug Docker daemon metrics status
+      debug:
+        msg: "Docker daemon metrics {{ 'enabled' if docker_daemon_metrics_result.status == 200 else 'not enabled or not accessible' }}"
+      when: validation_config.collect_debug_info | default(true)
+
+  rescue:
+    - name: Record Docker daemon metrics validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'docker_daemon_metrics': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug Docker daemon metrics failure
+      debug:
+        msg: "Docker daemon metrics validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate container resource monitoring
+  block:
+    - name: Check container CPU and memory metrics via Docker stats
+      command: docker stats --no-stream --format "table {{ '{{' }}.Container}}\t{{ '{{' }}.CPUPerc}}\t{{ '{{' }}.MemUsage}}"
+      register: docker_stats_result
+      changed_when: false
+      when: performance_monitoring.enable_resource_monitoring | default(true)
+
+    - name: Parse Docker stats output
+      set_fact:
+        container_stats: "{{ docker_stats_result.stdout_lines[1:] | map('split', '\t') | list }}"
+      when:
+        - performance_monitoring.enable_resource_monitoring | default(true)
+        - docker_stats_result.stdout_lines | length > 1
+
+    - name: Validate container resource usage within thresholds
+      assert:
+        that:
+          - (item[1] | regex_replace('%', '') | float) <= performance_monitoring.cpu_alert_threshold
+        fail_msg: "Container {{ item[0] }} CPU usage {{ item[1] }} exceeds threshold {{ performance_monitoring.cpu_alert_threshold }}%"
+        success_msg: "Container {{ item[0] }} CPU usage {{ item[1] }} within threshold"
+      loop: "{{ container_stats }}"
+      when:
+        - performance_monitoring.enable_resource_monitoring | default(true)
+        - container_stats is defined
+        - container_stats | length > 0
+      register: resource_threshold_checks
+
+    - name: Record resource monitoring validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'resource_monitoring': {'status': 'PASS', 'containers_monitored': container_stats | length, 'cpu_threshold': performance_monitoring.cpu_alert_threshold}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when:
+        - performance_monitoring.enable_resource_monitoring | default(true)
+        - container_stats is defined
+
+    - name: Skip resource monitoring validation if disabled
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'resource_monitoring': {'status': 'SKIP', 'reason': 'Resource monitoring disabled'}}) }}"
+      when: not (performance_monitoring.enable_resource_monitoring | default(true))
+
+  rescue:
+    - name: Record resource monitoring validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'resource_monitoring': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug resource monitoring validation failure
+      debug:
+        msg: "Resource monitoring validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate log monitoring integration
+  block:
+    - name: Check container log drivers
+      set_fact:
+        container_log_drivers: "{{ security_container_info.results | map(attribute='container.HostConfig.LogConfig.Type') | list }}"
+      when:
+        - expected_containers | length > 0
+        - security_container_info is defined
+        - log_validation.log_driver_validation | default(true)
+
+    - name: Validate log drivers are approved
+      assert:
+        that:
+          - item in daemon_config_validation.logging_driver_whitelist
+        fail_msg: "Container using unapproved log driver: {{ item }}"
+        success_msg: "Container log driver approved: {{ item }}"
+      loop: "{{ container_log_drivers | unique }}"
+      when:
+        - expected_containers | length > 0
+        - container_log_drivers is defined
+        - daemon_config_validation.logging_driver_whitelist | length > 0
+        - log_validation.log_driver_validation | default(true)
+
+    - name: Record log monitoring validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'log_monitoring': {'status': 'PASS', 'log_drivers': container_log_drivers | unique, 'containers_checked': expected_containers | length}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when:
+        - expected_containers | length > 0
+        - log_validation.log_driver_validation | default(true)
+
+    - name: Skip log monitoring validation if disabled
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'log_monitoring': {'status': 'SKIP', 'reason': 'Log monitoring validation disabled or no containers'}}) }}"
+      when: not (log_validation.log_driver_validation | default(true)) or expected_containers | length == 0
+
+  rescue:
+    - name: Record log monitoring validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'log_monitoring': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug log monitoring validation failure
+      debug:
+        msg: "Log monitoring validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Display monitoring integration summary
+  debug:
+    msg:
+      - "Docker Monitoring Integration Results:"
+      - "  Monitoring Endpoints: {{ docker_validation_results.monitoring_endpoints.status | default('SKIP') }}"
+      - "  Prometheus Integration: {{ docker_validation_results.prometheus_integration.status | default('SKIP') }}"
+      - "  cAdvisor Integration: {{ docker_validation_results.cadvisor_integration.status | default('SKIP') }}"
+      - "  Docker Daemon Metrics: {{ docker_validation_results.docker_daemon_metrics.status | default('SKIP') }}"
+      - "  Resource Monitoring: {{ docker_validation_results.resource_monitoring.status | default('SKIP') }}"
+      - "  Log Monitoring: {{ docker_validation_results.log_monitoring.status | default('SKIP') }}"
+  when: reporting.log_level in ['debug', 'info']

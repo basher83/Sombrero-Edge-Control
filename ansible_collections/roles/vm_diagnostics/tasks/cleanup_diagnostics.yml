@@ -1,0 +1,58 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Cleanup Old Diagnostic Files and Data
+
+- name: Find old diagnostic directories
+  find:
+    paths: "/tmp"
+    patterns: "diagnostics*"
+    file_type: directory
+    age: "{{ retain_diagnostics_days }}d"
+  register: old_diagnostic_dirs
+  when: retain_diagnostics_days | int > 0
+
+- name: Find old diagnostic files
+  find:
+    paths: "/tmp"
+    patterns:
+      - "vm_diagnostics_report_*.json"
+      - "vm_diagnostics_report_*.txt"
+      - "vm_diagnostics_report_*.yml"
+      - "executive_summary_*.txt"
+      - "ci_vm_diagnostics_result_*.json"
+      - "diagnostics_*.tar.gz"
+    age: "{{ retain_diagnostics_days }}d"
+  register: old_diagnostic_files
+  when: retain_diagnostics_days | int > 0
+
+- name: Clean up old diagnostic directories
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ old_diagnostic_dirs.files | default([]) }}"
+  when:
+    - retain_diagnostics_days | int > 0
+    - old_diagnostic_dirs.files is defined
+    - old_diagnostic_dirs.files | length > 0
+
+- name: Clean up old diagnostic files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ old_diagnostic_files.files | default([]) }}"
+  when:
+    - retain_diagnostics_days | int > 0
+    - old_diagnostic_files.files is defined
+    - old_diagnostic_files.files | length > 0
+
+- name: Record cleanup results
+  set_fact:
+    vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
+      'diagnostic_cleanup': {
+        'status': 'PASS',
+        'retention_days': retain_diagnostics_days,
+        'directories_cleaned': old_diagnostic_dirs.files | length if old_diagnostic_dirs.files is defined else 0,
+        'files_cleaned': old_diagnostic_files.files | length if old_diagnostic_files.files is defined else 0,
+        'cleanup_enabled': retain_diagnostics_days | int > 0
+      }
+    }) }}"

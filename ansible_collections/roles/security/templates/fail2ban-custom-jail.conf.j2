@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+# Custom jail configuration for {{ item.name }}
+
+[{{ item.name }}]
+enabled = {{ item.enabled | default(true) | lower }}
+port = {{ item.port | default('ssh') }}
+filter = {{ item.filter | default(item.name) }}
+logpath = {{ item.logpath | default('/var/log/syslog') }}
+maxretry = {{ item.maxretry | default(security_fail2ban_maxretry) }}
+bantime = {{ item.bantime | default(security_fail2ban_bantime) }}
+findtime = {{ item.findtime | default(security_fail2ban_findtime) }}

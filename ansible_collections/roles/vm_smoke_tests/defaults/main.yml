@@ -1,0 +1,101 @@
+#SPDX-License-Identifier: MIT-0
+---
+# VM Smoke Tests Role Configuration
+
+# Test execution phases to run (all enabled by default)
+smoke_test_phases:
+  - system_health
+  - service_validation
+  - application_health
+  - security_validation
+  - performance_monitoring
+
+# System Health Thresholds
+max_load_average: 2.0              # Maximum 1-minute load average
+min_memory_percent: 15             # Minimum free memory percentage
+min_disk_percent: 10               # Minimum free disk space percentage
+max_cpu_usage: 80                  # Maximum CPU usage percentage
+
+# Critical filesystems to monitor
+critical_filesystems:
+  - "/"
+  - "/var"
+  - "/tmp"
+  - "/home"
+
+# Network connectivity tests
+network_tests:
+  - host: "8.8.8.8"
+    port: 53
+    timeout: 10
+  - host: "1.1.1.1"
+    port: 53
+    timeout: 10
+
+# Expected system services (systemd units)
+expected_services:
+  - docker.service
+  - ssh.service
+  - systemd-resolved.service
+  - systemd-networkd.service
+
+# Expected Docker containers (if Docker validation enabled)
+expected_containers: []
+# Example:
+# expected_containers:
+#   - name: "nginx"
+#     expected_state: "running"
+#   - name: "postgres"
+#     expected_state: "running"
+
+# HTTP health check endpoints
+health_check_endpoints: []
+# Example:
+# health_check_endpoints:
+#   - url: "http://localhost:8080/health"
+#     method: "GET"
+#     expected_status: 200
+#     timeout: 30
+#   - url: "http://localhost:9090/metrics"
+#     method: "GET"
+#     expected_status: 200
+#     timeout: 30
+
+# Expected listening ports
+expected_ports:
+  - port: 22
+    description: "SSH"
+    protocol: "tcp"
+  # Additional ports can be added based on services
+
+# Security validation settings
+security_checks:
+  ssh_key_only: true               # Verify SSH key-only authentication
+  check_sudo_users: true          # Validate sudo user configuration
+  verify_firewall: true           # Check firewall status
+
+# Performance monitoring settings
+performance_checks:
+  enable_resource_monitoring: true
+  max_response_time: 5000         # Maximum HTTP response time in ms
+  min_available_memory_mb: 256    # Minimum available memory in MB
+
+# Test behavior configuration
+test_config:
+  fail_fast: false                # Stop on first failure
+  collect_debug_info: true        # Gather debug information on failures
+  timeout_default: 30             # Default timeout for operations in seconds
+  retry_count: 3                  # Number of retries for failed tests
+  retry_delay: 5                  # Delay between retries in seconds
+
+# Output and reporting
+reporting:
+  generate_json_report: true      # Generate structured test results
+  log_level: "info"              # Logging verbosity: debug, info, warn, error
+  show_skipped_tests: false      # Include skipped tests in output
+
+# Docker-specific settings (used if community.docker available)
+docker_settings:
+  validate_containers: true      # Enable Docker container validation
+  check_docker_daemon: true     # Verify Docker daemon health
+  container_timeout: 60         # Timeout for container operations

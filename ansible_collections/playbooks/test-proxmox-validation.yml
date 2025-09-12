@@ -1,0 +1,15 @@
+---
+# Test playbook for proxmox_validation role
+
+- name: Test Proxmox Validation Role
+  hosts: localhost
+  gather_facts: no
+
+  roles:
+    - role: basher83.automation_server.proxmox_validation
+      vars:
+        proxmox_node: "lloyd"
+        required_template_id: 1001
+        # Override if testing against different environment
+        # proxmox_api_url: "https://192.168.10.2:8006"
+        # proxmox_verify_ssl: false

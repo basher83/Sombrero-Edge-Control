@@ -1,0 +1,54 @@
+---
+# Handlers for firewall role
+
+- name: save iptables rules
+  shell: |
+    iptables-save > /etc/iptables/rules.v4
+    {% if firewall_ipv6_enabled %}
+    ip6tables-save > /etc/iptables/rules.v6
+    {% endif %}
+  become: true
+  listen: "save firewall rules"
+
+- name: restore iptables rules
+  shell: |
+    iptables-restore < /etc/iptables/rules.v4
+    {% if firewall_ipv6_enabled %}
+    ip6tables-restore < /etc/iptables/rules.v6
+    {% endif %}
+  become: true
+  listen: "restore firewall rules"
+
+- name: restart netfilter-persistent
+  systemd:
+    name: netfilter-persistent
+    state: restarted
+  become: true
+  listen: "restart firewall service"
+
+- name: reload netfilter-persistent
+  systemd:
+    name: netfilter-persistent
+    state: reloaded
+  become: true
+  listen: "reload firewall service"
+
+- name: restart docker
+  systemd:
+    name: docker
+    state: restarted
+  become: true
+  when: firewall_docker_present | bool
+  listen: "restart docker after firewall"
+
+- name: validate firewall rules
+  command: iptables-restore -t < /etc/iptables/rules.v4
+  become: true
+  listen: "validate firewall"
+
+- name: backup firewall rules
+  shell: |
+    timestamp=$(date +%Y%m%d_%H%M%S)
+    cp /etc/iptables/rules.v4 {{ firewall_rules_backup_dir }}/rules.v4.backup.${timestamp}
+  become: true
+  listen: "backup firewall"

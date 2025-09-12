@@ -1,0 +1,257 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Docker image validation tasks
+
+- name: Validate expected images are available
+  block:
+    - name: Get information for expected images
+      community.docker.docker_image_info:
+        name: "{{ item.name }}"
+      loop: "{{ expected_images }}"
+      register: image_info_results
+      when: expected_images | length > 0
+
+    - name: Validate required images exist
+      assert:
+        that:
+          - item.images | length > 0
+        fail_msg: "Required image not found: {{ item.item.name }}"
+        success_msg: "Required image found: {{ item.item.name }}"
+      loop: "{{ image_info_results.results }}"
+      when:
+        - expected_images | length > 0
+        - image_info_results is defined
+        - item.item.required | default(false)
+      register: image_existence_checks
+
+    - name: Validate image sizes within limits
+      assert:
+        that:
+          - (item.images[0].Size / 1024 / 1024) <= (item.item.max_size_mb | default(1000))
+        fail_msg: "Image {{ item.item.name }} size {{ (item.images[0].Size / 1024 / 1024) | round(2) }}MB exceeds limit {{ item.item.max_size_mb | default(1000) }}MB"
+        success_msg: "Image {{ item.item.name }} size {{ (item.images[0].Size / 1024 / 1024) | round(2) }}MB within limit"
+      loop: "{{ image_info_results.results }}"
+      when:
+        - expected_images | length > 0
+        - image_info_results is defined
+        - item.images | length > 0
+        - item.item.max_size_mb is defined
+      register: image_size_checks
+
+    - name: Record image validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_validation': {'status': 'PASS', 'images_validated': expected_images | length, 'images': image_details}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      vars:
+        image_details: "{{ image_info_results.results | map(attribute='item.name') | list }}"
+      when: expected_images | length > 0
+
+    - name: Skip image validation if no images expected
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_validation': {'status': 'SKIP', 'reason': 'No images configured for validation'}}) }}"
+      when: expected_images | length == 0
+
+  rescue:
+    - name: Record image validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_validation': {'status': 'FAIL', 'expected_images': expected_images, 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug image validation failure
+      debug:
+        msg: "Image validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate Docker registry connectivity
+  block:
+    - name: Test registry connectivity
+      uri:
+        url: "https://{{ item.url }}/v2/"
+        method: GET
+        status_code: [200, 401]  # 401 is OK, means registry is accessible but needs auth
+        timeout: "{{ item.timeout | default(30) }}"
+        validate_certs: "{{ item.validate_ssl | default(true) }}"
+      loop: "{{ docker_registries }}"
+      register: registry_connectivity_results
+      when: docker_registries | length > 0
+
+    - name: Validate registry authentication (if configured)
+      uri:
+        url: "https://{{ item.url }}/v2/"
+        method: GET
+        user: "{{ item.username }}"
+        password: "{{ item.password }}"
+        force_basic_auth: true
+        status_code: 200
+        timeout: "{{ item.timeout | default(30) }}"
+        validate_certs: "{{ item.validate_ssl | default(true) }}"
+      loop: "{{ docker_registries }}"
+      register: registry_auth_results
+      when:
+        - docker_registries | length > 0
+        - item.username is defined
+        - item.password is defined
+      no_log: true  # Don't log credentials
+
+    - name: Record registry validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'registry_connectivity': {'status': 'PASS', 'registries_tested': docker_registries | length, 'registries': docker_registries | map(attribute='url') | list}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when: docker_registries | length > 0
+
+    - name: Skip registry validation if no registries configured
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'registry_connectivity': {'status': 'SKIP', 'reason': 'No registries configured for validation'}}) }}"
+      when: docker_registries | length == 0
+
+  rescue:
+    - name: Record registry validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'registry_connectivity': {'status': 'FAIL', 'registries': docker_registries | map(attribute='url') | list, 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug registry validation failure
+      debug:
+        msg: "Registry validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate image layer integrity
+  block:
+    - name: Check image layer information
+      community.docker.docker_image_info:
+        name: "{{ item.name }}"
+      loop: "{{ expected_images }}"
+      register: image_layer_results
+      when: expected_images | length > 0
+
+    - name: Validate image has expected layers
+      assert:
+        that:
+          - item.images[0].RootFS.Layers | length > 0
+        fail_msg: "Image {{ item.item.name }} has no layers or is corrupted"
+        success_msg: "Image {{ item.item.name }} has {{ item.images[0].RootFS.Layers | length }} layers"
+      loop: "{{ image_layer_results.results }}"
+      when:
+        - expected_images | length > 0
+        - image_layer_results is defined
+        - item.images | length > 0
+
+    - name: Record image integrity validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_integrity': {'status': 'PASS', 'images_checked': expected_images | length}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when: expected_images | length > 0
+
+  rescue:
+    - name: Record image integrity validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_integrity': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug image integrity validation failure
+      debug:
+        msg: "Image integrity validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Validate image pull capability
+  block:
+    - name: Test image pull capability (dry run)
+      command: docker pull --dry-run {{ item.name }}
+      loop: "{{ expected_images }}"
+      register: image_pull_results
+      changed_when: false
+      failed_when: false
+      when:
+        - expected_images | length > 0
+        - item.pull_policy | default('missing') in ['always', 'missing']
+
+    - name: Validate images can be pulled
+      assert:
+        that:
+          - item.rc == 0
+        fail_msg: "Cannot pull image {{ item.item.name }}: {{ item.stderr | default('Unknown error') }}"
+        success_msg: "Image {{ item.item.name }} can be pulled successfully"
+      loop: "{{ image_pull_results.results }}"
+      when:
+        - expected_images | length > 0
+        - image_pull_results is defined
+        - item.item.pull_policy | default('missing') in ['always', 'missing']
+
+    - name: Record image pull validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_pull_capability': {'status': 'PASS', 'images_tested': pullable_images | length}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      vars:
+        pullable_images: "{{ expected_images | selectattr('pull_policy', 'defined') | selectattr('pull_policy', 'in', ['always', 'missing']) | list }}"
+      when: expected_images | length > 0
+
+  rescue:
+    - name: Record image pull validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_pull_capability': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug image pull validation failure
+      debug:
+        msg: "Image pull validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Check for unused images
+  block:
+    - name: Get all Docker images
+      command: docker images --format "{{ '{{' }}.Repository}}:{{ '{{' }}.Tag}}"
+      register: all_images_result
+      changed_when: false
+      when: cleanup_validation.validate_image_cleanup | default(true)
+
+    - name: Get images in use by containers
+      command: docker ps -a --format "{{ '{{' }}.Image}}"
+      register: used_images_result
+      changed_when: false
+      when: cleanup_validation.validate_image_cleanup | default(true)
+
+    - name: Calculate unused images
+      set_fact:
+        unused_images: "{{ (all_images_result.stdout_lines | default([])) | difference(used_images_result.stdout_lines | default([])) }}"
+      when: cleanup_validation.validate_image_cleanup | default(true)
+
+    - name: Validate unused image count within limits
+      assert:
+        that:
+          - unused_images | length <= cleanup_validation.max_unused_images
+        fail_msg: "Too many unused images: {{ unused_images | length }} (maximum: {{ cleanup_validation.max_unused_images }})"
+        success_msg: "Unused images within limits: {{ unused_images | length }}/{{ cleanup_validation.max_unused_images }}"
+      when: cleanup_validation.validate_image_cleanup | default(true)
+
+    - name: Record image cleanup validation results
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_cleanup': {'status': 'PASS', 'unused_count': unused_images | length, 'unused_limit': cleanup_validation.max_unused_images}}) }}"
+        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+      when: cleanup_validation.validate_image_cleanup | default(true)
+
+    - name: Skip image cleanup validation if disabled
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_cleanup': {'status': 'SKIP', 'reason': 'Image cleanup validation disabled'}}) }}"
+      when: not (cleanup_validation.validate_image_cleanup | default(true))
+
+  rescue:
+    - name: Record image cleanup validation failure
+      set_fact:
+        docker_validation_results: "{{ docker_validation_results | combine({'image_cleanup': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+
+    - name: Debug image cleanup validation failure
+      debug:
+        msg: "Image cleanup validation failed: {{ ansible_failed_result.msg }}"
+      when: validation_config.collect_debug_info | default(true)
+
+- name: Display image validation summary
+  debug:
+    msg:
+      - "Image Validation Results:"
+      - "  Image Availability: {{ docker_validation_results.image_validation.status | default('SKIP') }}"
+      - "  Registry Connectivity: {{ docker_validation_results.registry_connectivity.status | default('SKIP') }}"
+      - "  Image Integrity: {{ docker_validation_results.image_integrity.status | default('SKIP') }}"
+      - "  Pull Capability: {{ docker_validation_results.image_pull_capability.status | default('SKIP') }}"
+      - "  Cleanup Status: {{ docker_validation_results.image_cleanup.status | default('SKIP') }}"
+  when: reporting.log_level in ['debug', 'info']

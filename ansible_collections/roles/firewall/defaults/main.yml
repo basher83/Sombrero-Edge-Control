@@ -1,0 +1,263 @@
+---
+# Firewall role default variables
+
+# Firewall backend selection
+firewall_backend: "iptables"  # Options: iptables, iptables-nft, iptables-legacy
+firewall_enable: true
+firewall_flush_existing: false  # NEVER set to true with Docker installed!
+
+# Rule management method
+firewall_use_priority_rules: true  # Use new numbered priority system (recommended)
+firewall_merge_priority_rules: true  # Merge custom rules with defaults
+
+# Docker compatibility settings
+firewall_docker_compatibility: true  # Enables Docker-aware firewall rules
+firewall_configure_docker_user_chain: true  # Configure DOCKER-USER chain
+firewall_preserve_docker_chains: true  # Never touch DOCKER, DOCKER-ISOLATION chains
+
+# iptables persistence
+firewall_persistent: true
+firewall_save_rules_on_change: true
+firewall_rules_backup_dir: "/etc/iptables/backups"
+firewall_create_backup: true
+
+# Default policies
+firewall_default_input_policy: "DROP"
+firewall_default_forward_policy: "DROP"  # Docker will manage its own FORWARD rules
+firewall_default_output_policy: "ACCEPT"
+
+# Loopback configuration
+firewall_allow_loopback: true
+
+# Connection tracking
+firewall_allow_established: true
+firewall_allow_related: true
+firewall_connection_tracking_modules:
+  - nf_conntrack_ftp
+  - nf_conntrack_tftp
+
+# ICMP configuration
+firewall_allow_icmp: true
+firewall_icmp_types:
+  - echo-request
+  - echo-reply
+  - destination-unreachable
+  - time-exceeded
+
+# SSH configuration
+firewall_ssh_enabled: true
+firewall_ssh_port: 22
+firewall_ssh_source_ips: []  # Empty = allow from anywhere
+firewall_ssh_rate_limit: true
+firewall_ssh_rate_limit_burst: 5
+firewall_ssh_rate_limit_seconds: 60
+
+# Hierarchical numbered rule system (inspired by mikegleasonjr.firewall)
+# Rules are processed in numerical order (lower numbers = higher priority)
+firewall_rules_priority:
+  001_default_policies:
+    description: "Set default chain policies"
+    rules:
+      - chain: INPUT
+        policy: "{{ firewall_default_input_policy }}"
+      - chain: OUTPUT
+        policy: "{{ firewall_default_output_policy }}"
+      - chain: FORWARD
+        policy: "{{ firewall_default_forward_policy }}"
+        skip_if_docker: true  # Docker manages FORWARD
+
+  010_loopback:
+    description: "Loopback interface rules"
+    rules:
+      - "-A INPUT -i lo -j ACCEPT"
+      - "-A OUTPUT -o lo -j ACCEPT"
+      - "-A INPUT -s 127.0.0.0/8 ! -i lo -j DROP"
+
+  020_connection_tracking:
+    description: "Stateful connection tracking"
+    rules:
+      - "-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT"
+      - "-A INPUT -m conntrack --ctstate INVALID -j DROP"
+
+  030_icmp:
+    description: "ICMP handling"
+    rules:
+      - "-A INPUT -p icmp --icmp-type echo-request -m limit --limit 10/second -j ACCEPT"
+      - "-A INPUT -p icmp --icmp-type echo-reply -j ACCEPT"
+      - "-A INPUT -p icmp --icmp-type destination-unreachable -j ACCEPT"
+      - "-A INPUT -p icmp --icmp-type time-exceeded -j ACCEPT"
+
+  100_ssh:
+    description: "SSH access with rate limiting"
+    enabled: "{{ firewall_ssh_enabled }}"
+    rules:
+      - "-A INPUT -p tcp --dport {{ firewall_ssh_port }} -m state --state NEW -m recent --set --name SSH --mask 255.255.255.255"
+      - "-A INPUT -p tcp --dport {{ firewall_ssh_port }} -m state --state NEW -m recent --update --seconds 60 --hitcount 4 --name SSH --mask 255.255.255.255 -j DROP"
+      - "-A INPUT -p tcp --dport {{ firewall_ssh_port }} -j ACCEPT"
+
+  150_docker:
+    description: "Docker integration rules"
+    enabled: "{{ firewall_docker_present | default(false) }}"
+    rules:
+      - "-A INPUT -i docker0 -j ACCEPT"
+      - "-A FORWARD -i docker0 -o docker0 -j ACCEPT"
+      - "-A FORWARD -i docker0 ! -o docker0 -j ACCEPT"
+      - "-A FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT"
+
+  200_web_services:
+    description: "HTTP and HTTPS services"
+    rules:
+      - "-A INPUT -p tcp --dport 80 -j ACCEPT"
+      - "-A INPUT -p tcp --dport 443 -j ACCEPT"
+    enabled: false  # Override in host_vars
+
+  300_custom:
+    description: "Custom application rules"
+    rules: "{{ firewall_custom_priority_rules | default([]) }}"
+
+  900_logging:
+    description: "Log dropped packets"
+    enabled: "{{ firewall_enable_logging }}"
+    rules:
+      - "-A INPUT -m limit --limit 5/min -j LOG --log-prefix 'iptables-DROP: ' --log-level 4"
+
+  999_final_drop:
+    description: "Final drop rule"
+    rules:
+      - "-A INPUT -j DROP"
+    enabled: "{{ firewall_default_input_policy == 'ACCEPT' }}"
+
+# Legacy format for backward compatibility
+firewall_input_rules:
+  - name: "SSH"
+    port: 22
+    protocol: tcp
+    source: "0.0.0.0/0"
+    state: "enabled"
+    comment: "Allow SSH access"
+
+  - name: "HTTP"
+    port: 80
+    protocol: tcp
+    source: "0.0.0.0/0"
+    state: "disabled"  # Enable when needed
+    comment: "Allow HTTP traffic"
+
+  - name: "HTTPS"
+    port: 443
+    protocol: tcp
+    source: "0.0.0.0/0"
+    state: "disabled"  # Enable when needed
+    comment: "Allow HTTPS traffic"
+
+# Custom input rules (additional to basic services)
+firewall_custom_input_rules: []
+
+# Custom priority rules (for use with numbered system)
+firewall_custom_priority_rules: []
+# Example:
+# firewall_custom_priority_rules:
+#   - "-A INPUT -p tcp --dport 8080 -s 192.168.1.0/24 -j ACCEPT"
+#   - "-A INPUT -p tcp --dport 9090 -j ACCEPT"
+
+# Docker-specific settings
+firewall_docker_interface: "docker0"
+firewall_docker_network: "172.17.0.0/16"
+firewall_docker_user_rules: []
+# Example Docker-USER chain rules:
+# firewall_docker_user_rules:
+#   - name: "Block external to containers"
+#     interface: "eth0"
+#     action: "DROP"
+#     position: 1
+#   - name: "Allow HTTP to containers"
+#     interface: "eth0"
+#     port: 80
+#     protocol: tcp
+#     action: "ACCEPT"
+#     position: 2
+
+# External interface configuration
+firewall_external_interface: "{{ ansible_default_ipv4.interface | default('eth0') }}"
+firewall_external_network: "{{ ansible_default_ipv4.network | default('0.0.0.0') }}/{{ ansible_default_ipv4.prefix | default('0') }}"
+
+# Internal/trusted networks
+firewall_trusted_networks:
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+
+# Rate limiting
+firewall_enable_rate_limiting: true
+firewall_rate_limit_per_ip: "10/second"
+firewall_rate_limit_burst: 20
+
+# SYN flood protection
+firewall_syn_flood_protection: true
+firewall_syn_flood_rate: "25/second"
+firewall_syn_flood_burst: 50
+
+# Port scanning protection
+firewall_port_scan_protection: true
+firewall_port_scan_detection_threshold: 10
+firewall_port_scan_block_time: 600  # seconds
+
+# Logging
+firewall_enable_logging: true
+firewall_log_dropped: true
+firewall_log_accepted: false
+firewall_log_prefix: "iptables"
+firewall_log_level: 4  # warning
+
+# IPv6 support
+firewall_ipv6_enabled: false
+firewall_ipv6_default_policy: "DROP"
+
+# Fail2ban integration
+firewall_fail2ban_integration: false
+firewall_fail2ban_chain: "f2b-chain"
+
+# Debug mode
+firewall_debug_mode: false
+firewall_verbose_output: false
+
+# Testing mode (dry-run)
+firewall_test_mode: false  # If true, generates rules but doesn't apply
+
+# Rollback settings
+firewall_enable_rollback: true
+firewall_rollback_timeout: 60  # seconds to wait for confirmation
+
+# Rule validation
+firewall_validate_rules: true
+firewall_check_syntax: true
+
+# Performance tuning
+firewall_optimize_rules: true
+firewall_use_ipset: false  # Use ipset for large IP lists
+
+# Security hardening
+firewall_drop_invalid: true
+firewall_drop_fragments: false  # May break some legitimate traffic
+firewall_drop_xmas_packets: true
+firewall_drop_null_packets: true
+firewall_prevent_ip_spoofing: true
+
+# Service-specific chains
+firewall_create_service_chains: true
+firewall_service_chains:
+  - web-services
+  - admin-services
+  - monitoring
+
+# Monitoring and metrics
+firewall_enable_statistics: false
+firewall_stats_interval: 300  # seconds
+
+# Notification settings
+firewall_notify_on_changes: false
+firewall_notification_email: ""
+
+# Export summary
+firewall_export_summary: false
+firewall_summary_path: "/tmp/firewall-summary.txt"

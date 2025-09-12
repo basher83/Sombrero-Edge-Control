@@ -1,0 +1,55 @@
+---
+# Apply individual priority rule set
+
+- name: "Apply rules for {{ rule_priority }}: {{ rule_config.description | default('') }}"
+  block:
+    - name: Process policy rules
+      iptables:
+        chain: "{{ rule.chain }}"
+        policy: "{{ rule.policy }}"
+      loop: "{{ rule_config.rules }}"
+      when:
+        - rule is mapping
+        - rule.policy is defined
+        - not (rule.skip_if_docker | default(false) and firewall_docker_present)
+      loop_control:
+        loop_var: rule
+
+    - name: Process standard iptables rules
+      shell: |
+        # Apply rule: {{ rule }}
+        {% if rule is string %}
+        iptables {{ rule }}
+        {% endif %}
+      args:
+        executable: /bin/bash
+      loop: "{{ rule_config.rules }}"
+      when:
+        - rule is string
+        - not firewall_test_mode | bool
+      loop_control:
+        loop_var: rule
+      register: rule_result
+      changed_when: rule_result.rc == 0
+      failed_when:
+        - rule_result.rc != 0
+        - "'already exists' not in rule_result.stderr | default('')"
+
+    - name: Process complex rules with conditions
+      iptables:
+        chain: "{{ rule.chain | default('INPUT') }}"
+        protocol: "{{ rule.protocol | default(omit) }}"
+        destination_port: "{{ rule.port | default(omit) }}"
+        source: "{{ rule.source | default(omit) }}"
+        in_interface: "{{ rule.interface | default(omit) }}"
+        jump: "{{ rule.action | default('ACCEPT') }}"
+        comment: "{{ rule_priority }}: {{ rule.comment | default(rule_config.description) }}"
+      loop: "{{ rule_config.rules }}"
+      when:
+        - rule is mapping
+        - rule.chain is defined or rule.port is defined
+        - not firewall_test_mode | bool
+      loop_control:
+        loop_var: rule
+
+  when: rule_config.enabled | default(true) | bool
