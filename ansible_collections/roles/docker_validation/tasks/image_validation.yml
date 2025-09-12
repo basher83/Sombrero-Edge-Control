@@ -154,8 +154,8 @@
 
 - name: Validate image pull capability
   block:
-    - name: Test image pull capability (dry run)
-      command: docker pull --dry-run {{ item.name }}
+    - name: Test image pull capability (no-download manifest inspect)
+      command: docker manifest inspect {{ item.name }}
       loop: "{{ expected_images }}"
       register: image_pull_results
       changed_when: false
@@ -164,18 +164,17 @@
         - expected_images | length > 0
         - item.pull_policy | default('missing') in ['always', 'missing']
 
-    - name: Validate images can be pulled
+    - name: Validate images are retrievable from registry
       assert:
         that:
           - item.rc == 0
-        fail_msg: "Cannot pull image {{ item.item.name }}: {{ item.stderr | default('Unknown error') }}"
-        success_msg: "Image {{ item.item.name }} can be pulled successfully"
+        fail_msg: "Cannot retrieve manifest for {{ item.item.name }}: {{ item.stderr | default('Unknown error') }}"
+        success_msg: "Manifest available for {{ item.item.name }}"
       loop: "{{ image_pull_results.results }}"
       when:
         - expected_images | length > 0
         - image_pull_results is defined
         - item.item.pull_policy | default('missing') in ['always', 'missing']
-
     - name: Record image pull validation results
       set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'image_pull_capability': {'status': 'PASS', 'images_tested': pullable_images | length}}) }}"
