@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the step-by-step strategy for migrating from the current shell-based operations to Ansible roles 
+This document outlines the step-by-step strategy for migrating from the current shell-based operations to Ansible roles
 while maintaining operational continuity.
 
 ## Migration Principles

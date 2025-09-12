@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines how mise will be used to manage tools and tasks for the Ansible-first refactor, maintaining 
+This document outlines how mise will be used to manage tools and tasks for the Ansible-first refactor, maintaining
 consistency with the project's existing tool management approach.
 
 **Reference**:

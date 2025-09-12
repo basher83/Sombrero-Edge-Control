@@ -81,6 +81,7 @@ License
 -------
 
 # TO-DO: Update the license to the one you want to use (delete this line after setting the license)
+
 BSD
 
 Author Information
