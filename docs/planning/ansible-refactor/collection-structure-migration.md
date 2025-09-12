@@ -7,11 +7,12 @@
 
 ## Executive Summary
 
-Migrate the current Ansible directory structure to a proper Ansible Collection format to enforce better compliance with ansible-lint, improve code organization, and align with Ansible best practices.
+Migrate the current Ansible directory structure to a proper Ansible Collection format to enforce better compliance with
+ansible-lint, improve code organization, and align with Ansible best practices.
 
 ## Current State
 
-```
+```text
 ansible/
 ├── playbooks/
 ├── roles/
@@ -23,7 +24,7 @@ ansible/
 
 ## Proposed Collection Structure
 
-```
+```text
 ansible_collections/
 └── sombrero/
     └── edge_control/
@@ -119,15 +120,15 @@ ansible_collections/
 ### galaxy.yml Content
 
 ```yaml
-namespace: sombrero
-name: edge_control
+namespace: basher83
+name: automation_server
 version: 1.0.0
 readme: README.md
 authors:
-  - Sombrero Edge Control Team
+  - basher83
 description: Ansible collection for managing jump host infrastructure
 license:
-  - GPL-3.0-or-later
+  - MIT
 tags:
   - infrastructure
   - proxmox
@@ -159,8 +160,8 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 - name: Configure jump host
   hosts: jump_hosts
   roles:
-    - sombrero.edge_control.docker
-    - sombrero.edge_control.firewall
+    - basher83.automation_server.docker
+    - basher83.automation_server.firewall
 ```
 
 ## Impact Analysis

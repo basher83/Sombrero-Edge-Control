@@ -17,18 +17,18 @@
 
 ```bash
 # Create the collection directory structure
-mkdir -p ansible_collections/sombrero/edge_control/{docs,meta,plugins,roles,playbooks,tests}
-mkdir -p ansible_collections/sombrero/edge_control/plugins/{modules,filter,lookup,inventory}
-mkdir -p ansible_collections/sombrero/edge_control/tests/{unit,integration}
+mkdir -p ansible_collections/basher83/automation_server/{docs,meta,plugins,roles,playbooks,tests}
+mkdir -p ansible_collections/basher83/automation_server/plugins/{modules,filter,lookup,inventory}
+mkdir -p ansible_collections/basher83/automation_server/tests/{unit,integration}
 ```
 
 ## Step 2: Create Collection Metadata
 
-### Create `ansible_collections/sombrero/edge_control/galaxy.yml`
+### Create `ansible_collections/basher83/automation_server/galaxy.yml`
 
 ```yaml
-namespace: sombrero
-name: edge_control
+namespace: basher83
+name: automation_server
 version: 1.0.0
 readme: README.md
 authors:
@@ -57,12 +57,12 @@ homepage: https://github.com/basher83/Sombrero-Edge-Control
 issues: https://github.com/basher83/Sombrero-Edge-Control/issues
 ```
 
-### Create `ansible_collections/sombrero/edge_control/meta/runtime.yml`
+### Create `ansible_collections/basher83/automation_server/meta/runtime.yml`
 
 ```yaml
 requires_ansible: ">=2.19.0"
 action_groups:
-  edge_control:
+  automation_server:
     - docker
     - docker_validation
     - firewall
@@ -76,10 +76,10 @@ action_groups:
 
 ```bash
 # Copy roles to collection structure
-cp -r ansible/roles/* ansible_collections/sombrero/edge_control/roles/
+cp -r ansible/roles/* ansible_collections/basher83/automation_server/roles/
 
 # Update role metadata to include collection namespace
-for role in ansible_collections/sombrero/edge_control/roles/*/; do
+for role in ansible_collections/basher83/automation_server/roles/*/; do
   if [ -f "$role/meta/main.yml" ]; then
     # Add collection info to role metadata
     echo "Updating role metadata for $(basename $role)"
@@ -100,7 +100,7 @@ dependencies:
 
 ```yaml
 dependencies:
-  - role: sombrero.edge_control.firewall
+  - role: basher83.automation_server.firewall
 ```
 
 ## Step 4: Migrate Playbooks
@@ -109,12 +109,22 @@ dependencies:
 
 ```bash
 # Copy playbooks
-cp ansible/playbooks/*.yml ansible_collections/sombrero/edge_control/playbooks/
+cp ansible/playbooks/*.yml ansible_collections/basher83/automation_server/playbooks/
 ```
 
 ### Update Role References in Playbooks
 
 **Original** (`ansible/playbooks/post-deploy.yml`):
+
+```yaml
+- name: Post-deployment configuration
+  hosts: jump_hosts
+  roles:
+    - docker
+    - docker_validation
+    - development-tools
+    - firewall
+```
 
 ```yaml
 - name: Post-deployment configuration
@@ -132,21 +142,21 @@ cp ansible/playbooks/*.yml ansible_collections/sombrero/edge_control/playbooks/
 - name: Post-deployment configuration
   hosts: jump_hosts
   collections:
-    - sombrero.edge_control
+    - basher83.automation_server
   roles:
-    - sombrero.edge_control.docker
-    - sombrero.edge_control.docker_validation
-    - sombrero.edge_control.development_tools  # Note: hyphen changed to underscore
-    - sombrero.edge_control.firewall
+    - basher83.automation_server.docker
+    - basher83.automation_server.docker_validation
+    - basher83.automation_server.development_tools  # Note: hyphen changed to underscore
+    - basher83.automation_server.firewall
 ```
 
 ## Step 5: Update Inventory and Variables
 
 ```bash
 # Copy inventory structure
-cp -r ansible/inventory ansible_collections/sombrero/edge_control/
-cp -r ansible/group_vars ansible_collections/sombrero/edge_control/
-cp -r ansible/host_vars ansible_collections/sombrero/edge_control/
+cp -r ansible/inventory ansible_collections/basher83/automation_server/
+cp -r ansible/group_vars ansible_collections/basher83/automation_server/
+cp -r ansible/host_vars ansible_collections/basher83/automation_server/
 ```
 
 ## Step 6: Configure ansible.cfg
@@ -156,8 +166,8 @@ Create/update `ansible.cfg`:
 ```ini
 [defaults]
 collections_paths = ./ansible_collections:~/.ansible/collections:/usr/share/ansible/collections
-roles_path = ./ansible_collections/sombrero/edge_control/roles
-inventory = ./ansible_collections/sombrero/edge_control/inventory/hosts.yml
+roles_path = ./ansible_collections/basher83/automation_server/roles
+inventory = ./ansible_collections/basher83/automation_server/inventory/hosts.yml
 
 [galaxy]
 server_list = release_galaxy
@@ -200,7 +210,7 @@ collections_path:
 
 # Define FQCN mapping for migration
 fqcn:
-  - sombrero.edge_control
+  - basher83.automation_server
 ```
 
 ## Step 8: Test Migration
@@ -209,23 +219,23 @@ fqcn:
 
 ```bash
 # Test the collection structure
-ansible-lint ansible_collections/sombrero/edge_control/playbooks/*.yml
+ansible-lint ansible_collections/basher83/automation_server/playbooks/*.yml
 
 # Run specific role tests
-ansible-lint ansible_collections/sombrero/edge_control/roles/docker/
+ansible-lint ansible_collections/basher83/automation_server/roles/docker/
 ```
 
 ### Test Playbook Execution
 
 ```bash
 # Test in check mode first
-ansible-playbook -i ansible_collections/sombrero/edge_control/inventory/hosts.yml \
-  ansible_collections/sombrero/edge_control/playbooks/post-deploy.yml \
+ansible-playbook -i ansible_collections/basher83/automation_server/inventory/hosts.yml \
+  ansible_collections/basher83/automation_server/playbooks/post-deploy.yml \
   --check --diff
 
 # Run smoke tests
-ansible-playbook -i ansible_collections/sombrero/edge_control/inventory/hosts.yml \
-  ansible_collections/sombrero/edge_control/playbooks/smoke-test.yml
+ansible-playbook -i ansible_collections/basher83/automation_server/inventory/hosts.yml \
+  ansible_collections/basher83/automation_server/playbooks/smoke-test.yml
 ```
 
 ## Step 9: Update CI/CD
@@ -244,7 +254,7 @@ jobs:
       - name: Run ansible-lint
         uses: ansible/ansible-lint-action@v6
         with:
-          path: "ansible_collections/sombrero/edge_control"
+          path: "ansible_collections/basher83/automation_server"
 ```
 
 ### Update mise tasks
@@ -252,11 +262,11 @@ jobs:
 ```toml
 # .mise.toml updates
 [tasks.ansible-lint]
-run = "ansible-lint ansible_collections/sombrero/edge_control/"
+run = "ansible-lint ansible_collections/basher83/automation_server/"
 description = "Lint Ansible collection"
 
 [tasks.ansible-test]
-run = "ansible-playbook -i ansible_collections/sombrero/edge_control/inventory/hosts.yml ansible_collections/sombrero/edge_control/playbooks/site.yml --check"
+run = "ansible-playbook -i ansible_collections/basher83/automation_server/inventory/hosts.yml ansible_collections/basher83/automation_server/playbooks/site.yml --check"
 description = "Test Ansible playbooks in check mode"
 ```
 
@@ -266,14 +276,14 @@ Update Terraform provisioners to use collection paths:
 
 ```hcl
 provisioner "local-exec" {
-  command = "ansible-playbook -i ansible_collections/sombrero/edge_control/inventory/hosts.yml ansible_collections/sombrero/edge_control/playbooks/post-deploy.yml"
+  command = "ansible-playbook -i ansible_collections/basher83/automation_server/inventory/hosts.yml ansible_collections/basher83/automation_server/playbooks/post-deploy.yml"
 }
 ```
 
 ## Step 11: Documentation Updates
 
 1. Update main README.md with new structure
-2. Create ansible_collections/sombrero/edge_control/README.md
+2. Create ansible_collections/basher83/automation_server/README.md
 3. Update CLAUDE.md with new paths
 4. Document FQCN usage for team
 
@@ -315,7 +325,7 @@ mv ansible_collections ansible_collections.backup
 
 ### Issue: "Role not found"
 
-**Solution**: Ensure FQCN is used: `sombrero.edge_control.role_name`
+**Solution**: Ensure FQCN is used: `basher83.automation_server.role_name`
 
 ### Issue: "Collection not found"
 
