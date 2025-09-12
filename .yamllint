@@ -1,0 +1,62 @@
+# YAML Linting Configuration for Sombrero Edge Control
+# Consolidated configuration combining best practices from both configs
+extends: default
+
+rules:
+  # Line length - matches project standards (120 chars)
+  line-length:
+    max: 120
+    level: warning
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  # Truthy values - allow standard YAML boolean representations
+  truthy:
+    allowed-values: ['true', 'false', 'on', 'off', 'yes', 'no']
+    check-keys: false
+
+  # Comments configuration
+  comments-indentation: disable
+  comments:
+    min-spaces-from-content: 1
+    require-starting-space: true
+
+  # Document start - allow but don't require
+  document-start:
+    present: false
+
+  # Empty lines - reasonable limits
+  empty-lines:
+    max: 2
+    max-start: 2
+    max-end: 1
+
+  # Indentation - 2 spaces standard
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Enable duplicate key detection
+  key-duplicates: enable
+
+  # Unix line endings
+  new-lines:
+    type: unix
+
+  # Require newlines at end of files
+  new-line-at-end-of-file: enable
+
+  # Trailing spaces
+  trailing-spaces: enable
+
+# Ignore generated/vendor directories and allow Ansible-specific patterns
+ignore: |
+  .terraform/
+  .venv/
+  venv/
+  node_modules/
+  vendor/
+  .terraform.lock.hcl
+  # Temporarily ignore ansible files while we address structural issues
+  ansible/

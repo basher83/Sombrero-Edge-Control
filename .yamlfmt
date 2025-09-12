@@ -1,0 +1,41 @@
+# yamlfmt configuration
+# This configuration fixes the yamllint issues identified in the project
+
+# Files to format (can be overridden via command line)
+include:
+  - "*.yml"
+  - "*.yaml"
+  - ".github/**/*.yml"
+  - ".github/**/*.yaml"
+  - "ansible/**/*.yml"
+  - "ansible/**/*.yaml"
+  - "infrastructure/**/*.yml"
+  - "infrastructure/**/*.yaml"
+
+# Files to exclude
+exclude:
+  - "node_modules/**"
+  - ".git/**"
+  - "vendor/**"
+
+# Line ending configuration
+line_ending: lf
+
+# Formatter configuration - this is where yamlfmt settings go
+formatter:
+  type: basic
+  # Line length settings to help with "line too long" warnings
+  max_line_length: 120
+
+  # Indentation settings
+  indent: 2
+  include_document_start: false
+
+  # Formatting options to improve readability and fix yamllint issues
+  retain_line_breaks: true
+  pad_line_comments: 1
+  trim_trailing_whitespace: true
+  eof_newline: true
+
+  # Array formatting - helps with readability
+  indentless_arrays: false
