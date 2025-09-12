@@ -125,6 +125,7 @@ The MegaLinter workflow runs automatically on:
    ```
 
 3. **Missing Dependencies**
+
    ```bash
    # Install mega-linter-runner
    npm install -g mega-linter-runner

@@ -27,17 +27,20 @@
 ## Emergency Procedures 🆘
 
 ### Rollback
+
 ```bash
 terraform destroy -target=module.jump_man -auto-approve
 ```
 
 ### Debug cloud-init
+
 ```bash
 ssh ansible@192.168.10.250 "sudo cloud-init status --long"
 ssh ansible@192.168.10.250 "sudo journalctl -u cloud-init"
 ```
 
 ### Connection timeout
+
 ```bash
 # Check VM status in Proxmox
 qm status 7000

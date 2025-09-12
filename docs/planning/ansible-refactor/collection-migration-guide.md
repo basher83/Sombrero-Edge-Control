@@ -90,12 +90,14 @@ done
 ### Update Role Dependencies
 
 **Before** (in `ansible/roles/docker/meta/main.yml`):
+
 ```yaml
 dependencies:
   - role: firewall
 ```
 
 **After** (in collection):
+
 ```yaml
 dependencies:
   - role: sombrero.edge_control.firewall
@@ -113,6 +115,7 @@ cp ansible/playbooks/*.yml ansible_collections/sombrero/edge_control/playbooks/
 ### Update Role References in Playbooks
 
 **Original** (`ansible/playbooks/post-deploy.yml`):
+
 ```yaml
 - name: Post-deployment configuration
   hosts: jump_hosts
@@ -124,6 +127,7 @@ cp ansible/playbooks/*.yml ansible_collections/sombrero/edge_control/playbooks/
 ```
 
 **Updated** (collection version):
+
 ```yaml
 - name: Post-deployment configuration
   hosts: jump_hosts
@@ -277,10 +281,12 @@ provisioner "local-exec" {
 
 1. **Final Testing**: Run full deployment in test environment
 2. **Team Communication**: Notify team of structure change
-3. **Archive Old Structure**: 
+3. **Archive Old Structure**:
+
    ```bash
    mv ansible ansible.old
    ```
+
 4. **Update Default Paths**: Make collection structure primary
 5. **Monitor**: Watch for any issues in first production runs
 
@@ -308,15 +314,19 @@ mv ansible_collections ansible_collections.backup
 ## Common Issues and Solutions
 
 ### Issue: "Role not found"
+
 **Solution**: Ensure FQCN is used: `sombrero.edge_control.role_name`
 
 ### Issue: "Collection not found"
+
 **Solution**: Check `collections_paths` in ansible.cfg
 
 ### Issue: Variables not loading
+
 **Solution**: Verify group_vars/host_vars are in collection path
 
 ### Issue: Inventory not found
+
 **Solution**: Update ansible.cfg inventory path or use -i flag
 
 ## Benefits After Migration

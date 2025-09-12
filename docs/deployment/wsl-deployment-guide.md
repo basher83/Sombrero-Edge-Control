@@ -13,6 +13,7 @@ This guide addresses specific considerations and solutions for deploying infrast
 **Solutions**:
 
 #### Option A: Keychain (Recommended)
+
 ```bash
 # Install keychain
 sudo apt-get update && sudo apt-get install keychain
@@ -28,6 +29,7 @@ ssh-add -l
 ```
 
 #### Option B: Windows SSH Agent Bridge
+
 ```bash
 # Install npiperelay and socat
 sudo apt install socat
@@ -47,6 +49,7 @@ fi
 **Problem**: Windows Firewall may block WSL network access to Proxmox.
 
 **Solutions**:
+
 ```powershell
 # Run in Windows PowerShell as Administrator
 # Allow WSL through firewall
@@ -61,6 +64,7 @@ New-NetFirewallRule -DisplayName "WSL SSH to Proxmox" -Direction Outbound -Proto
 **Problem**: Windows file system doesn't preserve Linux permissions properly.
 
 **Solutions**:
+
 ```bash
 # Store project in WSL filesystem, not Windows mount
 cd ~/dev  # Use WSL home directory
@@ -75,12 +79,14 @@ options = "metadata,umask=22,fmask=11"
 ## Pre-Deployment Checklist for WSL
 
 ### System Requirements
+
 - [ ] WSL 2 installed (check with `wsl --version`)
 - [ ] Ubuntu 20.04+ or Debian 11+ distribution
 - [ ] Sufficient RAM allocated to WSL (at least 4GB)
 - [ ] Network connectivity from WSL to Proxmox
 
 ### Tool Installation
+
 ```bash
 # Core tools
 sudo apt-get update
@@ -101,6 +107,7 @@ mise install terraform@1.13.0
 ```
 
 ### SSH Configuration
+
 ```bash
 # Generate SSH key if needed
 ssh-keygen -t ed25519 -C "wsl-deployment"
@@ -118,6 +125,7 @@ ssh root@192.168.10.2 "echo 'Connected from WSL'"
 ## Deployment Process
 
 ### 1. Environment Setup
+
 ```bash
 # Clone repository in WSL filesystem
 cd ~/dev
@@ -133,6 +141,7 @@ eval "$(mise env)"
 ```
 
 ### 2. SSH Agent Setup (Every WSL Session)
+
 ```bash
 # If using keychain (automatic)
 # Already loaded via .bashrc
@@ -144,6 +153,7 @@ ssh-add -l  # Verify
 ```
 
 ### 3. Run Deployment
+
 ```bash
 # Initialize
 mise run prod-init
@@ -161,6 +171,7 @@ mise run prod-apply
 ## Troubleshooting WSL-Specific Issues
 
 ### SSH Agent Not Found
+
 ```bash
 # Check if agent is running
 ps aux | grep ssh-agent
@@ -172,6 +183,7 @@ ssh-add ~/.ssh/id_ed25519
 ```
 
 ### Network Timeouts
+
 ```bash
 # Check WSL network
 ip addr show
@@ -184,6 +196,7 @@ Get-NetFirewallRule | Where-Object {$_.DisplayName -like "*WSL*"}
 ```
 
 ### Permission Denied Errors
+
 ```bash
 # Fix SSH key permissions
 chmod 600 ~/.ssh/id_ed25519
@@ -208,6 +221,7 @@ find . -type d -exec chmod 755 {} \;
 ## WSL Configuration File
 
 Create `C:\Users\<username>\.wslconfig`:
+
 ```ini
 [wsl2]
 memory=8GB
@@ -218,6 +232,7 @@ localhostForwarding=true
 ## Environment Variables for WSL
 
 Add to `.mise.local.toml`:
+
 ```toml
 [env]
 # Proxmox connection
@@ -236,6 +251,7 @@ WSL_DISTRO = "Ubuntu-20.04"  # or your distro
 ## Deployment Checklist Template Addition
 
 When creating deployment checklists, include:
+
 ```markdown
 ## Deployment Environment Details
 - **Platform**: Windows WSL 2

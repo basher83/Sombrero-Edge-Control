@@ -47,6 +47,7 @@ Chosen option: "Migrate to Ansible Collection Structure", because it provides co
 ## Implementation Details
 
 ### Collection Structure
+
 ```
 ansible_collections/
 └── sombrero/
@@ -77,4 +78,4 @@ ansible_collections/
 
 - Planning document: docs/planning/ansible-refactor/collection-structure-migration.md
 - Related ADR: 20250906-ansible-roles.md (Ansible Role-First Architecture)
-- Ansible Collection Documentation: https://docs.ansible.com/ansible-core/devel/dev_guide/developing_collections.html
+- Ansible Collection Documentation: <https://docs.ansible.com/ansible-core/devel/dev_guide/developing_collections.html>

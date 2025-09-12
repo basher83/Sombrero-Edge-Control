@@ -18,6 +18,7 @@ mise run deployment-start
 ### 2. Execute Deployment
 
 Work through the checklist, updating statuses as you go:
+
 - ✅ for completed steps
 - ❌ for failed/skipped steps
 - 🔄 for in-progress

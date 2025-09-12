@@ -14,28 +14,6 @@ skip-rules = []
 enabled = true
 severity = "medium"
 
-# Disable AWS-specific rules since this is Proxmox virtualization
-[rules.AWSTerraformVPCDefaultSecurityGroup]
-enabled = false
-
-[rules.AWSTerraformS3BucketVersioning]
-enabled = false
-
-[rules.AWSTerraformEC2InstanceMetadataService]
-enabled = false
-
-[rules.AWSTerraformS3BucketPublicRead]
-enabled = false
-
-[rules.AWSTerraformS3BucketPublicWrite]
-enabled = false
-
-[rules.AWSTerraformLoadBalancerDeletionProtection]
-enabled = false
-
-[rules.AWSTerraformLoadBalancerAccessLogging]
-enabled = false
-
 # Scan settings
 [scan]
 iac-type = "terraform"

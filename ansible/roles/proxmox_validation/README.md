@@ -6,6 +6,7 @@ This role validates Proxmox infrastructure readiness before deployment operation
 ## Research Findings
 
 ### Collections Evaluated
+
 - **community.proxmox** (Score: 85/100) - Production-ready Proxmox management collection
   - 29 comprehensive modules for all Proxmox operations
   - Active development with recent commits
@@ -13,13 +14,16 @@ This role validates Proxmox infrastructure readiness before deployment operation
 - **community.general** (Score: 95/100) - Proxmox modules migrated to community.proxmox
 
 ### Decision
+
 Using community.proxmox collection as dependency - Production-ready with comprehensive module coverage.
 
 ### Reference Implementations
+
 - [community.proxmox documentation](https://docs.ansible.com/ansible/latest/collections/community/proxmox/)
 - [Proxmox API documentation](https://pve.proxmox.com/pve-docs/api-viewer/)
 
 ### Custom Additions
+
 - Enhanced validation for template metadata
 - Resource availability thresholds specific to our requirements
 - Network configuration verification for our environment
@@ -28,6 +32,7 @@ Requirements
 ------------
 
 ### Collections
+
 ```yaml
 collections:
   - name: community.proxmox
@@ -35,6 +40,7 @@ collections:
 ```
 
 ### Python Dependencies
+
 ```
 proxmoxer>=1.3.1
 requests

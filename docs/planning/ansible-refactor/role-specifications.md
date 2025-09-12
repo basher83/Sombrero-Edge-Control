@@ -13,6 +13,7 @@ Before implementing any role, use the **ansible-research subagent** to discover 
 #### Research Process
 
 1. **Discovery**: Search for existing collections
+
    ```bash
    # Invoke ansible-research subagent
    # Example: "discover proxmox ansible collections"
@@ -32,6 +33,7 @@ Before implementing any role, use the **ansible-research subagent** to discover 
    - Build from scratch (only if no suitable options)
 
 4. **Document Findings**: Record in role README:
+
    ```markdown
    ## Research Findings
    - Collections evaluated: [list]
@@ -47,6 +49,7 @@ After research phase, proceed with role development following the specifications
 ## Role Structure Standard
 
 Each role follows this structure:
+
 ```
 role_name/
 ├── defaults/
@@ -73,10 +76,13 @@ role_name/
 ## 1. proxmox_validation
 
 ### Purpose
+
 Validate Proxmox infrastructure readiness before deployment operations.
 
 ### Research Requirements
+
 Use ansible-research subagent to:
+
 - Search for: `"discover proxmox ansible collections"`
 - Focus on: Official Proxmox collections and community.general modules
 - Expected findings: `community.general.proxmox_*` modules, potential third-party collections
@@ -135,10 +141,13 @@ proxmox_validation_results:
 ## 2. vm_smoke_tests
 
 ### Purpose
+
 Comprehensive validation of deployed VM functionality.
 
 ### Research Requirements
+
 Use ansible-research subagent to:
+
 - Search for: `"discover ansible testing collections"`
 - Focus on: Testing patterns, assertion modules, validation approaches
 - Expected findings: `ansible.builtin` testing modules, `community.general` validation patterns
@@ -234,10 +243,13 @@ smoke_test_report:
 ## 3. docker_validation
 
 ### Purpose
+
 Specialized validation of Docker installation and functionality.
 
 ### Research Requirements
+
 Use ansible-research subagent to:
+
 - Search for: `"analyze community.docker collection"`
 - Focus on: Docker modules, container management patterns
 - Expected findings: `community.docker` collection with comprehensive Docker support
@@ -296,10 +308,13 @@ test_container_cleanup: true
 ## 4. vm_diagnostics
 
 ### Purpose
+
 Troubleshooting and diagnostic operations for debugging issues.
 
 ### Research Requirements
+
 Use ansible-research subagent to:
+
 - Search for: `"discover ansible debugging collections"`
 - Focus on: Log collection patterns, diagnostic modules, troubleshooting approaches
 - Expected findings: Debug strategies from various collections
@@ -367,10 +382,13 @@ compress_output: true
 ## 5. vm_lifecycle
 
 ### Purpose
+
 Manage VM lifecycle operations including rollback and cleanup.
 
 ### Research Requirements
+
 Use ansible-research subagent to:
+
 - Search for: `"discover terraform ansible integration collections"`
 - Focus on: Terraform state management, resource cleanup patterns
 - Expected findings: Patterns for managing infrastructure state via Ansible
@@ -433,10 +451,13 @@ cleanup_artifacts:
 ## 6. terraform_outputs
 
 ### Purpose
+
 Parse Terraform outputs and integrate with Ansible inventory.
 
 ### Research Requirements
+
 Use ansible-research subagent to:
+
 - Search for: `"discover terraform inventory ansible collections"`
 - Focus on: Dynamic inventory patterns, Terraform state parsing
 - Expected findings: `cloud.terraform` collection, inventory plugin patterns

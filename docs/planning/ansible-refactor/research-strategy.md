@@ -7,6 +7,7 @@ This document outlines the research-first approach for the Ansible refactor, lev
 ## Why Research First?
 
 Building custom Ansible roles without researching existing solutions leads to:
+
 - **Reinventing the wheel** - Missing production-ready solutions
 - **Missing best practices** - Not learning from community patterns
 - **Technical debt** - Creating maintenance burden for solved problems
@@ -17,6 +18,7 @@ Building custom Ansible roles without researching existing solutions leads to:
 ### Capabilities
 
 The ansible-research subagent specializes in:
+
 - Discovering official and community Ansible collections on GitHub
 - Evaluating collection quality using a 100-point scoring system
 - Analyzing repository health, code quality, and community engagement
@@ -118,15 +120,18 @@ Using community.docker collection as dependency
 ### proxmox_validation
 
 **Research Focus**:
+
 - Proxmox API interaction patterns
 - VM template validation approaches
 - Resource availability checking
 
 **Expected Collections**:
+
 - `community.general` (contains proxmox modules)
 - Third-party Proxmox-specific collections
 
 **Key Questions**:
+
 - How do existing collections handle API authentication?
 - What validation patterns are used?
 - Are there idempotency considerations?
@@ -134,15 +139,18 @@ Using community.docker collection as dependency
 ### vm_smoke_tests
 
 **Research Focus**:
+
 - Testing and assertion patterns
 - System validation approaches
 - Service health checking
 
 **Expected Collections**:
+
 - `ansible.builtin` (core testing modules)
 - `community.general` (extended testing)
 
 **Key Questions**:
+
 - What assertion modules are available?
 - How to structure comprehensive tests?
 - Best practices for test reporting?
@@ -150,15 +158,18 @@ Using community.docker collection as dependency
 ### docker_validation
 
 **Research Focus**:
+
 - Docker service management
 - Container lifecycle operations
 - Docker Compose integration
 
 **Expected Collections**:
+
 - `community.docker` (official Docker collection)
 - `community.general` (Docker modules)
 
 **Key Questions**:
+
 - How mature is community.docker?
 - What's the module coverage?
 - Integration with Docker Compose?
@@ -166,15 +177,18 @@ Using community.docker collection as dependency
 ### vm_diagnostics
 
 **Research Focus**:
+
 - Log collection patterns
 - System information gathering
 - Troubleshooting automation
 
 **Expected Collections**:
+
 - Various collections with diagnostic patterns
 - Logging and monitoring collections
 
 **Key Questions**:
+
 - How to efficiently collect logs?
 - Patterns for system diagnostics?
 - Error reporting best practices?
@@ -182,15 +196,18 @@ Using community.docker collection as dependency
 ### vm_lifecycle
 
 **Research Focus**:
+
 - Infrastructure state management
 - Terraform integration patterns
 - Cleanup and rollback procedures
 
 **Expected Collections**:
+
 - `cloud.terraform` (Terraform integration)
 - Infrastructure management collections
 
 **Key Questions**:
+
 - How to manage Terraform state from Ansible?
 - Rollback patterns and safety?
 - State synchronization approaches?
@@ -198,15 +215,18 @@ Using community.docker collection as dependency
 ### terraform_outputs
 
 **Research Focus**:
+
 - Dynamic inventory generation
 - Terraform state parsing
 - Inventory plugin patterns
 
 **Expected Collections**:
+
 - `cloud.terraform` (inventory plugin)
 - Dynamic inventory collections
 
 **Key Questions**:
+
 - Best practices for dynamic inventory?
 - How to handle complex Terraform outputs?
 - Caching strategies?
@@ -250,6 +270,7 @@ Here's a complete example for the docker_validation role:
 ## Red Flags to Watch For
 
 When researching collections, avoid those with:
+
 - No commits in 6+ months
 - Single maintainer/contributor
 - No testing infrastructure
@@ -314,6 +335,7 @@ Create a research summary document:
 ## Success Metrics
 
 Research is successful when:
+
 - [ ] All roles have been researched before implementation
 - [ ] Quality scores documented for all evaluated collections
 - [ ] Integration decisions justified based on scores

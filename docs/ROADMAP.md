@@ -1,17 +1,21 @@
 # Project Roadmap
+
 *Sombrero-Edge-Control Infrastructure Pipeline*
 *Last Updated: September 11, 2025*
 *Overall Completion: 82%*
 
 ## Project Vision
+
 Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden image pipeline technology, achieving sub-minute deployments with comprehensive automation and configuration management.
 
 ---
 
 ## Phase 1: Foundation (✅ 95% Complete)
+
 *Timeline: Completed August 2024 - September 2025*
 
 ### ✅ Completed Tasks
+
 - [x] **Repository Setup** - Initial structure and git configuration
 - [x] **Terraform VM Module** - Parameterized, reusable VM provisioning module
 - [x] **Cloud-init Integration** - User-data and vendor-data injection system
@@ -21,15 +25,18 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Basic Documentation** - README, CHANGELOG, initial guides
 
 ### ⏳ Pending Tasks
+
 - [ ] **Performance Baseline** - Measure legacy deployment times
 - [ ] **State Management** - Move from local to remote state
 
 ---
 
 ## Phase 2: Golden Image Pipeline (✅ 90% Complete)
+
 *Timeline: September 2025 - October 2025*
 
 ### ✅ Completed Tasks
+
 - [x] **Packer Configuration** - Ubuntu 24.04 template builder
 - [x] **Docker Pre-installation** - Docker CE and Compose in golden images
 - [x] **Development Tools** - nvm, Node.js, uv, Python tools integration
@@ -39,6 +46,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Mise Task Integration** - deploy-packer automated task
 
 ### ⏳ Pending Tasks
+
 - [ ] **Cloud-init Files** 🔴 - Create missing configuration files
 - [ ] **Performance Validation** 🔴 - Prove 90% speed improvement claim
 - [ ] **Template Versioning** - Implement semantic versioning for images
@@ -46,9 +54,11 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ---
 
 ## Phase 3: Ansible Configuration Management (✅ 75% Complete)
+
 *Timeline: September 2025 - November 2025*
 
 ### ✅ Completed Tasks
+
 - [x] **Post-deployment Playbook** - Comprehensive configuration automation
 - [x] **Role Architecture** - 10+ specialized Ansible roles created
 - [x] **Docker Role** - Complete Docker installation and configuration
@@ -58,6 +68,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Mise Task Integration** - deploy-ansible automated task
 
 ### ⏳ Pending Tasks
+
 - [ ] **Smoke Test Playbook Integration** 🟠 - Replace shell script with Ansible
 - [ ] **VM Lifecycle Management** - Restart and maintenance playbooks
 - [ ] **Role Documentation** - Add README to all roles
@@ -67,9 +78,11 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ---
 
 ## Phase 4: Ansible Collections Migration (⏳ 30% Complete)
+
 *Timeline: September 2025 - December 2025*
 
 ### ✅ Completed Tasks
+
 - [x] **Migration Strategy** - Comprehensive 4-phase migration plan
 - [x] **ADR Documentation** - Architectural decisions documented
 - [x] **Requirements Analysis** - Collection structure requirements defined
@@ -77,6 +90,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Research Strategy** - Investigation approach documented
 
 ### ⏳ Pending Tasks
+
 - [ ] **Collection Structure Creation** 🟠 - ansible_collections/sombrero/edge_control/
 - [ ] **Galaxy.yml Generation** - Collection metadata file
 - [ ] **Role Migration** - Convert roles to collection format
@@ -87,9 +101,11 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ---
 
 ## Phase 5: Testing & Quality Assurance (✅ 70% Complete)
+
 *Timeline: September 2025 - November 2025*
 
 ### ✅ Completed Tasks
+
 - [x] **Smoke Test Suite** - 20+ comprehensive validation tests
 - [x] **Shell-based Testing** - scripts/smoke-test.sh implementation
 - [x] **CI Workflow** - GitHub Actions for Terraform validation
@@ -99,6 +115,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Security Scanning** - KICS and Infisical integration
 
 ### ⏳ Pending Tasks
+
 - [ ] **Terraform Unit Tests** - Terratest implementation
 - [ ] **Integration Tests** - Component interaction validation
 - [ ] **Contract Tests** - Terraform/Ansible interface validation
@@ -109,9 +126,11 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ---
 
 ## Phase 6: CI/CD Automation (✅ 65% Complete)
+
 *Timeline: October 2025 - December 2025*
 
 ### ✅ Completed Tasks
+
 - [x] **GitHub Actions Workflows** - CI, MegaLinter, Documentation
 - [x] **Terraform Validation** - Format, validate, lint checks
 - [x] **Documentation Generation** - Automated terraform-docs
@@ -120,6 +139,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Mise Pipeline Tasks** - 100+ automation tasks
 
 ### ⏳ Pending Tasks
+
 - [ ] **Automated Deployment** - Push-button deployment pipeline
 - [ ] **Environment Promotion** - Dev → Staging → Production flow
 - [ ] **Deployment Approvals** - Manual gates for production
@@ -130,9 +150,11 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ---
 
 ## Phase 7: Documentation & Standards (✅ 85% Complete)
+
 *Timeline: Ongoing*
 
 ### ✅ Completed Tasks
+
 - [x] **Documentation Structure** - Logical directory organization
 - [x] **16 ADRs** - Architectural decisions documented
 - [x] **Standards Documents** - 7 comprehensive standards guides
@@ -142,6 +164,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Planning Documents** - Migration and refactor strategies
 
 ### ⏳ Pending Tasks
+
 - [ ] **Production README Fix** 🔴 - Remove Vault references
 - [ ] **Component Documentation** - README for each role/module
 - [ ] **API Documentation** - Module interfaces and contracts
@@ -151,9 +174,11 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ---
 
 ## Phase 8: Production Readiness (⏳ 60% Complete)
+
 *Timeline: November 2025 - December 2025*
 
 ### ✅ Completed Tasks
+
 - [x] **Architecture Design** - Three-tier pipeline architecture
 - [x] **Security Baseline** - SSH, firewall, basic hardening
 - [x] **Deployment Pipeline** - mise run deploy-full capability
@@ -161,6 +186,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 - [x] **Change Management** - Git-based version control
 
 ### ⏳ Pending Tasks
+
 - [ ] **Production Deployment** - Actual live deployment validation
 - [ ] **Performance Validation** 🔴 - Empirical speed measurements
 - [ ] **Security Compliance** - Full CIS benchmark compliance
@@ -174,16 +200,19 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ## Critical Path Items 🚨
 
 ### Immediate Blockers (Must Fix Now)
+
 1. **Missing Cloud-init Files** - Deployment will fail without these
 2. **Production Documentation Error** - Completely misleading about purpose
 3. **Performance Claims Unvalidated** - Core value proposition unproven
 
 ### High Priority (Next 2 Weeks)
+
 1. **Ansible Smoke Test Integration** - Complete but unused capability
 2. **Collection Structure Creation** - Start migration execution
 3. **Performance Benchmarking** - Validate 90% improvement claim
 
 ### Medium Priority (Next Month)
+
 1. **Testing Infrastructure** - Unit and integration tests
 2. **CI/CD Automation** - Deployment pipeline completion
 3. **Security Validation** - Compliance testing
@@ -193,6 +222,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ## Success Metrics
 
 ### Phase Completion Targets
+
 | Phase | Current | Target | Due Date |
 |-------|---------|--------|----------|
 | Foundation | 95% | 100% | Oct 2025 |
@@ -205,6 +235,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 | Production | 60% | 100% | Dec 2025 |
 
 ### Key Performance Indicators
+
 - [ ] Deployment Time: < 60 seconds (currently unvalidated)
 - [ ] Test Coverage: > 80% (currently ~40%)
 - [ ] Ansible Collection Migration: > 80% (currently 0%)
@@ -216,12 +247,14 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ## Resource Allocation
 
 ### Current Team Focus
+
 - **Infrastructure**: Cloud-init fixes, performance validation
 - **Ansible**: Collection migration, smoke test integration
 - **Testing**: Unit test implementation, CI/CD completion
 - **Documentation**: Production README fix, role documentation
 
 ### Recommended Priorities
+
 1. **Week 1**: Fix blockers, validate performance
 2. **Week 2-3**: Ansible migration execution
 3. **Week 4-6**: Testing and CI/CD completion
@@ -232,6 +265,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ## Risk Register
 
 ### High Risks
+
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | Performance claims false | Project credibility | Immediate validation required |
@@ -239,6 +273,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 | Ansible migration stalled | Technical debt | Execute phase 1 now |
 
 ### Medium Risks
+
 | Risk | Impact | Mitigation |
 |------|--------|------------|
 | No unit tests | Quality issues | Implement Terratest |
@@ -250,16 +285,19 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ## Next Quarterly Objectives (Q4 2025)
 
 ### October 2025
+
 - Complete performance validation
 - Fix all critical blockers
 - Begin Ansible collection migration
 
 ### November 2025
+
 - Complete testing infrastructure
 - Achieve 80% test coverage
 - Deploy to production
 
 ### December 2025
+
 - Complete CI/CD automation
 - Finish Ansible collections
 - Achieve full production readiness
@@ -269,16 +307,19 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 ## Long-term Vision (2026)
 
 ### Q1 2026
+
 - Multi-environment support
 - Blue-green deployments
 - Full observability stack
 
 ### Q2 2026
+
 - Kubernetes integration
 - Service mesh deployment
 - Advanced security features
 
 ### Q3 2026
+
 - Multi-cloud support
 - Disaster recovery automation
 - Compliance certifications

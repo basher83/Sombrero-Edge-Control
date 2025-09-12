@@ -208,15 +208,14 @@ If desired, this content can replace the prior linting and link‑check sections
 
 ## References
 
-[^1]: https://github.com/oxsecurity/megalinter
-[^2]: http://megalinter.io/5.1.0/configuration/
-[^3]: https://megalinter.io/8/quick-start/
-[^4]: https://megalinter.io/8/descriptors/repository/
-[^5]: https://megalinter.io/8/reporters/JsonReporter/
-[^6]: https://megalinter.io/v8/descriptors/bash_shfmt/
-[^7]: https://megalinter.io/8/descriptors/json_eslint_plugin_jsonc/
-[^8]: https://megalinter.io/8/descriptors/csharp/
-[^9]: https://www.npmjs.com/package/markdown-link-check
-[^10]: https://stackoverflow.com/questions/79540889/ansible-lint-is-there-a-way-to-ignore-errors-in-all-files-without-specifying-f
-[^11]: https://www.npmjs.com/package/mega-linter-runner
-[^12]: https://github.com/efrecon/mega-linter-runner
+[^1]: <https://github.com/oxsecurity/megalinter>
+[^2]: <http://megalinter.io/5.1.0/configuration/>
+[^3]: <https://megalinter.io/8/quick-start/>
+[^4]: <https://megalinter.io/8/descriptors/repository/>
+[^5]: <https://megalinter.io/8/reporters/JsonReporter/>
+[^6]: <https://megalinter.io/v8/descriptors/bash_shfmt/>
+[^7]: <https://megalinter.io/8/descriptors/json_eslint_plugin_jsonc/>
+[^8]: <https://megalinter.io/8/descriptors/csharp/>
+[^9]: <https://www.npmjs.com/package/markdown-link-check>
+[^10]: <https://stackoverflow.com/questions/79540889/ansible-lint-is-there-a-way-to-ignore-errors-in-all-files-without-specifying-f>
+[^11]: <https://www.npmjs.com/package/mega-linter-runner>

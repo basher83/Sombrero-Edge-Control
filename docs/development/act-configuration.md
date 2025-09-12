@@ -222,6 +222,7 @@ act --container-options "--cpus 2"
    ```
 
 4. **Debug Issues**: When failures occur
+
    ```bash
    mise run act-debug  # Verbose output
    ```
@@ -432,6 +433,7 @@ act -s GITHUB_TOKEN=xxx
 1. Install "GitHub Actions" extension
 1. Use integrated terminal for act commands
 1. Set up tasks.json:
+
    ```json
    {
      "version": "2.0.0",

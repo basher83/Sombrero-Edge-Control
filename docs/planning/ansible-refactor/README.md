@@ -7,25 +7,30 @@ This directory contains the comprehensive planning documentation for refactoring
 ## Documents
 
 ### Core Planning
+
 1. **[refactor-plan.md](./refactor-plan.md)** - Complete implementation plan with phases, timeline, and success criteria
 2. **[migration-strategy.md](./migration-strategy.md)** - Step-by-step migration from shell scripts to Ansible roles
 
 ### Technical Specifications
+
 3. **[role-specifications.md](./role-specifications.md)** - Detailed specifications for each Ansible role
 4. **[research-strategy.md](./research-strategy.md)** - Research-first approach using ansible-research subagent
 
 ### Implementation Details
+
 5. **[mise-integration.md](./mise-integration.md)** - Tool management and task automation via mise
 6. **[requirements-ansible.txt](./requirements-ansible.txt)** - Python dependencies for Ansible development
 
 ## Quick Start
 
 ### For Reviewers
+
 1. Start with [refactor-plan.md](./refactor-plan.md) for the big picture
 2. Review [research-strategy.md](./research-strategy.md) to understand the research-first approach
 3. Check [role-specifications.md](./role-specifications.md) for implementation details
 
 ### For Implementers
+
 1. Read [research-strategy.md](./research-strategy.md) before creating any role
 2. Follow [mise-integration.md](./mise-integration.md) to set up development environment
 3. Use [migration-strategy.md](./migration-strategy.md) for the transition plan
@@ -100,6 +105,7 @@ ansible-lint --version
 ## Questions or Feedback?
 
 Please review the planning documents and provide feedback on:
+
 - Timeline feasibility
 - Role specifications completeness
 - Research approach

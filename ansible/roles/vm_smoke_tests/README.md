@@ -7,13 +7,16 @@ This role performs comprehensive smoke testing and health validation for VMs in 
 Based on comprehensive research of Ansible collections for VM testing:
 
 ### Primary Collections Used
+
 - **community.general v11.3.0** (Score: 88/100) - Comprehensive system validation and service testing
 - **ansible.builtin** (Score: 75/100) - Core validation modules with stable APIs
 - **ansible.posix v3.0.0** (Score: 82/100) - POSIX system validation and security checks
 - **community.docker** (Score: 81/100) - Docker container and service validation
 
 ### Collection Quality Assessment
+
 Research conducted using ansible-research subagent with 100-point scoring system evaluating:
+
 - Repository health and maintenance activity
 - Community engagement and contributor base
 - Documentation quality and completeness
@@ -31,30 +34,35 @@ This role implements a multi-phase testing approach:
 ## Features
 
 ### System Health Checks
+
 - CPU load and utilization monitoring
 - Memory availability validation
 - Disk space and filesystem health
 - Network connectivity testing
 
 ### Service Validation
+
 - Systemd service status verification
 - Port availability testing
 - Docker container health checks
 - Process validation
 
 ### Application Testing
+
 - HTTP endpoint health checks
 - API availability testing
 - Database connectivity validation
 - Custom application-specific tests
 
 ### Security Validation
+
 - SSH configuration verification
 - User account validation
 - Firewall status checking
 - File permission validation
 
 ### Performance Monitoring
+
 - Resource utilization thresholds
 - Response time validation
 - Service availability metrics
@@ -63,6 +71,7 @@ This role implements a multi-phase testing approach:
 ## Usage
 
 ### Basic Usage
+
 ```yaml
 - name: VM Smoke Tests
   hosts: all
@@ -71,6 +80,7 @@ This role implements a multi-phase testing approach:
 ```
 
 ### Advanced Configuration
+
 ```yaml
 - name: VM Smoke Tests with Custom Settings
   hosts: jump_hosts
@@ -99,6 +109,7 @@ This role implements a multi-phase testing approach:
 ## Variables
 
 See `defaults/main.yml` for all configurable variables including:
+
 - System resource thresholds
 - Expected services list
 - Health check endpoints
@@ -126,6 +137,7 @@ molecule converge -s default
 ## Integration
 
 Designed to integrate with:
+
 - Proxmox VM deployment workflows
 - Docker container orchestration
 - Infrastructure monitoring systems
@@ -134,6 +146,7 @@ Designed to integrate with:
 ## Migration Notes
 
 This role replaces the following shell-based operations:
+
 - Direct SSH system health checks
 - Manual service status verification
 - Shell-based disk space monitoring

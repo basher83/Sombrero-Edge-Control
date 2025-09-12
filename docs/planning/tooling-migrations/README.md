@@ -12,7 +12,7 @@ Complete guide for migrating from individual linting tools to MegaLinter for cen
 **Date**: 2025-09-06
 **Impact**: Consolidates 7+ individual linting tools into single MegaLinter setup
 
-#### What Was Migrated:
+#### What Was Migrated
 
 - **Terraform**: `terraform fmt`, `terraform validate`, `tflint`
 - **YAML**: `yamllint`
@@ -20,7 +20,7 @@ Complete guide for migrating from individual linting tools to MegaLinter for cen
 - **Markdown**: `markdownlint-cli2`
 - **Ansible**: `ansible-lint`
 
-#### Key Benefits:
+#### Key Benefits
 
 - ⚡ **60%+ faster CI execution** through parallel processing
 - 📊 **Enhanced reporting** with SARIF integration

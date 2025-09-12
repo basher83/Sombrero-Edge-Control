@@ -34,10 +34,12 @@ Based on research of existing Ansible Docker collections:
 ## Dependencies
 
 This role depends on:
+
 - `geerlingguy.docker` (for Docker installation)
 - `community.docker` collection (for Docker management modules)
 
 Install dependencies:
+
 ```bash
 ansible-galaxy install -r requirements.yml
 ```
@@ -206,12 +208,15 @@ docker_export_summary: false
 ## Security Considerations
 
 ### Docker Group Warning
+
 ⚠️ **CRITICAL**: Users added to the `docker` group have root-equivalent privileges. For production systems:
+
 - Use `sudo` for Docker commands instead of adding users to docker group
 - Consider using rootless Docker mode
 - Implement proper RBAC with Docker Enterprise or Kubernetes
 
 ### Security Best Practices Implemented
+
 1. **User Namespace Remapping**: Isolates container users from host
 2. **Seccomp Profiles**: Restricts system calls available to containers
 3. **No New Privileges**: Prevents privilege escalation
@@ -236,6 +241,7 @@ The role is organized into logical task groups:
 ## Validation Tests
 
 The role includes comprehensive validation:
+
 - Docker service status verification
 - Docker version compatibility check
 - Docker Compose plugin availability
@@ -247,6 +253,7 @@ The role includes comprehensive validation:
 ## Handlers
 
 Available handlers:
+
 - `restart docker`: Restart Docker service
 - `reload docker`: Reload Docker configuration
 - `reload systemd`: Reload systemd daemon
@@ -276,12 +283,14 @@ Available handlers:
 ## Testing
 
 Run molecule tests:
+
 ```bash
 cd ansible/roles/docker
 molecule test
 ```
 
 Manual validation:
+
 ```bash
 ansible-playbook -i inventory playbook.yml --tags docker_validate
 ```
