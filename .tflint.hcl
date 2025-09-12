@@ -9,11 +9,9 @@ plugin "terraform" {
   preset = "recommended"
 }
 
-plugin "aws" {
-  enabled = true
-  version = "0.42.0"
-  source  = "github.com/terraform-linters/tflint-ruleset-aws"
-}
+# Note: No official tflint-ruleset-proxmox exists yet
+# Using only core terraform rules for now
+# Consider adding when available: https://github.com/terraform-linters/tflint-ruleset-proxmox
 
 rule "terraform_unused_declarations" {
   enabled = true

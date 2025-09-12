@@ -1,0 +1,29 @@
+---
+# Ansible-lint configuration for Sombrero Edge Control
+# Modern YAML format for ansible-lint 6.x+
+
+profile: production
+
+exclude_paths:
+  - .git/
+  - .terraform/
+  - kics-results/
+  - .venv/
+  - node_modules/
+
+# Rules to skip completely
+skip_list: []
+
+# Rules that should only produce warnings
+warn_list:
+  - no-changed-when
+  - unnamed-task
+
+# Enable offline mode to avoid external dependencies during linting
+offline: false
+
+# Mock modules for syntax checking (if needed)
+mock_modules: []
+
+# Mock roles for syntax checking (if needed)
+mock_roles: []
