@@ -199,7 +199,7 @@
     - name: Check container seccomp profiles
       assert:
         that:
-          - item.container.HostConfig.SecurityOpt | default([]) | select('match', 'seccomp:unconfined') | list | length == 0
+          - item.container.HostConfig.SecurityOpt | default([]) | select('search', '^seccomp=unconfined$') | list | length == 0
         fail_msg: "Container {{ item.item.name }} is running with unconfined seccomp profile"
         success_msg: "Container {{ item.item.name }} has proper seccomp profile configuration"
       loop: "{{ security_container_info.results }}"
