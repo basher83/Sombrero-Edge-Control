@@ -16,9 +16,9 @@
 
     - name: Analyze network interfaces
       set_fact:
-        interface_count: "{{ ansible_interfaces | length | default(0) }}"
-        default_gateway: "{{ ansible_default_ipv4.gateway | default('Not configured') }}"
-        primary_interface: "{{ ansible_default_ipv4.interface | default('Unknown') }}"
+        interface_count: "{{ (ansible_interfaces | default([])) | length }}"
+        default_gateway: "{{ (ansible_default_ipv4 | default({})).gateway | default('Not configured') }}"
+        primary_interface: "{{ (ansible_default_ipv4 | default({})).interface | default('Unknown') }}"
 
     - name: Record interface analysis results
       set_fact:
