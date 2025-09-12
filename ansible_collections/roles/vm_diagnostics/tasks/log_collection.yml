@@ -97,7 +97,7 @@
     - name: Search for error patterns in available logs
       shell: |
         error_count=0
-        for logfile in {{ available_log_files | join(' ') }}; do
+        for logfile in {{ available_log_files | map('quote') | join(' ') }}; do
           if [ -r "$logfile" ]; then
             count=$(grep -i -E "(error|fail|critical|panic|fatal)" "$logfile" 2>/dev/null | wc -l)
             echo "$logfile: $count errors"
