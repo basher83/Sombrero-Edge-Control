@@ -2,7 +2,7 @@
 #
 # See all available variables at https://megalinter.io/latest/config-file/ and in
 # linters documentation
-
+APPLY_FIXES: all
 # Enable specific linters for IaC + docs
 ENABLE_LINTERS:
   - MARKDOWN_MARKDOWNLINT
@@ -31,9 +31,6 @@ TERRAFORM_TFLINT_UNSECURED_ENV_VARIABLES:
 MARKDOWN_SUMMARY_REPORTER: true
 SHOW_ELAPSED_TIME: true
 SARIF_REPORTER: true
-
-# Auto-fix settings (disabled by default for safety)
-APPLY_FIXES: "all"
 
 LLM_ADVISOR_ENABLED: "true"
 LLM_PROVIDER: "anthropic"

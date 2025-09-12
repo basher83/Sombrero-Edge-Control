@@ -3,27 +3,22 @@
 ---
 name: MegaLinter
 
+# Trigger mega-linter at every push. Action will also be visible from
+# Pull Requests to main
 on:
+  # Comment this line to trigger action only on pull-requests
+  # (not recommended if you don't pay for GH Actions)
+  push:
   pull_request:
-    paths:
-      - "**/*.md"
-      - "**/*.tf"
-      - "**/*.hcl"
-      - "**/*.yaml"
-      - "**/*.yml"
-      - "**/*.json"
-      - "**/*.sh"
-      - "ansible/**"
-      - "infrastructure/**"
-      - "packer/**"
-      - "docs/**"
-  workflow_dispatch:
-env: # Comment env block if you don't want to apply fixes
-  # Apply linter fixes configuration
+    branches:
+      - main
+      - master
+
+# Comment env block if you do not want to apply fixes
+env:
   APPLY_FIXES: all
   APPLY_FIXES_EVENT: pull_request
   APPLY_FIXES_MODE: commit
-
 concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
@@ -32,32 +27,45 @@ jobs:
   megalinter:
     name: MegaLinter
     runs-on: ubuntu-latest
+
+    # Give the default GITHUB_TOKEN write permission to commit and push, comment
+    # issues, and post new Pull Requests; remove the ones you do not need
     permissions:
-      # Give the default GITHUB_TOKEN write permission to commit and push, comment issues & post new PR
-      # Remove the ones you do not need
       contents: write
       issues: write
       pull-requests: write
-      security-events: write
+
     steps:
       # Git Checkout
       - name: Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # fetch-depth: 0 # If you use VALIDATE_ALL_CODEBASE = true, you can remove this line to improve performances
 
+      # MegaLinter
       - name: MegaLinter
+        uses: oxsecurity/megalinter/flavors/cupcake@beta
         id: ml
-        uses: oxsecurity/megalinter/flavors/terraform@v8
-        continue-on-error: true # Allow workflow to continue even if linting fails
+        # All available variables are described in documentation
+        # https://megalinter.io/latest/config-file/
         env:
-          # Validate all codebase on every run
+          # Validates all source when push on main, else just the git diff with
+          # main. Override with true if you always want to lint all sources
+          #
+          # To validate the entire codebase, set to:
+          # VALIDATE_ALL_CODEBASE: true
+          #
+          # To validate only diff with main, set to:
+          # VALIDATE_ALL_CODEBASE: >-
+          #   ${{
+          #     github.event_name == 'push' &&
+          #     github.ref == 'refs/heads/main'
+          #   }}
           VALIDATE_ALL_CODEBASE: true
-          # GitHub token for API operations
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Linter configuration is centralized in .mega-linter.yml
+
+          # ADD YOUR CUSTOM ENV VARIABLES HERE TO OVERRIDE VALUES OF
+          # .mega-linter.yml AT THE ROOT OF YOUR REPOSITORY
 
       # Upload MegaLinter artifacts
       - name: Archive production artifacts
@@ -93,7 +101,7 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          true
+          !contains(github.event.head_commit.message, 'skip fix')
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "[MegaLinter] Apply linters automatic fixes"
@@ -112,7 +120,7 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          true
+          !contains(github.event.head_commit.message, 'skip fix')
         run: |
           echo "PR Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "PR URL - ${{ steps.cpr.outputs.pull-request-url }}"
@@ -132,7 +140,7 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          true
+          !contains(github.event.head_commit.message, 'skip fix')
         run: sudo chown -Rc $UID .git/
 
       - name: Commit and push applied linter fixes
@@ -149,7 +157,7 @@ jobs:
             github.event_name == 'push' ||
             github.event.pull_request.head.repo.full_name == github.repository
           ) &&
-          true
+          !contains(github.event.head_commit.message, 'skip fix')
         with:
           branch: >-
             ${{
