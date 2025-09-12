@@ -40,12 +40,11 @@
 
     - name: Record image validation results
       set_fact:
-        docker_validation_results: "{{ docker_validation_results | combine({'image_validation': {'status': 'PASS', 'images_validated': expected_images | length, 'images': image_details}}) }}"
-        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+        docker_validation_results: "{{ (docker_validation_results | default({})) | combine({'image_validation': {'status': 'PASS', 'images_validated': (expected_images | default([])) | length, 'images': image_details}}, recursive=True) }}"
+        docker_validation_passed_count: "{{ (docker_validation_passed_count | default(0)) + 1 }}"
       vars:
         image_details: "{{ image_info_results.results | map(attribute='item.name') | list }}"
-      when: expected_images | length > 0
-
+      when: (expected_images | default([])) | length > 0
     - name: Skip image validation if no images expected
       set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'image_validation': {'status': 'SKIP', 'reason': 'No images configured for validation'}}) }}"
