@@ -1,1 +1,47 @@
-.github/linters/.terrascan.toml
+# Terrascan Configuration for Infrastructure Security Scanning
+# Configured for Proxmox virtualization infrastructure
+
+# Global settings
+[config]
+policy-type = ["terraform"]
+severity = ["high", "medium", "low"]
+skip-rules = []
+
+# Rule configurations - General Terraform security rules
+[rules]
+# Basic terraform security best practices
+[rules.TerraformGitRepository]
+enabled = true
+severity = "medium"
+
+# Disable AWS-specific rules since this is Proxmox virtualization
+[rules.AWSTerraformVPCDefaultSecurityGroup]
+enabled = false
+
+[rules.AWSTerraformS3BucketVersioning]
+enabled = false
+
+[rules.AWSTerraformEC2InstanceMetadataService]
+enabled = false
+
+[rules.AWSTerraformS3BucketPublicRead]
+enabled = false
+
+[rules.AWSTerraformS3BucketPublicWrite]
+enabled = false
+
+[rules.AWSTerraformLoadBalancerDeletionProtection]
+enabled = false
+
+[rules.AWSTerraformLoadBalancerAccessLogging]
+enabled = false
+
+# Scan settings
+[scan]
+iac-type = "terraform"
+iac-version = "v14"
+iac-file = ""
+policy-path = ""
+results-format = "json"
+show-passed-rules = false
+verbose = false
