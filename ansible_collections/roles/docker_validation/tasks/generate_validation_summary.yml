@@ -6,7 +6,7 @@
   set_fact:
     docker_validation_end_time: "{{ ansible_date_time.epoch }}"
     docker_validation_duration: "{{ (ansible_date_time.epoch | int) - (docker_validation_start_time | int) }}"
-
+    report_ts: "{{ ansible_date_time.epoch }}"
 - name: Generate detailed validation summary
   set_fact:
     docker_validation_summary:
