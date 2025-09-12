@@ -56,24 +56,25 @@
         - docker_compose_stacks | length > 0
         - compose_services is defined
 
+    - name: Build (stack, service) pairs
+      set_fact:
+        compose_service_pairs: >-
+          {{ (compose_service_pairs | default([])) + (
+             (compose_services[stack_item.path] | default([]))
+             | map('combine', {'__stack_path': stack_item.path}) | list) }}
+      loop: "{{ docker_compose_stacks }}"
+      loop_control: { loop_var: stack_item }
+      when:
+        - (docker_compose_stacks | default([])) | length > 0
+        - compose_services is defined
+
     - name: Validate service states in compose stacks
       assert:
         that:
-          - service_info.State in ['running', 'Up']
-        fail_msg: "Service {{ service_info.Service }} in stack {{ item.path }} is {{ service_info.State }}, expected running"
-        success_msg: "Service {{ service_info.Service }} in stack {{ item.path }} is {{ service_info.State }}"
-      loop: "{{ docker_compose_stacks }}"
-      loop_control:
-        loop_var: stack_item
-      when:
-        - docker_compose_stacks | length > 0
-        - compose_services is defined
-        - compose_services[stack_item.path] is defined
-      vars:
-        service_info: "{{ item }}"
-        stack_path: "{{ stack_item.path }}"
-      with_items: "{{ compose_services[stack_item.path] | default([]) }}"
-
+          - item.State in ['running', 'Up']
+        fail_msg: "Service {{ item.Service }} in stack {{ item.__stack_path }} is {{ item.State }}, expected running"
+        success_msg: "Service {{ item.Service }} in stack {{ item.__stack_path }} is {{ item.State }}"
+      loop: "{{ compose_service_pairs | default([]) }}"
     - name: Record compose stack validation results
       set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'compose_validation': {'status': 'PASS', 'stacks_validated': docker_compose_stacks | length, 'stacks': docker_compose_stacks | map(attribute='path') | list}}) }}"
