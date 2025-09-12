@@ -361,7 +361,15 @@
 
 - name: Write performance diagnostics to file
   copy:
-    content: "{{ vm_diagnostic_results | selectattr('match', '^(cpu|memory|disk|process|performance)_') | dict2items | to_nice_json }}"
+  copy:
+    content: "{{ vm_diagnostic_results
+                 | dict2items
+                 | selectattr('key','match','^(cpu|memory|disk|process|performance)_')
+                 | items2dict
+                 | to_nice_json }}"
     dest: "{{ diagnostic_output_dir }}/performance_diagnostics.json"
     mode: '0644'
-  when: vm_diagnostic_results | selectattr('match', '^(cpu|memory|disk|process|performance)_') | list | length > 0
+  when: (vm_diagnostic_results
+           | dict2items
+           | selectattr('key','match','^(cpu|memory|disk|process|performance)_')
+           | list | length) > 0
