@@ -36,8 +36,6 @@
   when:
     - not item.passed
     - not item.optional
-    - item.rc != 0
-
 - name: Validate Node.js npm packages
   ansible.builtin.shell: npm list -g --depth=0 | grep {{ item }}
   register: npm_package_check
