@@ -1,0 +1,31 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for ansible/roles/proxmox_validation
+
+- name: Include validation tasks
+  include_tasks: "{{ item }}"
+  loop:
+    - check_api_connectivity.yml
+    - verify_node_resources.yml
+    - validate_template.yml
+    - check_network_configuration.yml
+
+- name: Set validation success fact
+  set_fact:
+    proxmox_validation_passed: true
+  when:
+    - api_connectivity_passed | default(false)
+    - node_resources_adequate | default(false)
+    - template_exists | default(false)
+    - network_configured | default(false)
+
+- name: Generate validation report
+  debug:
+    msg:
+      - "Proxmox Validation Report"
+      - "========================"
+      - "API Connectivity: {{ 'PASS' if api_connectivity_passed else 'FAIL' }}"
+      - "Node Resources: {{ 'PASS' if node_resources_adequate else 'FAIL' }}"
+      - "Template Available: {{ 'PASS' if template_exists else 'FAIL' }}"
+      - "Network Configuration: {{ 'PASS' if network_configured else 'FAIL' }}"
+      - "Overall Status: {{ 'PASS' if proxmox_validation_passed | default(false) else 'FAIL' }}"

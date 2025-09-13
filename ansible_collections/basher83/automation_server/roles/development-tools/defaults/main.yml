@@ -1,0 +1,119 @@
+---
+# Development Tools Role Defaults
+# Based on research findings: hybrid approach using community.general + custom tasks
+
+# Role Configuration
+devtools_enabled: true
+devtools_user: "{{ ansible_user }}"
+devtools_install_path: "/opt/devtools"
+
+# Standard Tools (via community.general)
+devtools_standard_packages:
+  - nodejs
+  - npm
+  - python3
+  - python3-pip
+  - python3-venv
+  - curl
+  - wget
+  - jq
+  - tmux
+  - vim
+  - git
+  - unzip
+  - build-essential
+
+# Node.js Configuration
+devtools_nodejs_version: "20"  # LTS version
+devtools_npm_global_packages:
+  - yarn
+  - "@angular/cli"
+  - typescript
+  - eslint
+  - prettier
+
+# Python Configuration
+devtools_python_version: "3.11"
+devtools_pip_packages:
+  - requests
+  - pyyaml
+  - jinja2
+  - ansible
+  - black
+  - flake8
+  - pytest
+
+# Modern Tools (custom installation)
+devtools_mise_enabled: true
+devtools_mise_version: "latest"
+devtools_mise_install_path: "/usr/local/bin/mise"
+devtools_mise_config_dir: "/home/{{ devtools_user }}/.config/mise"
+
+devtools_uv_enabled: true
+devtools_uv_version: "latest"
+devtools_uv_install_path: "/usr/local/bin/uv"
+
+# Additional DevOps Tools
+devtools_docker_compose_enabled: true
+devtools_docker_compose_version: "2.24.0"
+
+devtools_additional_tools:
+  - name: "fzf"
+    description: "Fuzzy finder"
+    package: "fzf"
+  - name: "ripgrep"
+    description: "Fast text search"
+    package: "ripgrep"
+  - name: "fd-find"
+    description: "Fast file finder"
+    package: "fd-find"
+  - name: "bat"
+    description: "Better cat"
+    package: "bat"
+  - name: "tree"
+    description: "Directory tree view"
+    package: "tree"
+  - name: "htop"
+    description: "Better top"
+    package: "htop"
+
+# Shell Configuration
+devtools_configure_shell: true
+devtools_shell_additions:
+  - "# Development tools additions"
+  - "export PATH=\"/usr/local/bin:$PATH\""
+  - "export MISE_DATA_DIR=\"/home/{{ devtools_user }}/.local/share/mise\""
+  - "export MISE_CONFIG_DIR=\"{{ devtools_mise_config_dir }}\""
+  - ""
+  - "# Initialize mise if available"
+  - "if command -v mise >/dev/null 2>&1; then"
+  - "  eval \"$(mise activate bash)\""
+  - "fi"
+
+# Validation Settings
+devtools_validate_installation: true
+devtools_validation_commands:
+  - command: "node --version"
+    expected_pattern: "^v[0-9]+\\."
+    description: "Node.js version check"
+  - command: "npm --version"
+    expected_pattern: "^[0-9]+\\."
+    description: "npm version check"
+  - command: "python3 --version"
+    expected_pattern: "Python [0-9]+\\."
+    description: "Python version check"
+  - command: "pip3 --version"
+    expected_pattern: "^pip [0-9]+\\."
+    description: "pip version check"
+  - command: "mise --version"
+    expected_pattern: "^[0-9]+\\."
+    description: "mise version check"
+    optional: true
+  - command: "uv --version"
+    expected_pattern: "^uv [0-9]+\\."
+    description: "uv version check"
+    optional: true
+
+# Documentation Generation
+devtools_generate_summary: true
+devtools_summary_path: "/var/log/development-tools-summary.txt"

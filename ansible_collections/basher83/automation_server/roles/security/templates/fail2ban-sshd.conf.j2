@@ -1,0 +1,31 @@
+# {{ ansible_managed }}
+# SSH jail configuration for fail2ban
+
+[sshd]
+enabled = true
+port = {{ security_ssh_port }}
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = {{ security_fail2ban_jails | selectattr('name', 'equalto', 'sshd') | map(attribute='maxretry') | first | default(3) }}
+bantime = {{ security_fail2ban_jails | selectattr('name', 'equalto', 'sshd') | map(attribute='bantime') | first | default(7200) }}
+findtime = {{ security_fail2ban_jails | selectattr('name', 'equalto', 'sshd') | map(attribute='findtime') | first | default(600) }}
+
+# Additional SSH protection
+[sshd-ddos]
+enabled = true
+port = {{ security_ssh_port }}
+filter = sshd-ddos
+logpath = /var/log/auth.log
+maxretry = 10
+bantime = 3600
+findtime = 60
+
+# Protection against SSH scanning
+[sshd-aggressive]
+enabled = true
+port = {{ security_ssh_port }}
+filter = sshd[mode=aggressive]
+logpath = /var/log/auth.log
+maxretry = 2
+bantime = 86400
+findtime = 3600

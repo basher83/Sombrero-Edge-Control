@@ -1,0 +1,150 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Generate comprehensive test summary and reporting
+
+- name: Calculate test execution time
+  set_fact:
+    smoke_test_end_time: "{{ ansible_date_time.epoch }}"
+    smoke_test_duration: "{{ (ansible_date_time.epoch | int) - (smoke_test_start_time | int) }}"
+
+- name: Generate detailed test summary
+  set_fact:
+    smoke_test_summary:
+      metadata:
+        target_host: "{{ inventory_hostname }}"
+        ansible_host: "{{ ansible_host | default('N/A') }}"
+        test_start_time: "{{ smoke_test_start_time }}"
+        test_end_time: "{{ smoke_test_end_time }}"
+        test_duration_seconds: "{{ smoke_test_duration }}"
+        test_phases_executed: "{{ smoke_test_phases }}"
+        ansible_version: "{{ ansible_version.full }}"
+      statistics:
+        total_tests: "{{ smoke_test_passed_count + smoke_test_failed_count }}"
+        tests_passed: "{{ smoke_test_passed_count }}"
+        tests_failed: "{{ smoke_test_failed_count }}"
+        success_rate: "{{ ((smoke_test_passed_count / (smoke_test_passed_count + smoke_test_failed_count)) * 100) | round(2) if (smoke_test_passed_count + smoke_test_failed_count) > 0 else 0 }}"
+        overall_status: "{{ 'PASS' if smoke_test_failed_count == 0 else 'FAIL' }}"
+      test_results: "{{ smoke_test_results }}"
+
+- name: Write JSON test report to file
+  copy:
+    content: "{{ smoke_test_summary | to_nice_json }}"
+    dest: "/tmp/smoke_test_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
+    mode: '0644'
+  when: reporting.generate_json_report | default(true)
+
+- name: Generate human-readable test report
+  set_fact:
+    human_readable_report: |
+      ========================================
+      VM Smoke Test Report
+      ========================================
+      Target Host: {{ inventory_hostname }}
+      Test Start: {{ ansible_date_time.iso8601 }}
+      Duration: {{ smoke_test_duration }} seconds
+
+      SUMMARY
+      -------
+      Total Tests: {{ smoke_test_passed_count + smoke_test_failed_count }}
+      Passed: {{ smoke_test_passed_count }}
+      Failed: {{ smoke_test_failed_count }}
+      Success Rate: {{ ((smoke_test_passed_count / (smoke_test_passed_count + smoke_test_failed_count)) * 100) | round(2) if (smoke_test_passed_count + smoke_test_failed_count) > 0 else 0 }}%
+      Overall Status: {{ 'PASS' if smoke_test_failed_count == 0 else 'FAIL' }}
+
+      SYSTEM INFORMATION
+      ------------------
+      OS: {{ ansible_distribution | default('Unknown') }} {{ ansible_distribution_version | default('') }}
+      Kernel: {{ ansible_kernel | default('Unknown') }}
+      Architecture: {{ ansible_architecture | default('Unknown') }}
+      CPU Cores: {{ ansible_processor_cores | default(ansible_processor_count) | default('Unknown') }}
+      Total Memory: {{ ansible_memtotal_mb | default('Unknown') }}MB
+
+      ========================================
+
+- name: Generate detailed results section separately
+  set_fact:
+    detailed_results: |
+      DETAILED RESULTS
+      ----------------
+      {% for category, result in smoke_test_results.items() %}
+      {{ category.replace('_', ' ').title() }}: {{ result.status }}
+      {% if result.status == 'FAIL' %}
+        Error: {{ result.error | default('N/A') }}
+      {% endif %}
+      {% endfor %}
+
+- name: Write human-readable report to file
+  copy:
+    content: "{{ human_readable_report }}"
+    dest: "/tmp/smoke_test_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+    mode: '0644'
+
+- name: Generate category breakdown message
+  set_fact:
+    category_breakdown_msg: |
+      Test Results by Category:
+      {% for category, result in smoke_test_results.items() %}
+        {{ category.replace('_', ' ').title() }}: {{ result.status }}
+      {% endfor %}
+
+- name: Display test category breakdown
+  debug:
+    msg: "{{ category_breakdown_msg.split('\n') }}"
+  when: reporting.log_level in ['debug', 'info']
+
+- name: Generate failed test details message
+  set_fact:
+    failed_test_msg: |
+      Failed Test Details:
+      {% for category, result in smoke_test_results.items() %}
+      {% if result.status == 'FAIL' %}
+        {{ category.replace('_', ' ').title() }}: {{ result.error | default('Unknown error') }}
+      {% endif %}
+      {% endfor %}
+  when: smoke_test_failed_count > 0
+
+- name: Display failed test details
+  debug:
+    msg: "{{ failed_test_msg.split('\n') }}"
+  when:
+    - smoke_test_failed_count > 0
+    - reporting.log_level in ['debug', 'info']
+    - failed_test_msg is defined
+
+- name: Display performance metrics summary
+  debug:
+    msg:
+      - "Performance Metrics:"
+      - "  CPU Usage: {{ smoke_test_results.cpu_performance.usage_percent | default('N/A') }}%"
+      - "  Memory Free: {{ smoke_test_results.memory_performance.available_mb | default('N/A') }}MB"
+      - "  Average Response Time: {{ smoke_test_results.response_time_performance.average_ms | default('N/A') }}ms"
+      - "  Disk Write Speed: {{ smoke_test_results.disk_io_performance.write_speed_mb_s | default('N/A') }}MB/s"
+      - "  System Uptime: {{ smoke_test_results.system_stability.uptime_hours | default('N/A') }} hours"
+  when:
+    - "'performance_monitoring' in smoke_test_phases"
+    - reporting.log_level in ['debug', 'info']
+
+- name: Create test result artifact for CI/CD integration
+  set_fact:
+    ci_test_result:
+      test_suite: "vm_smoke_tests"
+      target: "{{ inventory_hostname }}"
+      timestamp: "{{ ansible_date_time.iso8601 }}"
+      duration: "{{ smoke_test_duration }}"
+      status: "{{ 'passed' if smoke_test_failed_count == 0 else 'failed' }}"
+      total_tests: "{{ smoke_test_passed_count + smoke_test_failed_count }}"
+      passed_tests: "{{ smoke_test_passed_count }}"
+      failed_tests: "{{ smoke_test_failed_count }}"
+      test_results: "{{ smoke_test_results }}"
+
+- name: Write CI/CD integration result
+  copy:
+    content: "{{ ci_test_result | to_nice_json }}"
+    dest: "/tmp/ci_smoke_test_result_{{ inventory_hostname }}.json"
+    mode: '0644'
+
+- name: Set test completion fact for external monitoring
+  set_fact:
+    smoke_tests_completed: true
+    smoke_tests_status: "{{ 'PASS' if smoke_test_failed_count == 0 else 'FAIL' }}"
+    smoke_tests_summary: "{{ smoke_test_summary }}"

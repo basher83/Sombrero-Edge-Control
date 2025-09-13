@@ -1,0 +1,48 @@
+---
+# Global Docker configuration defaults for all hosts
+# These can be overridden in host_vars or at playbook level
+
+# Docker installation defaults
+docker_installation_mode: "install"  # Options: install, validate
+docker_edition: 'ce'  # Community Edition
+
+# Default packages to install
+docker_packages_default:
+  - "docker-ce"
+  - "docker-ce-cli"
+  - "containerd.io"
+  - "docker-buildx-plugin"
+  - "docker-compose-plugin"
+
+# Service management defaults
+docker_service_enabled: true
+docker_service_state: "started"
+
+# Default security settings
+docker_enable_user_namespace_remapping: false
+docker_enable_seccomp: true
+docker_socket_permissions: "0660"
+docker_content_trust: false
+
+# Resource management defaults
+docker_enable_cleanup_cron: false
+docker_cleanup_retention_hours: 72
+docker_configure_log_rotation: true
+docker_log_max_size: "10m"
+docker_log_max_files: "3"
+
+# Network defaults
+docker_registry_mirrors: []
+docker_insecure_registries: []
+
+# Debug mode default
+docker_debug_mode: false
+
+# Export summary default
+docker_export_summary: false
+
+# Validation tests to run
+docker_validation_tests:
+  - hello_world_test
+  - network_test
+  - volume_test

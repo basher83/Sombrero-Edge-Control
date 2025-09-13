@@ -1,0 +1,114 @@
+---
+# Pre-flight checks for firewall role
+
+- name: Check if system is supported
+  assert:
+    that:
+      - ansible_os_family in ['Debian', 'RedHat']
+    msg: "This role only supports Debian/Ubuntu and RedHat/CentOS systems"
+
+- name: Check if running as root
+  assert:
+    that:
+      - ansible_user_uid == 0 or ansible_become | bool
+    msg: "This role requires root privileges. Please run with become: true"
+
+- name: Check for conflicting firewall tools
+  block:
+    - name: Check if ufw is installed
+      command: which ufw
+      register: ufw_check
+      changed_when: false
+      failed_when: false
+
+    - name: Check if firewalld is installed
+      command: which firewall-cmd
+      register: firewalld_check
+      changed_when: false
+      failed_when: false
+
+    - name: Warn about UFW with Docker
+      fail:
+        msg: |
+          ⛔ UFW is installed and Docker is present!
+          UFW is incompatible with Docker's iptables management.
+          Docker will bypass UFW rules completely.
+
+          Options:
+          1. Uninstall UFW and use this iptables-based role
+          2. Disable Docker's iptables management (not recommended)
+          3. Use a different firewall strategy
+
+          To proceed, set firewall_force_with_ufw: true (at your own risk)
+      when:
+        - ufw_check.rc == 0
+        - firewall_docker_present | bool
+        - not (firewall_force_with_ufw | default(false))
+
+    - name: Warn about firewalld with Docker
+      debug:
+        msg: |
+          ⚠️  WARNING: firewalld is installed
+          firewalld has limited Docker compatibility.
+          This role uses iptables directly for better Docker support.
+          Consider removing firewalld or using firewalld's Docker zone.
+      when:
+        - firewalld_check.rc == 0
+        - firewall_docker_present | bool
+
+- name: Check network configuration
+  block:
+    - name: Get default network interface
+      set_fact:
+        detected_interface: "{{ ansible_default_ipv4.interface | default('eth0') }}"
+
+    - name: Verify network interface exists
+      command: ip link show {{ firewall_external_interface }}
+      register: interface_check
+      changed_when: false
+      failed_when: interface_check.rc != 0
+
+- name: Check existing iptables rules
+  shell: |
+    echo "=== Current iptables rules count ==="
+    echo "Filter table: $(iptables -L -n | wc -l) lines"
+    echo "NAT table: $(iptables -t nat -L -n | wc -l) lines"
+    echo "Mangle table: $(iptables -t mangle -L -n | wc -l) lines"
+  register: existing_rules
+  changed_when: false
+
+- name: Display existing rules summary
+  debug:
+    msg: "{{ existing_rules.stdout_lines }}"
+  when: firewall_debug_mode | bool
+
+- name: Check for Docker iptables chains
+  shell: |
+    for chain in DOCKER DOCKER-USER DOCKER-ISOLATION-STAGE-1 DOCKER-ISOLATION-STAGE-2; do
+      iptables -L $chain -n >/dev/null 2>&1 && echo "$chain: exists" || echo "$chain: missing"
+    done
+  register: docker_chains_status
+  changed_when: false
+  when: firewall_docker_present | bool
+
+- name: Display Docker chains status
+  debug:
+    msg: "{{ docker_chains_status.stdout_lines }}"
+  when:
+    - firewall_docker_present | bool
+    - firewall_debug_mode | bool
+
+- name: Verify kernel modules
+  block:
+    - name: Check required netfilter modules
+      modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - ip_tables
+        - iptable_filter
+        - iptable_nat
+        - iptable_mangle
+        - ip_conntrack
+        - iptable_raw
+      become: true

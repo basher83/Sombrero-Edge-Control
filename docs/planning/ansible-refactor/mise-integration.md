@@ -2,7 +2,12 @@
 
 ## Overview
 
-This document outlines how mise will be used to manage tools and tasks for the Ansible-first refactor, maintaining consistency with the project's existing tool management approach.
+This document outlines how mise will be used to manage tools and tasks for the Ansible-first refactor, maintaining
+consistency with the project's existing tool management approach.
+
+**Reference**:
+[ansible-template-mise](https://github.com/chronicc/ansible-template)
+[Ansible-mise](https://blog.devops.dev/how-to-use-mise-in-an-ansible-team-project-63d3d9c98193)
 
 ## Tool Management Strategy
 

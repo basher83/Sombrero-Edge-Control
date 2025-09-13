@@ -1,0 +1,31 @@
+---
+# Check Proxmox API connectivity
+
+- name: Test Proxmox API connectivity
+  community.proxmox.proxmox_node_info:
+    api_host: "{{ proxmox_api_url | urlsplit('hostname') }}"
+    api_port: "{{ proxmox_api_url | urlsplit('port') | default(8006) }}"
+    api_user: "{{ proxmox_api_token_id.split('!')[0] }}"
+    api_token_id: "{{ proxmox_api_token_id.split('!')[1] }}"
+    api_token_secret: "{{ proxmox_api_token_secret }}"
+    validate_certs: "{{ proxmox_verify_ssl }}"
+    node: "{{ proxmox_node }}"
+  register: node_info
+  ignore_errors: true
+  timeout: "{{ validation_timeout }}"
+
+- name: Set API connectivity status
+  set_fact:
+    api_connectivity_passed: "{{ node_info is not failed }}"
+    proxmox_node_info: "{{ node_info.proxmox_node_info | default({}) }}"
+
+- name: Display API connection status
+  debug:
+    msg: "API Connection: {{ 'SUCCESS' if api_connectivity_passed else 'FAILED' }} - {{ proxmox_api_url }}"
+
+- name: Fail if API not accessible
+  fail:
+    msg: "Cannot connect to Proxmox API at {{ proxmox_api_url }}. Error: {{ node_info.msg | default('Unknown error') }}"
+  when:
+    - not api_connectivity_passed
+    - fail_on_missing_template | default(true)

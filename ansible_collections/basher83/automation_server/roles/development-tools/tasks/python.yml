@@ -1,0 +1,99 @@
+---
+# Python and pip configuration
+
+- name: Ensure pip is up to date
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+    executable: pip3
+
+- name: Install Python development packages via pip
+  ansible.builtin.pip:
+    name: "{{ devtools_pip_packages }}"
+    state: present
+    executable: pip3
+  register: pip_installs
+
+- name: Display pip package installation results
+  ansible.builtin.debug:
+    msg: "Installed Python packages: {{ devtools_pip_packages | join(', ') }}"
+  when: pip_installs.changed
+
+- name: Create Python virtual environment directory
+  ansible.builtin.file:
+    path: "/home/{{ devtools_user }}/.venvs"
+    state: directory
+    owner: "{{ devtools_user }}"
+    group: "{{ devtools_user }}"
+    mode: '0755'
+
+- name: Install pipx for isolated Python applications
+  ansible.builtin.pip:
+    name: pipx
+    state: present
+    executable: pip3
+
+- name: Ensure pipx bin directory is in PATH
+  ansible.builtin.shell: |
+    pipx ensurepath
+  become_user: "{{ devtools_user }}"
+  changed_when: false
+  failed_when: false
+
+- name: Create pip configuration directory
+  ansible.builtin.file:
+    path: "/home/{{ devtools_user }}/.pip"
+    state: directory
+    owner: "{{ devtools_user }}"
+    group: "{{ devtools_user }}"
+    mode: '0755'
+
+- name: Configure pip with better defaults
+  ansible.builtin.copy:
+    content: |
+      [global]
+      user = true
+      upgrade-strategy = eager
+
+      [install]
+      use-pep517 = true
+    dest: "/home/{{ devtools_user }}/.pip/pip.conf"
+    owner: "{{ devtools_user }}"
+    group: "{{ devtools_user }}"
+    mode: '0644'
+
+- name: Add Python user bin to PATH
+  ansible.builtin.lineinfile:
+    path: "/home/{{ devtools_user }}/.bashrc"
+    line: 'export PATH="/home/{{ devtools_user }}/.local/bin:$PATH"'
+    state: present
+    create: true
+  become_user: "{{ devtools_user }}"
+
+- name: Create Python development aliases
+  ansible.builtin.blockinfile:
+    path: "/home/{{ devtools_user }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Python aliases"
+    block: |
+      # Python development aliases
+      alias python='python3'
+      alias pip='pip3'
+      alias venv='python3 -m venv'
+      alias activate='source venv/bin/activate'
+    create: true
+  become_user: "{{ devtools_user }}"
+
+- name: Verify Python and pip installation
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - "python3 --version"
+    - "pip3 --version"
+  register: python_versions
+  changed_when: false
+  failed_when: false
+
+- name: Display Python installation info
+  ansible.builtin.debug:
+    msg: "{{ item.cmd[0] }}: {{ item.stdout }}"
+  loop: "{{ python_versions.results }}"
+  when: item.rc == 0

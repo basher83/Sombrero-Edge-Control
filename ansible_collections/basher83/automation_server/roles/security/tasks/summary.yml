@@ -1,0 +1,130 @@
+---
+# Generate security hardening summary report
+
+- name: Gather security configuration facts
+  ansible.builtin.set_fact:
+    security_report_timestamp: "{{ ansible_date_time.iso8601 }}"
+    security_report_hostname: "{{ ansible_hostname }}"
+    security_report_os: "{{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+- name: Check SSH configuration status
+  ansible.builtin.shell: |
+    echo "SSH Port: $(grep -E '^Port' /etc/ssh/sshd_config | awk '{print $2}')"
+    echo "Root Login: $(grep -E '^PermitRootLogin' /etc/ssh/sshd_config | awk '{print $2}')"
+    echo "Password Auth: $(grep -E '^PasswordAuthentication' /etc/ssh/sshd_config | awk '{print $2}')"
+  register: ssh_config_summary
+  changed_when: false
+
+- name: Check fail2ban jail status
+  ansible.builtin.command: fail2ban-client status
+  register: fail2ban_summary
+  changed_when: false
+  failed_when: false
+  when: security_fail2ban_enabled
+
+- name: Count audit rules
+  ansible.builtin.shell: auditctl -l 2>/dev/null | wc -l
+  register: audit_rules_summary
+  changed_when: false
+  failed_when: false
+  when: security_auditd_enabled
+
+- name: Check kernel hardening status
+  ansible.builtin.shell: |
+    echo "IP Forwarding: $(sysctl -n net.ipv4.ip_forward)"
+    echo "SYN Cookies: $(sysctl -n net.ipv4.tcp_syncookies)"
+    echo "ASLR: $(sysctl -n kernel.randomize_va_space)"
+  register: kernel_summary
+  changed_when: false
+  when: security_kernel_hardening_enabled
+
+- name: Generate security report content
+  ansible.builtin.set_fact:
+    security_report_content: |
+      ================================================
+      SECURITY HARDENING REPORT
+      ================================================
+      Generated: {{ security_report_timestamp }}
+      Hostname: {{ security_report_hostname }}
+      OS: {{ security_report_os }}
+      Ansible User: {{ ansible_user_id }}
+
+      ================================================
+      CONFIGURATION SUMMARY
+      ================================================
+
+      SSH HARDENING:
+      {{ ssh_config_summary.stdout }}
+      Allowed Users: {{ security_ssh_allow_users | join(', ') }}
+
+      FAIL2BAN STATUS:
+      {% if security_fail2ban_enabled %}
+      {{ fail2ban_summary.stdout | default('Not available') }}
+      {% else %}
+      Disabled
+      {% endif %}
+
+      AUDIT CONFIGURATION:
+      {% if security_auditd_enabled %}
+      Rules Loaded: {{ audit_rules_summary.stdout | default('0') }}
+      {% else %}
+      Disabled
+      {% endif %}
+
+      KERNEL HARDENING:
+      {% if security_kernel_hardening_enabled %}
+      {{ kernel_summary.stdout }}
+      {% else %}
+      Disabled
+      {% endif %}
+
+      SECURITY FEATURES:
+      - Password Quality: {{ 'Enabled' if security_password_quality_enabled else 'Disabled' }}
+      - AppArmor: {{ 'Enabled' if security_apparmor_enabled else 'Disabled' }}
+      - Automatic Updates: {{ 'Enabled' if security_automatic_updates_enabled else 'Disabled' }}
+      - Process Accounting: {{ 'Enabled' if security_process_accounting_enabled else 'Disabled' }}
+      - File Permissions: {{ 'Enforced' if security_file_permissions_enabled else 'Not enforced' }}
+
+      VALIDATION RESULTS:
+      {% if security_validation_results is defined %}
+      {% for result in security_validation_results %}
+      - {{ result }}
+      {% endfor %}
+      Score: {{ validation_passed | default(0) }}/{{ validation_total | default(0) }}
+      {% endif %}
+
+      ================================================
+      CIS COMPLIANCE
+      ================================================
+      Level: {{ security_cis_level }}
+      Profile: {{ security_cis_profile }}
+
+      ================================================
+      RECOMMENDATIONS
+      ================================================
+      1. Regularly review /var/log/auth.log for suspicious activity
+      2. Monitor fail2ban logs at /var/log/fail2ban.log
+      3. Check audit logs with: ausearch -ts recent
+      4. Review sudo usage in /var/log/sudo.log
+      5. Keep system updated with: apt update && apt upgrade
+
+      ================================================
+      END OF REPORT
+      ================================================
+
+- name: Write security report to file
+  ansible.builtin.copy:
+    content: "{{ security_report_content }}"
+    dest: "{{ security_report_path }}"
+    owner: root
+    group: root
+    mode: '0600'
+
+- name: Display report location
+  ansible.builtin.debug:
+    msg: "Security report generated: {{ security_report_path }}"
+
+- name: Display report summary to console
+  ansible.builtin.debug:
+    msg: "{{ security_report_content }}"
+  when: ansible_verbosity > 0

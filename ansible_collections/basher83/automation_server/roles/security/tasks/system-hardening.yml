@@ -1,0 +1,218 @@
+---
+# System Hardening Tasks - Additional security measures
+
+- name: Configure password quality requirements
+  block:
+    - name: Install libpam-pwquality
+      ansible.builtin.package:
+        name: libpam-pwquality
+        state: present
+
+    - name: Configure password quality settings
+      ansible.builtin.lineinfile:
+        path: /etc/security/pwquality.conf
+        regexp: "^{{ item.key }}\\s*="
+        line: "{{ item.key }} = {{ item.value }}"
+        state: present
+      loop:
+        - { key: "minlen", value: "{{ security_password_min_length }}" }
+        - { key: "minclass", value: "{{ security_password_min_class }}" }
+        - { key: "maxrepeat", value: "{{ security_password_max_repeat }}" }
+        - { key: "maxsequence", value: "{{ security_password_max_sequence }}" }
+        - { key: "gecoscheck", value: "1" }
+        - { key: "dictcheck", value: "1" }
+        - { key: "usercheck", value: "1" }
+        - { key: "enforcing", value: "1" }
+  when: security_password_quality_enabled
+
+- name: Configure login.defs password settings
+  ansible.builtin.lineinfile:
+    path: /etc/login.defs
+    regexp: "^{{ item.key }}\\s"
+    line: "{{ item.key }} {{ item.value }}"
+    state: present
+  loop:
+    - { key: "PASS_MAX_DAYS", value: "{{ security_login_defs_pass_max_days }}" }
+    - { key: "PASS_MIN_DAYS", value: "{{ security_login_defs_pass_min_days }}" }
+    - { key: "PASS_WARN_AGE", value: "{{ security_login_defs_pass_warn_age }}" }
+    - { key: "UMASK", value: "{{ security_login_defs_umask }}" }
+    - { key: "ENCRYPT_METHOD", value: "SHA512" }
+    - { key: "SHA_CRYPT_MIN_ROUNDS", value: "5000" }
+
+- name: Set account lockout policies
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/common-auth
+    regexp: "pam_tally2.so"
+    line: "auth required pam_tally2.so onerr=fail audit silent deny=5 unlock_time=900"
+    state: present
+    insertafter: "pam_unix.so"
+
+- name: Configure session timeout
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    regexp: "^TMOUT="
+    line: "TMOUT={{ security_login_timeout * 60 }}"
+    state: present
+
+- name: Disable unnecessary services
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop: "{{ security_disabled_services }}"
+  failed_when: false
+
+- name: Remove unnecessary packages
+  ansible.builtin.package:
+    name:
+      - telnet
+      - nis
+      - ntpdate
+      - prelink
+      - talk
+      - rsync
+    state: absent
+  failed_when: false
+
+- name: Set file permissions on sensitive files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop: "{{ security_sensitive_files }}"
+  when: security_file_permissions_enabled
+
+- name: Find and set permissions on all log files
+  ansible.builtin.shell: |
+    find /var/log -type f -exec chmod 640 {} \;
+    find /var/log -type d -exec chmod 750 {} \;
+  changed_when: false
+  when: security_file_permissions_enabled
+
+- name: Configure AppArmor
+  block:
+    - name: Install AppArmor packages
+      ansible.builtin.package:
+        name:
+          - apparmor
+          - apparmor-utils
+          - apparmor-profiles
+        state: present
+
+    - name: Ensure AppArmor is enabled
+      ansible.builtin.systemd:
+        name: apparmor
+        state: started
+        enabled: true
+
+    - name: Set AppArmor to enforce mode
+      ansible.builtin.command: aa-enforce /etc/apparmor.d/*
+      register: apparmor_enforce
+      changed_when: "'Setting' in apparmor_enforce.stdout"
+      failed_when: false
+  when: security_apparmor_enabled
+
+- name: Configure automatic security updates
+  block:
+    - name: Install unattended-upgrades
+      ansible.builtin.package:
+        name:
+          - unattended-upgrades
+          - apt-listchanges
+        state: present
+
+    - name: Configure unattended-upgrades
+      ansible.builtin.lineinfile:
+        path: /etc/apt/apt.conf.d/50unattended-upgrades
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      loop:
+        - regexp: '^\s*//\s*"${distro_id}:${distro_codename}-security";'
+          line: '        "${distro_id}:${distro_codename}-security";'
+        - regexp: '^//Unattended-Upgrade::AutoFixInterruptedDpkg'
+          line: 'Unattended-Upgrade::AutoFixInterruptedDpkg "true";'
+        - regexp: '^//Unattended-Upgrade::Remove-Unused-Dependencies'
+          line: 'Unattended-Upgrade::Remove-Unused-Dependencies "true";'
+
+    - name: Enable automatic updates
+      ansible.builtin.lineinfile:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+        create: true
+      loop:
+        - regexp: '^APT::Periodic::Update-Package-Lists'
+          line: 'APT::Periodic::Update-Package-Lists "1";'
+        - regexp: '^APT::Periodic::Unattended-Upgrade'
+          line: 'APT::Periodic::Unattended-Upgrade "1";'
+  when: security_automatic_updates_enabled
+
+- name: Configure NTP for time synchronization
+  block:
+    - name: Install chrony
+      ansible.builtin.package:
+        name: chrony
+        state: present
+
+    - name: Configure NTP servers
+      ansible.builtin.lineinfile:
+        path: /etc/chrony/chrony.conf
+        regexp: "^pool "
+        line: "pool {{ item }} iburst"
+        state: present
+      loop: "{{ security_ntp_servers }}"
+
+    - name: Ensure chrony is running
+      ansible.builtin.systemd:
+        name: chrony
+        state: started
+        enabled: true
+  when: security_ntp_enabled
+
+- name: Restrict cron and at to authorized users
+  block:
+    - name: Remove cron.deny and at.deny
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/cron.deny
+        - /etc/at.deny
+
+    - name: Create cron.allow and at.allow
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: touch
+        owner: root
+        group: root
+        mode: '0600'
+        modification_time: preserve
+        access_time: preserve
+      loop:
+        - /etc/cron.allow
+        - /etc/at.allow
+
+    - name: Add root to cron.allow and at.allow
+      ansible.builtin.lineinfile:
+        path: "{{ item }}"
+        line: "root"
+        state: present
+      loop:
+        - /etc/cron.allow
+        - /etc/at.allow
+
+- name: Configure sudo security
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: "^Defaults\\s+{{ item.key }}"
+    line: "Defaults {{ item.key }}{{ item.value }}"
+    state: present
+    validate: "visudo -cf %s"
+  loop:
+    - { key: "use_pty", value: "" }
+    - { key: "logfile", value: '="/var/log/sudo.log"' }
+    - { key: "timestamp_timeout", value: "=5" }
+    - { key: "passwd_tries", value: "=3" }

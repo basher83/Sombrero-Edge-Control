@@ -1,0 +1,61 @@
+---
+# Installation tasks for firewall role
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Install iptables and related packages
+  apt:
+    name:
+      - iptables
+      - iptables-persistent
+      - netfilter-persistent
+      - conntrack
+      - ipset
+    state: present
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Ensure iptables service is enabled
+  systemd:
+    name: netfilter-persistent
+    enabled: true
+    state: started
+  become: true
+
+- name: Check iptables version
+  command: iptables --version
+  register: iptables_version
+  changed_when: false
+
+- name: Display iptables version
+  debug:
+    msg: "iptables version: {{ iptables_version.stdout }}"
+  when: firewall_debug_mode | bool
+
+- name: Determine iptables backend
+  shell: |
+    if iptables --version | grep -q nf_tables; then
+      echo "nf_tables"
+    else
+      echo "legacy"
+    fi
+  register: iptables_backend
+  changed_when: false
+
+- name: Set iptables backend fact
+  set_fact:
+    firewall_iptables_backend: "{{ iptables_backend.stdout }}"
+
+- name: Display iptables backend warning for Docker
+  debug:
+    msg: |
+      ⚠️  iptables backend: {{ firewall_iptables_backend }}
+      Docker is compatible with both iptables-nft and iptables-legacy.
+      Docker is NOT compatible with pure nftables commands.
+  when:
+    - firewall_docker_present | bool
+    - firewall_debug_mode | bool

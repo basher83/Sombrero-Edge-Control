@@ -1,0 +1,76 @@
+---
+# Preflight checks for development tools installation
+
+- name: Check if running on supported OS
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Ubuntu"
+      - ansible_distribution_version is version('20.04', '>=')
+    fail_msg: "Development tools role requires Ubuntu 20.04 or later"
+    success_msg: "Running on supported OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+- name: Check if running with sufficient privileges
+  ansible.builtin.assert:
+    that:
+      - ansible_user_id == "root" or ansible_become == true
+    fail_msg: "This role requires root or sudo privileges for package installation"
+    success_msg: "Running with appropriate privileges"
+
+- name: Check internet connectivity for downloads
+  ansible.builtin.uri:
+    url: "https://api.github.com"
+    method: GET
+    status_code: 200
+    timeout: 10
+  failed_when: false
+  register: connectivity_check
+
+- name: Warn if no internet connectivity
+  ansible.builtin.debug:
+    msg: "WARNING: No internet connectivity. Some installations may fail."
+  when: connectivity_check.status != 200
+
+- name: Check available disk space
+  ansible.builtin.shell: df -BG / | awk 'NR==2 {print $4}' | sed 's/G//'
+  register: disk_space
+  changed_when: false
+
+- name: Verify sufficient disk space
+  ansible.builtin.assert:
+    that:
+      - disk_space.stdout | int > 2
+    fail_msg: "Insufficient disk space. At least 2GB required for development tools"
+    success_msg: "Sufficient disk space available: {{ disk_space.stdout }}GB"
+
+- name: Create development tools directory
+  ansible.builtin.file:
+    path: "{{ devtools_install_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Check if target user exists
+  ansible.builtin.user:
+    name: "{{ devtools_user }}"
+    state: present
+  check_mode: true
+  register: user_check
+  failed_when: false
+
+- name: Verify target user exists
+  ansible.builtin.assert:
+    that:
+      - user_check.changed == false
+    fail_msg: "Target user '{{ devtools_user }}' does not exist"
+    success_msg: "Target user '{{ devtools_user }}' exists"
+
+- name: Display preflight summary
+  ansible.builtin.debug:
+    msg: |
+      Preflight checks completed:
+      - OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+      - User: {{ devtools_user }}
+      - Disk space: {{ disk_space.stdout }}GB
+      - Internet: {{ 'Connected' if connectivity_check.status == 200 else 'Limited' }}
+      - Install path: {{ devtools_install_path }}

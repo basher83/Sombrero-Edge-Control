@@ -1,0 +1,79 @@
+---
+# Node.js and npm configuration
+
+- name: Check current npm version
+  ansible.builtin.command: npm --version
+  register: npm_version_check
+  changed_when: false
+  failed_when: false
+
+- name: Update npm to latest version
+  community.general.npm:
+    name: npm
+    global: true
+    state: latest
+  when: npm_version_check.rc == 0
+
+- name: Install global npm packages
+  community.general.npm:
+    name: "{{ item }}"
+    global: true
+    state: present
+  loop: "{{ devtools_npm_global_packages }}"
+  register: npm_installs
+  failed_when: false
+
+- name: Display npm package installation results
+  ansible.builtin.debug:
+    msg: "Installed npm package: {{ item.item }}"
+  loop: "{{ npm_installs.results }}"
+  when:
+    - item.changed is defined
+    - item.changed
+
+- name: Configure npm for user
+  ansible.builtin.shell: |
+    npm config set prefix "/home/{{ devtools_user }}/.local"
+    npm config set cache "/home/{{ devtools_user }}/.npm"
+  become_user: "{{ devtools_user }}"
+  changed_when: false
+
+- name: Create npmrc file for user
+  ansible.builtin.copy:
+    content: |
+      prefix=/home/{{ devtools_user }}/.local
+      cache=/home/{{ devtools_user }}/.npm
+      init-author-name={{ devtools_user }}
+      init-license=MIT
+      save-exact=true
+    dest: "/home/{{ devtools_user }}/.npmrc"
+    owner: "{{ devtools_user }}"
+    group: "{{ devtools_user }}"
+    mode: '0644'
+
+- name: Ensure npm cache directory exists
+  ansible.builtin.file:
+    path: "/home/{{ devtools_user }}/.npm"
+    state: directory
+    owner: "{{ devtools_user }}"
+    group: "{{ devtools_user }}"
+    mode: '0755'
+
+- name: Add npm global bin to PATH
+  ansible.builtin.lineinfile:
+    path: "/home/{{ devtools_user }}/.bashrc"
+    line: 'export PATH="/home/{{ devtools_user }}/.local/bin:$PATH"'
+    state: present
+    create: true
+  become_user: "{{ devtools_user }}"
+
+- name: Verify npm global packages
+  ansible.builtin.command: npm list -g --depth=0
+  register: npm_global_list
+  changed_when: false
+  failed_when: false
+
+- name: Display installed npm packages
+  ansible.builtin.debug:
+    msg: "Global npm packages installed successfully"
+  when: npm_global_list.rc == 0

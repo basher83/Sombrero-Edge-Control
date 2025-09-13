@@ -1,0 +1,30 @@
+#SPDX-License-Identifier: MIT-0
+---
+# defaults file for ansible/roles/proxmox_validation
+
+# Proxmox API Connection
+proxmox_api_url: "{{ lookup('env', 'TF_VAR_pve_api_url') | default('https://192.168.10.2:8006') }}"
+proxmox_api_token_id: "{{ lookup('env', 'TF_VAR_pve_api_token_id') | default('terraform@pve!token') }}"
+proxmox_api_token_secret: "{{ lookup('env', 'TF_VAR_pve_api_token') }}"
+proxmox_verify_ssl: false
+
+# Target node for validation
+proxmox_node: "lloyd"
+
+# Template requirements
+required_template_id: 1001
+template_name_pattern: "ubuntu-.*-docker"
+
+# Minimum resource requirements
+minimum_storage_gb: 50
+minimum_memory_mb: 4096
+minimum_cpu_cores: 2
+
+# Network requirements
+required_bridge: "vmbr0"
+required_vlan: null  # Set to VLAN ID if required
+
+# Validation behavior
+fail_on_missing_template: true
+fail_on_insufficient_resources: true
+validation_timeout: 30  # seconds for API operations

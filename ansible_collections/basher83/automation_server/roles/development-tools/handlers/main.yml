@@ -1,0 +1,42 @@
+---
+# Development tools handlers
+
+- name: reload shell environment
+  ansible.builtin.shell: |
+    source /home/{{ devtools_user }}/.bashrc
+  become_user: "{{ devtools_user }}"
+  changed_when: false
+
+- name: restart tmux sessions
+  ansible.builtin.shell: |
+    # Kill existing tmux sessions and start fresh
+    tmux kill-server 2>/dev/null || true
+  become_user: "{{ devtools_user }}"
+  changed_when: false
+  failed_when: false
+
+- name: update npm cache
+  community.general.npm:
+    name: npm
+    global: true
+    state: latest
+  changed_when: false
+  failed_when: false
+
+- name: update pip packages
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+    executable: pip3
+  changed_when: false
+  failed_when: false
+
+- name: refresh mise
+  ansible.builtin.shell: |
+    export MISE_CONFIG_DIR="{{ devtools_mise_config_dir }}"
+    export MISE_DATA_DIR="/home/{{ devtools_user }}/.local/share/mise"
+    mise install
+  become_user: "{{ devtools_user }}"
+  changed_when: false
+  failed_when: false
+  when: devtools_mise_enabled

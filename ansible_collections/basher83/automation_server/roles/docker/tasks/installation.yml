@@ -1,0 +1,38 @@
+---
+# Docker installation tasks
+# Note: Most installation is handled by geerlingguy.docker dependency
+# These tasks handle any custom pre/post installation requirements
+
+- name: Ensure required packages are installed
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - software-properties-common
+      - apt-transport-https
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  become: true
+
+- name: Create Docker directory for GPG key
+  file:
+    path: /usr/share/keyrings
+    state: directory
+    mode: '0755'
+  become: true
+
+# Note: The actual Docker installation is handled by the geerlingguy.docker
+# dependency defined in meta/main.yml
+
+- name: Verify Docker installation
+  command: docker --version
+  register: docker_version_output
+  changed_when: false
+
+- name: Display Docker version
+  debug:
+    msg: "Docker installed: {{ docker_version_output.stdout }}"
+  when: docker_debug_mode | bool

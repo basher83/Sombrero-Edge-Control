@@ -1,0 +1,193 @@
+---
+# Base firewall configuration tasks
+
+- name: Configure default policies
+  block:
+    - name: Set INPUT chain default policy
+      iptables:
+        chain: INPUT
+        policy: "{{ firewall_default_input_policy }}"
+      when: not firewall_test_mode | bool
+
+    - name: Set FORWARD chain default policy
+      iptables:
+        chain: FORWARD
+        policy: "{{ firewall_default_forward_policy }}"
+      when:
+        - not firewall_test_mode | bool
+        - not firewall_docker_present | bool  # Docker manages FORWARD chain
+
+    - name: Set OUTPUT chain default policy
+      iptables:
+        chain: OUTPUT
+        policy: "{{ firewall_default_output_policy }}"
+      when: not firewall_test_mode | bool
+
+- name: Configure loopback interface
+  block:
+    - name: Allow loopback input
+      iptables:
+        chain: INPUT
+        in_interface: lo
+        jump: ACCEPT
+        comment: "Accept all loopback traffic"
+      when: firewall_allow_loopback | bool
+
+    - name: Allow loopback output
+      iptables:
+        chain: OUTPUT
+        out_interface: lo
+        jump: ACCEPT
+        comment: "Accept all loopback output"
+      when: firewall_allow_loopback | bool
+
+    - name: Drop loopback traffic from external
+      iptables:
+        chain: INPUT
+        source: 127.0.0.0/8
+        in_interface: "!lo"
+        jump: DROP
+        comment: "Drop loopback traffic from non-loopback interfaces"
+
+- name: Configure connection tracking
+  block:
+    - name: Allow established connections
+      iptables:
+        chain: INPUT
+        ctstate: ESTABLISHED,RELATED
+        jump: ACCEPT
+        comment: "Accept established and related connections"
+      when: firewall_allow_established | bool
+
+    - name: Drop invalid packets
+      iptables:
+        chain: INPUT
+        ctstate: INVALID
+        jump: DROP
+        comment: "Drop invalid packets"
+      when: firewall_drop_invalid | bool
+
+- name: Configure ICMP
+  block:
+    - name: Allow specific ICMP types
+      iptables:
+        chain: INPUT
+        protocol: icmp
+        icmp_type: "{{ item }}"
+        jump: ACCEPT
+        comment: "Allow ICMP {{ item }}"
+      loop: "{{ firewall_icmp_types }}"
+      when: firewall_allow_icmp | bool
+
+    - name: Rate limit ICMP
+      iptables:
+        chain: INPUT
+        protocol: icmp
+        limit: "10/second"
+        limit_burst: 20
+        jump: ACCEPT
+        comment: "Rate limit ICMP"
+      when:
+        - firewall_allow_icmp | bool
+        - firewall_enable_rate_limiting | bool
+
+- name: Configure SSH access
+  block:
+    - name: Allow SSH with rate limiting
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ firewall_ssh_port }}"
+        ctstate: NEW
+        limit: "{{ firewall_ssh_rate_limit_burst }}/minute"
+        limit_burst: "{{ firewall_ssh_rate_limit_burst }}"
+        jump: ACCEPT
+        comment: "SSH with rate limiting"
+      when:
+        - firewall_ssh_enabled | bool
+        - firewall_ssh_rate_limit | bool
+        - firewall_ssh_source_ips | length == 0
+
+    - name: Allow SSH from specific IPs
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ firewall_ssh_port }}"
+        source: "{{ item }}"
+        jump: ACCEPT
+        comment: "SSH from {{ item }}"
+      loop: "{{ firewall_ssh_source_ips }}"
+      when:
+        - firewall_ssh_enabled | bool
+        - firewall_ssh_source_ips | length > 0
+
+    - name: Allow SSH without rate limiting
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        destination_port: "{{ firewall_ssh_port }}"
+        jump: ACCEPT
+        comment: "SSH access"
+      when:
+        - firewall_ssh_enabled | bool
+        - not firewall_ssh_rate_limit | bool
+        - firewall_ssh_source_ips | length == 0
+
+- name: Configure basic service ports
+  block:
+    - name: Process input rules
+      include_tasks: process-rule.yml
+      vars:
+        rule: "{{ item }}"
+        chain: "INPUT"
+      loop: "{{ firewall_input_rules }}"
+      when: item.state == "enabled"
+
+- name: Configure SYN flood protection
+  block:
+    - name: Limit SYN packets
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        tcp_flags:
+          flags: ALL
+          flags_set:
+            - SYN
+        limit: "{{ firewall_syn_flood_rate }}"
+        limit_burst: "{{ firewall_syn_flood_burst }}"
+        jump: ACCEPT
+        comment: "SYN flood protection"
+      when: firewall_syn_flood_protection | bool
+
+    - name: Drop excessive SYN packets
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        tcp_flags:
+          flags: ALL
+          flags_set:
+            - SYN
+        jump: DROP
+        comment: "Drop excessive SYN packets"
+      when: firewall_syn_flood_protection | bool
+
+- name: Configure logging
+  block:
+    - name: Log dropped packets
+      iptables:
+        chain: INPUT
+        jump: LOG
+        log_prefix: "{{ firewall_log_prefix }}-DROP: "
+        log_level: "{{ firewall_log_level }}"
+        limit: "5/minute"
+        comment: "Log dropped packets"
+      when:
+        - firewall_enable_logging | bool
+        - firewall_log_dropped | bool
+
+    - name: Final DROP rule for INPUT
+      iptables:
+        chain: INPUT
+        jump: DROP
+        comment: "Final drop rule"
+      when: firewall_default_input_policy == "ACCEPT"

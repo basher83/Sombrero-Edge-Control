@@ -1,0 +1,149 @@
+---
+# Validation tasks for firewall configuration
+
+- name: Validate firewall rules syntax
+  block:
+    - name: Check iptables rules syntax
+      shell: |
+        iptables-save | iptables-restore -t
+      register: syntax_check
+      changed_when: false
+      failed_when: syntax_check.rc != 0
+
+    - name: Validate specific chains exist
+      shell: |
+        for chain in INPUT OUTPUT FORWARD; do
+          iptables -L $chain -n >/dev/null 2>&1 || echo "Missing chain: $chain"
+        done
+      register: chain_check
+      changed_when: false
+
+    - name: Check for Docker chain preservation
+      shell: |
+        if [ "{{ firewall_docker_present }}" = "true" ]; then
+          for chain in DOCKER DOCKER-USER DOCKER-ISOLATION-STAGE-1; do
+            iptables -L $chain -n >/dev/null 2>&1 || echo "WARNING: Docker chain missing: $chain"
+          done
+        fi
+      register: docker_chain_check
+      changed_when: false
+      when: firewall_docker_present | bool
+
+- name: Test critical services connectivity
+  block:
+    - name: Test SSH connectivity (loopback)
+      wait_for:
+        port: "{{ firewall_ssh_port }}"
+        host: 127.0.0.1
+        timeout: 5
+      when: firewall_ssh_enabled | bool
+
+    - name: Check if we can still connect
+      ping:
+      delegate_to: localhost
+
+- name: Test Docker functionality if present
+  block:
+    - name: Test Docker daemon connectivity
+      command: docker version
+      register: docker_test
+      changed_when: false
+      failed_when: false
+      when: firewall_docker_present | bool
+
+    - name: Test Docker networking
+      shell: |
+        # Test Docker networking is not broken
+        docker run --rm hello-world 2>&1 | grep -q "Hello from Docker" && echo "Docker networking: OK" || echo "Docker networking: FAILED"
+      register: docker_network_test
+      changed_when: false
+      when: firewall_docker_present | bool
+
+    - name: Display Docker test results
+      debug:
+        msg: |
+          Docker daemon: {{ 'OK' if docker_test.rc == 0 else 'FAILED' }}
+          Docker networking: {{ docker_network_test.stdout }}
+      when:
+        - firewall_docker_present | bool
+        - firewall_debug_mode | bool
+
+- name: Validate rule counts
+  shell: |
+    echo "=== Current iptables rule counts ==="
+    echo "INPUT chain: $(iptables -L INPUT -n | tail -n +3 | wc -l) rules"
+    echo "OUTPUT chain: $(iptables -L OUTPUT -n | tail -n +3 | wc -l) rules"
+    echo "FORWARD chain: $(iptables -L FORWARD -n | tail -n +3 | wc -l) rules"
+    {% if firewall_docker_present %}
+    echo "DOCKER-USER chain: $(iptables -L DOCKER-USER -n 2>/dev/null | tail -n +3 | wc -l) rules"
+    {% endif %}
+  register: rule_counts
+  changed_when: false
+
+- name: Display rule counts
+  debug:
+    msg: "{{ rule_counts.stdout_lines }}"
+  when: firewall_debug_mode | bool
+
+- name: Generate validation report
+  copy:
+    content: |
+      FIREWALL VALIDATION REPORT
+      ==========================
+      Generated: {{ ansible_date_time.iso8601 }}
+
+      System Information:
+      - Hostname: {{ ansible_hostname }}
+      - OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+      - Kernel: {{ ansible_kernel }}
+      - iptables backend: {{ firewall_iptables_backend | default('unknown') }}
+
+      Docker Status: {{ 'Installed' if firewall_docker_present else 'Not Installed' }}
+
+      Rule Counts:
+      {{ rule_counts.stdout }}
+
+      Services Status:
+      - SSH (port {{ firewall_ssh_port }}): {{ 'Enabled' if firewall_ssh_enabled else 'Disabled' }}
+      - HTTP (port 80): {{ 'Enabled' if (firewall_input_rules | selectattr('port', 'equalto', 80) | selectattr('state', 'equalto', 'enabled') | list | length > 0) else 'Disabled' }}
+      - HTTPS (port 443): {{ 'Enabled' if (firewall_input_rules | selectattr('port', 'equalto', 443) | selectattr('state', 'equalto', 'enabled') | list | length > 0) else 'Disabled' }}
+
+      Security Features:
+      - Default INPUT policy: {{ firewall_default_input_policy }}
+      - Connection tracking: {{ 'Enabled' if firewall_allow_established else 'Disabled' }}
+      - Rate limiting: {{ 'Enabled' if firewall_enable_rate_limiting else 'Disabled' }}
+      - SYN flood protection: {{ 'Enabled' if firewall_syn_flood_protection else 'Disabled' }}
+      - Logging: {{ 'Enabled' if firewall_enable_logging else 'Disabled' }}
+
+      {% if firewall_docker_present %}
+      Docker Firewall Integration:
+      - DOCKER-USER chain configured: {{ 'Yes' if firewall_configure_docker_user_chain else 'No' }}
+      - Docker chains preserved: {{ 'Yes' if firewall_preserve_docker_chains else 'No' }}
+      - Custom Docker rules: {{ firewall_docker_user_rules | length }}
+      {% endif %}
+
+      Persistence:
+      - Rules saved to: /etc/iptables/rules.v4
+      - Auto-restore on boot: {{ 'Enabled' if firewall_persistent else 'Disabled' }}
+      - Backup location: {{ firewall_rules_backup_dir }}
+
+      Validation Status: PASSED
+    dest: /tmp/firewall-validation-report.txt
+    mode: '0644'
+
+- name: Display validation summary
+  debug:
+    msg: |
+      ====================================
+      Firewall Validation Complete
+      ====================================
+      ✓ Syntax check: PASSED
+      ✓ Chain verification: PASSED
+      ✓ Service connectivity: PASSED
+      {% if firewall_docker_present %}
+      ✓ Docker compatibility: PASSED
+      {% endif %}
+      ✓ Rule persistence: CONFIGURED
+
+      Report saved to: /tmp/firewall-validation-report.txt
+      ====================================

@@ -1,0 +1,223 @@
+---
+#SPDX-License-Identifier: MIT-0
+# Parse Terraform Outputs Tasks
+
+- name: Initialize output parsing for project
+  set_fact:
+    current_project_outputs: {}
+    current_project_status: "PROCESSING"
+
+- name: Check terraform project path exists
+  stat:
+    path: "{{ project_path }}"
+  register: project_path_stat
+  delegate_to: localhost
+
+- name: Validate project path
+  fail:
+    msg: "Terraform project path does not exist: {{ project_path }}"
+  when: not project_path_stat.stat.exists
+
+- name: Parse Terraform outputs
+  block:
+    - name: Check if Terraform is initialized
+      stat:
+        path: "{{ project_path }}/.terraform"
+      register: terraform_init_check
+      delegate_to: localhost
+
+    - name: Initialize Terraform if needed
+      shell: terraform init
+      args:
+        chdir: "{{ project_path }}"
+      register: terraform_init
+      delegate_to: localhost
+      when: not terraform_init_check.stat.exists
+
+    - name: Get current workspace
+      shell: terraform workspace show
+      args:
+        chdir: "{{ project_path }}"
+      register: current_workspace
+      delegate_to: localhost
+
+    - name: Switch to target workspace
+      shell: terraform workspace select {{ project_workspace }}
+      args:
+        chdir: "{{ project_path }}"
+      register: workspace_switch
+      delegate_to: localhost
+      when: current_workspace.stdout != project_workspace
+      failed_when: false
+
+    - name: Create workspace if it doesn't exist
+      shell: terraform workspace new {{ project_workspace }}
+      args:
+        chdir: "{{ project_path }}"
+      delegate_to: localhost
+      when:
+        - current_workspace.stdout != project_workspace
+        - workspace_switch.rc != 0
+      failed_when: false
+
+    - name: Get Terraform outputs as JSON
+      shell: terraform output -json
+      args:
+        chdir: "{{ project_path }}"
+      register: terraform_output_raw
+      delegate_to: localhost
+
+    - name: Parse Terraform outputs JSON
+      set_fact:
+        raw_terraform_outputs: "{{ terraform_output_raw.stdout | from_json }}"
+      when: terraform_output_raw.stdout | length > 0
+
+    - name: Handle empty outputs
+      set_fact:
+        raw_terraform_outputs: {}
+      when: terraform_output_raw.stdout | length == 0
+
+  rescue:
+    - name: Handle Terraform output parsing failure
+      set_fact:
+        current_project_status: "FAILED"
+        terraform_outputs_results: "{{ terraform_outputs_results | combine({
+          project_environment: {
+            'status': 'FAILED',
+            'error': ansible_failed_result.msg | default('Terraform output parsing failed'),
+            'project_path': project_path
+          }
+        }) }}"
+
+    - name: Fail on critical error
+      fail:
+        msg: "Failed to parse Terraform outputs: {{ ansible_failed_result.msg }}"
+      when: not error_handling.continue_on_output_errors | bool
+
+- name: Filter and process outputs
+  block:
+    - name: Apply output filtering
+      set_fact:
+        filtered_outputs: "{{ {} }}"
+
+    - name: Filter by parse_outputs list
+      set_fact:
+        filtered_outputs: "{{ filtered_outputs | combine({item: raw_terraform_outputs[item]}) }}"
+      loop: "{{ parse_outputs }}"
+      when:
+        - not parse_all_outputs | bool
+        - parse_outputs | length > 0
+        - item in raw_terraform_outputs
+
+    - name: Include all outputs if parse_all_outputs is true
+      set_fact:
+        filtered_outputs: "{{ raw_terraform_outputs }}"
+      when: parse_all_outputs | bool
+
+    - name: Exclude sensitive outputs
+      set_fact:
+        filtered_outputs: "{{ filtered_outputs | reject('match', '.*(' + (output_filtering.exclude_patterns | join('|')) + ').*') | dict }}"
+      when:
+        - exclude_sensitive_outputs | bool
+        - output_filtering.exclude_patterns | length > 0
+
+    - name: Process output values
+      set_fact:
+        processed_outputs: "{{ {} }}"
+
+    - name: Extract output values from Terraform format
+      set_fact:
+        processed_outputs: "{{ processed_outputs | combine({
+          item.key: item.value.value if item.value.value is defined else item.value
+        }) }}"
+      loop: "{{ filtered_outputs | dict2items }}"
+      when: filtered_outputs | length > 0
+
+    - name: Handle sensitive output masking
+      set_fact:
+        processed_outputs: "{{ processed_outputs | combine({
+          item.key: '***SENSITIVE***' if item.value.sensitive | default(false) else processed_outputs[item.key]
+        }) }}"
+      loop: "{{ filtered_outputs | dict2items }}"
+      when:
+        - security.mask_sensitive_outputs | bool
+        - filtered_outputs | length > 0
+
+    - name: Store processed outputs for current project
+      set_fact:
+        current_project_outputs: "{{ processed_outputs }}"
+        current_project_status: "SUCCESS"
+
+  rescue:
+    - name: Handle output processing failure
+      set_fact:
+        current_project_status: "FAILED"
+        current_project_outputs: {}
+
+- name: Apply variable transformation
+  block:
+    - name: Apply custom transformations
+      set_fact:
+        transformed_outputs: "{{ current_project_outputs }}"
+
+    - name: Apply variable mapping
+      set_fact:
+        mapped_outputs: "{{ {} }}"
+
+    - name: Map variables according to variable_mapping
+      set_fact:
+        mapped_outputs: "{{ mapped_outputs | combine({
+          variable_mapping[item.key]: item.value
+        }) }}"
+      loop: "{{ current_project_outputs | dict2items }}"
+      when:
+        - item.key in variable_mapping
+        - variable_integration.enabled | bool
+
+    - name: Preserve unmapped variables
+      set_fact:
+        mapped_outputs: "{{ mapped_outputs | combine({
+          item.key: item.value
+        }) }}"
+      loop: "{{ current_project_outputs | dict2items }}"
+      when:
+        - item.key not in variable_mapping
+        - variable_integration.enabled | bool
+
+    - name: Use original outputs if mapping disabled
+      set_fact:
+        mapped_outputs: "{{ current_project_outputs }}"
+      when: not variable_integration.enabled | bool
+
+    - name: Update current project outputs with mappings
+      set_fact:
+        current_project_outputs: "{{ mapped_outputs }}"
+
+  rescue:
+    - name: Handle transformation failure
+      debug:
+        msg: "Variable transformation failed, using original outputs"
+
+- name: Store project outputs in global results
+  set_fact:
+    terraform_parsed_outputs: "{{ terraform_parsed_outputs | combine({
+      project_environment: current_project_outputs
+    }) }}"
+    terraform_outputs_results: "{{ terraform_outputs_results | combine({
+      project_environment: {
+        'status': current_project_status,
+        'project_path': project_path,
+        'workspace': project_workspace,
+        'outputs_count': current_project_outputs | length,
+        'outputs': current_project_outputs
+      }
+    }) }}"
+
+- name: Log project parsing completion
+  debug:
+    msg:
+      - "Project parsing completed: {{ project_environment }}"
+      - "Status: {{ current_project_status }}"
+      - "Outputs parsed: {{ current_project_outputs | length }}"
+      - "Project path: {{ project_path }}"
+  when: logging.log_output_parsing | bool
