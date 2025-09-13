@@ -89,8 +89,8 @@
       - "Duration: {{ (ansible_date_time.epoch | int) - (terraform_outputs_start_time | int) }} seconds"
       - "Projects Processed: {{ terraform_projects | length if terraform_projects | length > 0 else 1 }}"
       - "Outputs Parsed: {{ terraform_parsed_outputs | length }}"
-      - "Inventory Generated: {{ inventory_generation.enabled }}"
-      - "Variables Integrated: {{ variable_integration.enabled }}"
+      - "Inventory Generated: {{ inventory_generation.enabled | default(false) }}"
+      - "Variables Integrated: {{ variable_integration.enabled | default(false) }}"
 
 - name: Set terraform outputs completion facts
   set_fact:

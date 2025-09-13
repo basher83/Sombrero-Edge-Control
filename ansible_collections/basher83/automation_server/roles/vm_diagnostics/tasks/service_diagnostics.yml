@@ -290,8 +290,19 @@
     - name: Analyze restart policies
       set_fact:
         restart_analysis:
-          services_with_restart_policy: "{{ service_restart_policies.results | selectattr('stdout', 'search', 'Restart=') | selectattr('stdout', 'search', '(?!Restart=no)') | list | length }}"
-          services_with_failures: "{{ service_failure_info.results | selectattr('stdout', 'search', 'NRestarts=[1-9]') | list | length }}"
+          services_with_restart_policy: >-
+            {{ service_restart_policies.results
+               | map(attribute='stdout')
+               | map('regex_search', 'Restart=(\w+)', '\1')
+               | select('defined')
+               | reject('equalto','no')
+               | list | length }}
+          services_with_failures: >-
+            {{ service_failure_info.results
+               | map(attribute='stdout')
+               | map('regex_search', 'NRestarts=(\d+)', '\1')
+               | select('defined') | map('int') | select('gt', 0)
+               | list | length }}
 
     - name: Record restart analysis results
       set_fact:

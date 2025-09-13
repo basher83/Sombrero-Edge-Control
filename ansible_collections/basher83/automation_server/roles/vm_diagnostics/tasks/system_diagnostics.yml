@@ -275,8 +275,14 @@
 
   when: system_diagnostics.smart_disk_checks | bool
 
+- name: Ensure diagnostic output directory exists
+  ansible.builtin.file:
+    path: "{{ diagnostic_output_dir }}"
+    state: directory
+    mode: '0755'
+
 - name: Write system diagnostics to file
-  copy:
+  ansible.builtin.copy:
     content: "{{ vm_diagnostic_results | to_nice_json }}"
     dest: "{{ diagnostic_output_dir }}/system_diagnostics.json"
     mode: '0644'

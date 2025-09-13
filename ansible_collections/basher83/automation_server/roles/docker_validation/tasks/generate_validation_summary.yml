@@ -33,8 +33,14 @@
         compose_stacks_count: "{{ docker_compose_stacks | length }}"
         monitoring_enabled: "{{ monitoring_integration.enable_prometheus | default(false) or monitoring_integration.enable_cadvisor | default(false) }}"
 
+- name: Ensure report directory exists
+  ansible.builtin.file:
+    path: "{{ reporting.report_path }}"
+    state: directory
+    mode: '0755'
+
 - name: Write JSON validation report to file
-  copy:
+  ansible.builtin.copy:
     content: "{{ docker_validation_summary | to_nice_json }}"
     dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.json"
     mode: '0644'
@@ -104,7 +110,7 @@
       {% endfor %}
 
 - name: Write human-readable report to file
-  copy:
+  ansible.builtin.copy:
     content: "{{ human_readable_report }}{{ detailed_results }}"
     dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.txt"
     mode: '0644'
@@ -174,7 +180,7 @@
 - name: Write CI/CD integration result
   copy:
     content: "{{ ci_validation_result | to_nice_json }}"
-    dest: "{{ reporting.report_path }}/ci_docker_validation_result_{{ inventory_hostname }}.json"
+    dest: "{{ reporting.report_path }}/ci_docker_validation_result_{{ inventory_hostname }}_{{ report_ts }}.json"
     mode: '0644'
 
 - name: Generate HTML report (if enabled)
@@ -193,4 +199,4 @@
     docker_validation_report_files:
       json: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.json"
       text: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.txt"
-      ci_integration: "{{ reporting.report_path }}/ci_docker_validation_result_{{ inventory_hostname }}.json"
+      ci_integration: "{{ reporting.report_path }}/ci_docker_validation_result_{{ inventory_hostname }}_{{ report_ts }}.json"
