@@ -248,24 +248,26 @@
         - compose_health_results is defined
         - item.rc == 0
 
+    - name: Build (stack, service) pairs for health checks
+      set_fact:
+        health_service_pairs: >-
+          {{ (health_service_pairs | default([])) + (
+             (service_health_status[stack_item.path] | default([]))
+             | map('combine', {'__stack_path': stack_item.path}) | list) }}
+      loop: "{{ docker_compose_stacks | default([]) }}"
+      loop_control: { loop_var: stack_item }
+      when:
+        - (docker_compose_stacks | default([])) | length > 0
+        - service_health_status is defined
+        - stack_item.validate_health_checks | default(false)
+
     - name: Validate services have healthy status
       assert:
         that:
-          - service.Health is not defined or service.Health in ['healthy', 'none', '']
-        fail_msg: "Service {{ service.Service }} in stack {{ stack_path }} is unhealthy: {{ service.Health | default('unknown') }}"
-        success_msg: "Service {{ service.Service }} in stack {{ stack_path }} is healthy"
-      loop: "{{ docker_compose_stacks }}"
-      loop_control:
-        loop_var: stack_item
-      when:
-        - docker_compose_stacks | length > 0
-        - service_health_status is defined
-        - service_health_status[stack_item.path] is defined
-        - stack_item.validate_health_checks | default(false)
-      vars:
-        service: "{{ item }}"
-        stack_path: "{{ stack_item.path }}"
-      with_items: "{{ service_health_status[stack_item.path] | default([]) }}"
+          - item.Health is not defined or item.Health in ['healthy', 'none', '']
+        fail_msg: "Service {{ item.Service }} in stack {{ item.__stack_path }} is unhealthy: {{ item.Health | default('unknown') }}"
+        success_msg: "Service {{ item.Service }} in stack {{ item.__stack_path }} is healthy"
+      loop: "{{ health_service_pairs | default([]) }}"
 
     - name: Record health check validation results
       set_fact:

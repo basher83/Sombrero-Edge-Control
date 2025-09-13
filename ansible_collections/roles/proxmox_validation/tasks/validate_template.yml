@@ -62,7 +62,7 @@
 
 - name: Fail if required template not found
   fail:
-    msg: "Required template (ID: {{ required_template_id }} or pattern: {{ template_name_pattern }}) not found on node {{ proxmox_node }}"
+    msg: "Required template (ID: {{ required_template_id }} or pattern: {{ template_name_pattern | default('N/A') }}) not found on node {{ proxmox_node }}"
   when:
     - not (template_exists | default(false))
     - fail_on_missing_template | default(true)

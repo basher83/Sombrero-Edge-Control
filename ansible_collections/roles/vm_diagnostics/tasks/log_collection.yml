@@ -288,7 +288,11 @@
 
 - name: Write log diagnostics summary to file
   copy:
-    content: "{{ vm_diagnostic_results | selectattr('match', '^log_') | dict2items | to_nice_json }}"
+    content: "{{ vm_diagnostic_results
+                | dict2items
+                | selectattr('key', 'match', '^log_')
+                | items2dict
+                | to_nice_json }}"
     dest: "{{ diagnostic_output_dir }}/log_diagnostics.json"
     mode: '0644'
-  when: vm_diagnostic_results | selectattr('match', '^log_') | list | length > 0
+  when: (vm_diagnostic_results | dict2items | selectattr('key', 'match', '^log_') | list | length) > 0

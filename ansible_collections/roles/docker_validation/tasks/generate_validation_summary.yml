@@ -4,9 +4,9 @@
 
 - name: Calculate validation execution time
   set_fact:
-    docker_validation_end_time: "{{ ansible_date_time.epoch }}"
-    docker_validation_duration: "{{ (ansible_date_time.epoch | int) - (docker_validation_start_time | int) }}"
     report_ts: "{{ ansible_date_time.epoch }}"
+    docker_validation_end_time: "{{ report_ts }}"
+    docker_validation_duration: "{{ (report_ts | int) - (docker_validation_start_time | int) }}"
 - name: Generate detailed validation summary
   set_fact:
     docker_validation_summary:
@@ -36,7 +36,7 @@
 - name: Write JSON validation report to file
   copy:
     content: "{{ docker_validation_summary | to_nice_json }}"
-    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
+    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.json"
     mode: '0644'
   when: reporting.generate_json_report | default(true)
 
@@ -106,7 +106,7 @@
 - name: Write human-readable report to file
   copy:
     content: "{{ human_readable_report }}{{ detailed_results }}"
-    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.txt"
     mode: '0644'
 
 - name: Generate category breakdown message
@@ -180,7 +180,7 @@
 - name: Generate HTML report (if enabled)
   template:
     src: docker_validation_report.html.j2
-    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.html"
+    dest: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.html"
     mode: '0644'
   when: reporting.generate_html_report | default(false)
   ignore_errors: true  # Template may not exist
@@ -191,6 +191,6 @@
     docker_validation_status: "{{ 'PASS' if docker_validation_failed_count == 0 else 'FAIL' }}"
     docker_validation_summary_data: "{{ docker_validation_summary }}"
     docker_validation_report_files:
-      json: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
-      text: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+      json: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.json"
+      text: "{{ reporting.report_path }}/docker_validation_report_{{ inventory_hostname }}_{{ report_ts }}.txt"
       ci_integration: "{{ reporting.report_path }}/ci_docker_validation_result_{{ inventory_hostname }}.json"

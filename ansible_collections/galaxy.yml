@@ -11,6 +11,7 @@ authors:
   - basher83 <basher83@github.com>
 
 description: Ansible collection for automation server infrastructure management including Docker, Terraform, Proxmox, and VM lifecycle management
+license: GPL-3.0-or-later
 license_file: LICENSE
 
 # TO-DO: update the tags based on your content type

@@ -23,11 +23,10 @@
   when: diagnostic_depth in ['standard', 'comprehensive']
 
 - name: Create diagnostic output directory
-  file:
+  ansible.builtin.file:
     path: "{{ diagnostic_output_dir }}"
     state: directory
     mode: '0755'
-  delegate_to: "{{ inventory_hostname if ansible_connection != 'local' else 'localhost' }}"
 
 - name: Phase 1 - System Diagnostics
   include_tasks: system_diagnostics.yml

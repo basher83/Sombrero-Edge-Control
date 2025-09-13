@@ -174,7 +174,8 @@ environment_settings:
     detailed_logging: true
   staging:
     validate_outputs: true
-    cache_enabled: true
+    performance:
+      cache_outputs: true
   production:
     validate_outputs: true
     backup_state: true

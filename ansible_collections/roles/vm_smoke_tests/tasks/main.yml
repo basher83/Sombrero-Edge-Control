@@ -63,4 +63,4 @@
     msg: "VM smoke tests failed: {{ smoke_test_failed_count }} test(s) failed"
   when:
     - smoke_test_failed_count > 0
-    - test_config.fail_fast | default(false)
+    - (test_config is defined and (test_config.fail_fast | default(false)))

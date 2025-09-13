@@ -55,20 +55,20 @@
 
     - name: Record container security validation results
       set_fact:
-        docker_validation_results: "{{ docker_validation_results | combine({'container_security': {'status': 'PASS', 'containers_validated': expected_containers | length, 'security_checks': ['privileged', 'root_user', 'capabilities']}}) }}"
-        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
-      when: expected_containers | length > 0
+        docker_validation_results: "{{ (docker_validation_results | default({})) | combine({'container_security': {'status': 'PASS', 'containers_validated': (expected_containers | default([])) | length, 'security_checks': ['privileged', 'root_user', 'capabilities']}}, recursive=True) }}"
+        docker_validation_passed_count: "{{ (docker_validation_passed_count | default(0)) + 1 }}"
+      when: (expected_containers | default([])) | length > 0
 
     - name: Skip container security validation if no containers
       set_fact:
-        docker_validation_results: "{{ docker_validation_results | combine({'container_security': {'status': 'SKIP', 'reason': 'No containers configured for validation'}}) }}"
-      when: expected_containers | length == 0
+        docker_validation_results: "{{ (docker_validation_results | default({})) | combine({'container_security': {'status': 'SKIP', 'reason': 'No containers configured for validation'}}, recursive=True) }}"
+      when: (expected_containers | default([])) | length == 0
 
   rescue:
     - name: Record container security validation failure
       set_fact:
-        docker_validation_results: "{{ docker_validation_results | combine({'container_security': {'status': 'FAIL', 'containers': expected_containers, 'error': ansible_failed_result.msg}}) }}"
-        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+        docker_validation_results: "{{ (docker_validation_results | default({})) | combine({'container_security': {'status': 'FAIL', 'containers': (expected_containers | default([])), 'error': ansible_failed_result.msg}}, recursive=True) }}"
+        docker_validation_failed_count: "{{ (docker_validation_failed_count | default(0)) + 1 }}"
 
     - name: Debug container security validation failure
       debug:
@@ -126,20 +126,20 @@
 
     - name: Record daemon security validation results
       set_fact:
-        docker_validation_results: "{{ docker_validation_results | combine({'daemon_security': {'status': 'PASS', 'config_file_exists': daemon_config_stat.stat.exists, 'logging_driver': daemon_config['log-driver'] | default('json-file')}}) }}"
-        docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
+        docker_validation_results: "{{ (docker_validation_results | default({})) | combine({'daemon_security': {'status': 'PASS', 'config_file_exists': daemon_config_stat.stat.exists, 'logging_driver': daemon_config['log-driver'] | default('json-file')}}, recursive=True) }}"
+        docker_validation_passed_count: "{{ (docker_validation_passed_count | default(0)) + 1 }}"
       when: daemon_config_validation.validate_daemon_config | default(true)
 
     - name: Skip daemon security validation if disabled
       set_fact:
-        docker_validation_results: "{{ docker_validation_results | combine({'daemon_security': {'status': 'SKIP', 'reason': 'Daemon configuration validation disabled'}}) }}"
+        docker_validation_results: "{{ (docker_validation_results | default({})) | combine({'daemon_security': {'status': 'SKIP', 'reason': 'Daemon configuration validation disabled'}}, recursive=True) }}"
       when: not (daemon_config_validation.validate_daemon_config | default(true))
 
   rescue:
     - name: Record daemon security validation failure
       set_fact:
-        docker_validation_results: "{{ docker_validation_results | combine({'daemon_security': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
-        docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
+        docker_validation_results: "{{ (docker_validation_results | default({})) | combine({'daemon_security': {'status': 'FAIL', 'error': ansible_failed_result.msg}}, recursive=True) }}"
+        docker_validation_failed_count: "{{ (docker_validation_failed_count | default(0)) + 1 }}"
 
     - name: Debug daemon security validation failure
       debug:
