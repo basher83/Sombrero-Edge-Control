@@ -361,7 +361,6 @@
 
 - name: Write performance diagnostics to file
   copy:
-  copy:
     content: "{{ vm_diagnostic_results
                  | dict2items
                  | selectattr('key','match','^(cpu|memory|disk|process|performance)_')
