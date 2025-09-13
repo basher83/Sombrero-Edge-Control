@@ -1,3 +1,4 @@
+---
 # This collection is initialized by https://github.com/ansible/ansible-creator 25.8.0
 
 # See https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
@@ -9,9 +10,7 @@ readme: README.md
 authors:
   - basher83 <basher83@github.com>
 
-description: >-
-  Ansible collection for automation server infrastructure management
-  including Docker, Terraform, Proxmox, and VM lifecycle management
+description: Ansible collection for automation server infrastructure management including Docker, Terraform, Proxmox, and VM lifecycle management
 license: GPL-3.0-or-later
 license_file: LICENSE
 
@@ -37,14 +36,6 @@ issues: https://github.com/basher83/Sombrero-Edge-Control/issues
 build_ignore:
   - .gitignore
   - changelogs/.plugin-cache.yaml
-  - .github/
-  - .devcontainer/
-  - tests/
-  - .venv/
-  - venv/
-  - node_modules/
-  - .pytest_cache/
-  - .tox/
 # A dict controlling use of manifest directives used in building the collection artifact. The key 'directives' is a
 # list of MANIFEST.in style
 # L(directives,https://packaging.python.org/en/latest/guides/using-manifest-in/#manifest-in-commands). The key
