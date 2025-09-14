@@ -8,14 +8,22 @@ name: "automation_server"
 version: 1.0.0
 readme: README.md
 authors:
-  - basher83 <basher83@github.com>
+  - basher83
 
-description: Ansible collection for automation server infrastructure management including Docker, Terraform, Proxmox, and VM lifecycle management
-license: GPL-3.0-or-later
-license_file: LICENSE
+description: Ansible collection for automation server infrastructure management
+license:
+  - MIT
 
-# TO-DO: update the tags based on your content type
-tags: ["infrastructure", "automation", "docker", "terraform", "proxmox", "vm", "devops", "linux"]
+tags:
+  - infrastructure
+  - configuration
+  - automation
+  - docker
+  - terraform
+  - proxmox
+  - vm
+  - devops
+  - linux
 
 # TO-DO: maintain this list to reflect the collection's dependencies
 dependencies:

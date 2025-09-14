@@ -1,8 +1,8 @@
 # Ansible Collection Structure Migration Plan
 
-**Status**: 🔵 Proposed  
-**Date**: 2025-09-10  
-**Author**: Development Team  
+**Status**: 🔵 Proposed
+**Date**: 2025-09-10
+**Author**: Development Team
 **Impact**: High - Restructures entire Ansible codebase
 
 ## Executive Summary
@@ -26,8 +26,8 @@ ansible/
 
 ```text
 ansible_collections/
-└── sombrero/
-    └── edge_control/
+└── basher83/
+    └── automation_server/
         ├── docs/
         ├── galaxy.yml
         ├── meta/
@@ -42,7 +42,7 @@ ansible_collections/
         │   ├── docker_validation/
         │   ├── development-tools/
         │   ├── firewall/
-        │   ├── jump_host_base/
+        │   ├── automation_server_base/
         │   ├── security_hardening/
         │   └── smoke_test/
         ├── playbooks/
@@ -69,7 +69,7 @@ ansible_collections/
 - Self-contained, distributable unit
 - Versioned releases possible
 - Can be published to Ansible Galaxy (private or public)
-- Clear namespace: `sombrero.edge_control`
+- Clear namespace: `basher83.automation_server`
 
 ### 3. **Better Testing**
 
@@ -194,10 +194,10 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 
 ## Implementation Checklist
 
-- [ ] Create ADR for architectural decision
-- [ ] Set up collection directory structure
-- [ ] Create galaxy.yml and meta files
-- [ ] Migrate first role (docker) as proof of concept
+- [x] Create ADR for architectural decision
+- [x] Set up collection directory structure
+- [x] Create galaxy.yml and meta files
+- [x] Migrate first role (docker) as proof of concept
 - [ ] Update ansible-lint configuration
 - [ ] Create migration script for automation
 - [ ] Update mise tasks for new structure

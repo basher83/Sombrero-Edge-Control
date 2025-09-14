@@ -1,17 +1,17 @@
 # Ansible Collection Migration Guide
 
-**Purpose**: Step-by-step technical guide for migrating from traditional Ansible structure to collection format  
-**Estimated Time**: 2-4 weeks  
+**Purpose**: Step-by-step technical guide for migrating from traditional Ansible structure to collection format
+**Estimated Time**: 2-4 weeks
 **Risk Level**: Medium (mitigated by parallel structure approach)
 
 ## Pre-Migration Checklist
 
-- [ ] Back up current ansible/ directory
-- [ ] Document all current playbook entry points
-- [ ] List all external dependencies (requirements.yml)
-- [ ] Identify custom filters/plugins if any
-- [ ] Review current ansible-lint warnings
-- [ ] Set up test environment
+- [x] Back up current ansible/ directory
+- [x] Document all current playbook entry points
+- [x] List all external dependencies (requirements.yml)
+- [x] Identify custom filters/plugins if any
+- [x] Review current ansible-lint warnings
+- [x] Set up test environment
 
 ## Step 1: Create Collection Structure
 
@@ -32,12 +32,12 @@ name: automation_server
 version: 1.0.0
 readme: README.md
 authors:
-  - Sombrero Edge Control Team <team@example.com>
+  - basher83
 description: >-
   Ansible collection for managing jump host infrastructure on Proxmox,
   including Docker setup, security hardening, and development tools.
 license:
-  - GPL-3.0-or-later
+  - MIT
 tags:
   - infrastructure
   - proxmox
@@ -146,7 +146,7 @@ cp ansible/playbooks/*.yml ansible_collections/basher83/automation_server/playbo
   roles:
     - basher83.automation_server.docker
     - basher83.automation_server.docker_validation
-    - basher83.automation_server.development_tools  # Note: hyphen changed to underscore
+    - basher83.automation_server.development_tools # Note: hyphen changed to underscore
     - basher83.automation_server.firewall
 ```
 
@@ -192,17 +192,17 @@ verbosity: 1
 exclude_paths:
   - .cache/
   - .github/
-  - ansible/  # Exclude old structure during migration
+  - ansible/ # Exclude old structure during migration
 
 use_default_rules: true
 enable_list:
-  - fqcn  # Enforce fully qualified collection names
+  - fqcn # Enforce fully qualified collection names
   - no-same-owner
 
 skip_list: []
 
 warn_list:
-  - experimental  # Warn on experimental features
+  - experimental # Warn on experimental features
 
 # Collection-specific settings
 collections_path:
