@@ -4,15 +4,15 @@
 
 galaxy_info:
   role_name: terraform_outputs
-  namespace: sombrero_edge
-  author: Sombrero Edge Control Infrastructure Team
+  namespace: basher83
+  author: basher83 Infrastructure Team
   description: |
     Parse Terraform outputs and integrate them with Ansible inventory management.
     Provides seamless integration between Terraform-provisioned infrastructure
     and Ansible automation workflows with dynamic inventory generation and
     variable integration capabilities.
 
-  company: Sombrero Edge Control
+  company: basher83
   license: MIT
 
   min_ansible_version: "2.15"

@@ -4,6 +4,7 @@
 
 - name: Test Docker role installation
   hosts: localhost
+  connection: local
   become: true
   gather_facts: true
 

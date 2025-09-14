@@ -4,15 +4,15 @@
 
 galaxy_info:
   role_name: vm_diagnostics
-  namespace: sombrero_edge
-  author: Sombrero Edge Control Infrastructure Team
+  namespace: basher83
+  author: basher83 Infrastructure Team
   description: |
     Comprehensive VM diagnostics and troubleshooting capabilities for systematic
     problem analysis and resolution. Provides automated diagnostic workflows
     across system health, log analysis, network connectivity, service status,
     performance monitoring, and troubleshooting automation.
 
-  company: Sombrero Edge Control
+  company: basher83
   license: MIT
 
   min_ansible_version: "2.15"

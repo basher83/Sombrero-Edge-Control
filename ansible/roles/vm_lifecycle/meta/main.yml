@@ -4,14 +4,14 @@
 
 galaxy_info:
   role_name: vm_lifecycle
-  namespace: sombrero_edge
-  author: Sombrero Edge Control Infrastructure Team
+  namespace: basher83
+  author: basher83 Infrastructure Team
   description: |
     Comprehensive VM lifecycle management including rollback operations, cleanup
     automation, reset procedures, and infrastructure state management. Provides
     systematic approaches to infrastructure recovery and maintenance operations.
 
-  company: Sombrero Edge Control
+  company: basher83
   license: MIT
 
   min_ansible_version: "2.15"

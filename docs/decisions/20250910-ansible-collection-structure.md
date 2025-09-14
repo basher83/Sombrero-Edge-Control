@@ -25,7 +25,7 @@ organization, and aligns with modern Ansible development practices.
 
 2. **Improved Code Organization**
    - Self-contained, distributable unit
-   - Clear namespace (sombrero.edge_control)
+   - Clear namespace (basher83.automation_server)
    - Versioned releases possible
    - Plugin development support
 

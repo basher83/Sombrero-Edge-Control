@@ -2,7 +2,7 @@
 galaxy_info:
   author: DevOps Team
   description: Comprehensive security hardening role for Ubuntu servers
-  company: Sombrero Edge Control
+  company: basher83
   license: MIT
   min_ansible_version: "2.9"
 

@@ -2,7 +2,7 @@
 galaxy_info:
   author: AI IDE Agent
   description: Validates Proxmox infrastructure readiness before deployment operations
-  company: Sombrero Edge Control
+  company: basher83
 
   license: MIT
 

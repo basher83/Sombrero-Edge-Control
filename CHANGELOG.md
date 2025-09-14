@@ -14,8 +14,9 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 - **Ansible Collection Migration**: Comprehensive migration strategy and documentation for transitioning to Ansible collections structure
 - **Ansible Development Tools**: Added ansible-dev-tools, uv, python 3.12, and antsibull-changelog
   to mise.toml for enhanced Ansible development workflow
-- **Ansible Collection Structure**: Complete basher83.automation_server collection with 10 migrated roles,
-  8 playbooks, inventory, and CI/CD configuration
+- **Ansible Collection Structure**: Complete basher83.automation_server collection with 11 migrated roles
+  (development-tools, docker, docker_validation, firewall, proxmox_validation, run, security,
+  terraform_outputs, vm_diagnostics, vm_lifecycle, vm_smoke_tests), 8 playbooks, inventory, and CI/CD configuration
 - **Docker Role Enhancements**: Complete refactoring with log rotation, error handling, and Molecule testing framework
 - **Docker Log Rotation**: Implemented json-file driver configuration with max-size and max-file limits
 - **Molecule Testing**: Added complete test framework for Docker role validation
@@ -29,12 +30,12 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Changed
 
-- **Docker Role Structure**: Applied FQCN (Fully Qualified Collection Names) throughout all tasks
+- **Docker Role Structure**: Applied FQCN (fully qualified collection name) throughout all tasks
 - **Variable Management**: Moved all Docker role variables from vars/ to defaults/ for proper precedence
 - **Error Handling**: Added comprehensive block/rescue/always patterns with backup and rollback mechanisms
 - **MegaLinter Configuration**: Optimized performance with fast mode and non-blocking errors
 - **Documentation Structure**: Added comprehensive guides for Ansible collection migration
-- **Namespace References**: Updated all documentation from 'sombrero.edge_control' to 'basher83.automation_server' namespace
+- **Namespace References**: Updated all documentation and metadata from 'sombrero.edge_control' and 'sombrero_edge' to 'basher83.automation_server' namespace
 - **CI Workflows**: Simplified and fixed workflow syntax issues
 
 ### Fixed

@@ -25,7 +25,7 @@ truncate = true
 [tools]
 # Core tools
 packer = "1.14.2"
-terraform = "1.13.2"    # Pin to Terraform >=1.10 for Ephemeral Resources support
+terraform = "1.13.2"                # Pin to Terraform >=1.10 for Ephemeral Resources support
 ansible-core = "2.19.1"
 "pipx:ansible-dev-tools" = "latest"
 uv = "latest"
@@ -45,10 +45,10 @@ pre-commit = "4.3.0" # Git hook framework
 terrascan = "1.19.9" # Infrastructure security scanning
 
 # Linting and formatting tools
-yamllint = "1.37.1"          # YAML linting
-yamlfmt = "0.17.2"           # YAML formatting
-shellcheck = "0.11.0"        # Shell script linting
-markdownlint-cli2 = "0.18.1" # Markdown linting
+yamllint = "1.37.1"                   # YAML linting
+yamlfmt = "0.17.2"                    # YAML formatting
+shellcheck = "0.11.0"                 # Shell script linting
+markdownlint-cli2 = "0.18.1"          # Markdown linting
 act = "0.2.81"
 "pipx:antsibull-changelog" = "latest"
 
