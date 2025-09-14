@@ -1,0 +1,41 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    # Test configuration
+    docker_installation_mode: install
+    docker_users_list:
+      - root
+    docker_enable_cleanup_cron: true
+    docker_configure_log_rotation: true
+    docker_log_max_size: "5m"
+    docker_log_max_files: "2"
+    docker_enable_user_namespace_remapping: false  # Disabled for testing
+    docker_validation_tests:
+      - engine_version
+      - compose_plugin
+      - service_status
+      - socket_permissions
+      - hello_world_test
+      - network_test
+      - volume_test
+    docker_debug_mode: true
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Python Docker module
+      ansible.builtin.pip:
+        name:
+          - docker
+          - requests
+        state: present
+
+  tasks:
+    - name: Include Docker role
+      ansible.builtin.include_role:
+        name: docker
