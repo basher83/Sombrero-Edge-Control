@@ -26,7 +26,7 @@ Based on research of existing Ansible Docker collections:
 ## Requirements
 
 - Ubuntu 20.04, 22.04, or 24.04 LTS
-- Ansible 2.15 or higher
+- Ansible 2.19 or higher
 - Python docker module (installed automatically)
 - Minimum 512MB RAM
 - Kernel version 3.10+
@@ -285,7 +285,7 @@ Available handlers:
 Run molecule tests:
 
 ```bash
-cd ansible/roles/docker
+cd ansible_collections/basher83/automation_server/roles/docker
 molecule test
 ```
 
