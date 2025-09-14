@@ -1,0 +1,88 @@
+---
+# Security Hardening Main Tasks
+# This role implements comprehensive security hardening following CIS benchmarks
+
+- name: Display security hardening banner
+  ansible.builtin.debug:
+    msg: |
+      ============================================
+      Starting Security Hardening Role
+      CIS Level: {{ security_cis_level }}
+      Profile: {{ security_cis_profile }}
+      ============================================
+
+- name: Include preflight checks
+  ansible.builtin.include_tasks: preflight.yml
+  tags:
+    - security
+    - preflight
+
+- name: Apply SSH hardening
+  ansible.builtin.include_tasks: ssh-hardening.yml
+  tags:
+    - security
+    - ssh
+    - network
+  when: true
+
+- name: Apply kernel hardening
+  ansible.builtin.include_tasks: kernel-hardening.yml
+  tags:
+    - security
+    - kernel
+    - sysctl
+  when: security_kernel_hardening_enabled
+
+- name: Configure fail2ban
+  ansible.builtin.include_tasks: fail2ban.yml
+  tags:
+    - security
+    - fail2ban
+    - intrusion
+  when: security_fail2ban_enabled
+
+- name: Configure audit and logging
+  ansible.builtin.include_tasks: audit-logging.yml
+  tags:
+    - security
+    - audit
+    - logging
+  when: security_auditd_enabled
+
+- name: Apply system hardening
+  ansible.builtin.include_tasks: system-hardening.yml
+  tags:
+    - security
+    - system
+    - hardening
+
+- name: Run security validation
+  ansible.builtin.include_tasks: validation.yml
+  tags:
+    - security
+    - validation
+    - verify
+  when: security_validation_enabled
+
+- name: Generate security report
+  ansible.builtin.include_tasks: summary.yml
+  tags:
+    - security
+    - summary
+    - report
+  when: security_generate_report
+
+- name: Display completion message
+  ansible.builtin.debug:
+    msg: |
+      ============================================
+      Security Hardening Complete!
+      Report: {{ security_report_path }}
+
+      Applied configurations:
+      - SSH Hardening: ✓
+      - Kernel Parameters: {{ '✓' if security_kernel_hardening_enabled else '✗' }}
+      - Fail2ban: {{ '✓' if security_fail2ban_enabled else '✗' }}
+      - Audit & Logging: {{ '✓' if security_auditd_enabled else '✗' }}
+      - System Hardening: ✓
+      ============================================

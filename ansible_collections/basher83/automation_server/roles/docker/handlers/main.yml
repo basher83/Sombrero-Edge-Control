@@ -1,0 +1,46 @@
+---
+# Docker role handlers
+
+- name: restart docker
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+    daemon_reload: true
+  become: true
+  listen: "restart docker"
+
+- name: reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+  listen: "reload systemd"
+
+- name: reload docker
+  ansible.builtin.systemd:
+    name: docker
+    state: reloaded
+  become: true
+  listen: "reload docker"
+
+- name: update grub
+  ansible.builtin.command: update-grub
+  become: true
+  listen: "update grub"
+
+- name: reload ufw
+  community.general.ufw:
+    state: reloaded
+  become: true
+  listen: "reload ufw"
+
+- name: reload firewalld
+  ansible.builtin.systemd:
+    name: firewalld
+    state: reloaded
+  become: true
+  listen: "reload firewalld"
+
+- name: prune docker system
+  ansible.builtin.command: docker system prune -af --volumes
+  become: true
+  listen: "prune docker system"

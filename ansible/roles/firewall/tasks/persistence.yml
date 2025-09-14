@@ -2,7 +2,7 @@
 # iptables persistence configuration
 
 - name: Ensure iptables rules directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/iptables
     state: directory
     owner: root
@@ -11,7 +11,7 @@
   become: true
 
 - name: Create backup directory
-  file:
+  ansible.builtin.file:
     path: "{{ firewall_rules_backup_dir }}"
     state: directory
     owner: root
@@ -23,14 +23,14 @@
 - name: Save current iptables rules
   block:
     - name: Save IPv4 rules
-      shell: |
+      ansible.builtin.shell: |
         iptables-save > /etc/iptables/rules.v4
       become: true
       register: save_v4
       when: firewall_save_rules_on_change | bool
 
     - name: Save IPv6 rules
-      shell: |
+      ansible.builtin.shell: |
         ip6tables-save > /etc/iptables/rules.v6
       become: true
       register: save_v6
@@ -39,7 +39,7 @@
         - firewall_ipv6_enabled | bool
 
     - name: Create timestamped backup
-      shell: |
+      ansible.builtin.shell: |
         timestamp=$(date +%Y%m%d_%H%M%S)
         cp /etc/iptables/rules.v4 "{{ firewall_rules_backup_dir }}/rules.v4.${timestamp}"
         {% if firewall_ipv6_enabled %}
@@ -108,13 +108,13 @@
       become: true
 
     - name: Test rule restoration
-      command: /tmp/test-iptables-restore.sh
+      ansible.builtin.command: /tmp/test-iptables-restore.sh
       register: restore_test
       changed_when: false
       failed_when: false
 
     - name: Display restoration test results
-      debug:
+      ansible.builtin.debug:
         msg: "{{ restore_test.stdout_lines }}"
       when: firewall_debug_mode | bool
 
@@ -176,7 +176,7 @@
   when: firewall_docker_present | bool
 
 - name: Clean up old backups
-  shell: |
+  ansible.builtin.shell: |
     find {{ firewall_rules_backup_dir }} -name "rules.v*.2*" -mtime +30 -delete
   become: true
   when: firewall_create_backup | bool

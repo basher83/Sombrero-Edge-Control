@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Log Collection and Analysis Tasks
 
 - name: Log File Availability Check
@@ -11,12 +11,12 @@
       loop: "{{ log_collection_paths }}"
 
     - name: Identify available log files
-      set_fact:
+      ansible.builtin.set_fact:
         available_log_files: "{{ log_file_stats.results | selectattr('stat.exists', 'equalto', true) | map(attribute='item') | list }}"
         missing_log_files: "{{ log_file_stats.results | selectattr('stat.exists', 'equalto', false) | map(attribute='item') | list }}"
 
     - name: Record log availability results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'log_file_availability': {
             'status': 'PASS',
@@ -31,7 +31,7 @@
 
   rescue:
     - name: Record log availability check failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'log_file_availability': {
             'status': 'FAIL',
@@ -55,12 +55,12 @@
       register: logrotate_configs
 
     - name: Analyze log file sizes
-      set_fact:
+      ansible.builtin.set_fact:
         oversized_logs: "{{ log_file_details.results | selectattr('stat.size', 'defined') | selectattr('stat.size', '>', (log_analysis.max_log_size_mb * 1024 * 1024)) | map(attribute='item') | list }}"
         total_log_size_mb: "{{ (log_file_details.results | selectattr('stat.size', 'defined') | map(attribute='stat.size') | sum / 1024 / 1024) | round(2) }}"
 
     - name: Record log size analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'log_size_rotation_analysis': {
             'status': 'PASS' if oversized_logs | length == 0 else 'WARN',
@@ -73,12 +73,12 @@
         }) }}"
 
     - name: Update diagnostic counters for log analysis
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + (1 if oversized_logs | length == 0 else 0) }}"
 
   rescue:
     - name: Record log size analysis failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'log_size_rotation_analysis': {
             'status': 'FAIL',
@@ -125,11 +125,11 @@
       failed_when: false
 
     - name: Extract error counts from search results
-      set_fact:
+      ansible.builtin.set_fact:
         total_errors_found: "{{ error_pattern_search.stdout_lines | select('match', '^Total errors found:') | map('regex_replace', '^Total errors found: (\\d+)', '\\1') | first | default(0) | int }}"
 
     - name: Record error pattern detection results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'error_pattern_detection': {
             'status': 'PASS' if total_errors_found < 10 else 'WARN',
@@ -144,7 +144,7 @@
 
   rescue:
     - name: Record error pattern detection failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'error_pattern_detection': {
             'status': 'FAIL',
@@ -179,11 +179,11 @@
       become: true
 
     - name: Analyze recent activity
-      set_fact:
+      ansible.builtin.set_fact:
         recent_activity_lines: "{{ recent_log_activity.stdout_lines | length + recent_journal_entries.stdout_lines | length }}"
 
     - name: Record recent activity results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'recent_log_activity': {
             'status': 'PASS',
@@ -198,7 +198,7 @@
 
   rescue:
     - name: Record recent activity analysis failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'recent_log_activity': {
             'status': 'FAIL',
@@ -212,7 +212,7 @@
 - name: Log Collection and Archival
   block:
     - name: Create log collection subdirectory
-      file:
+      ansible.builtin.file:
         path: "{{ diagnostic_output_dir }}/logs"
         state: directory
         mode: '0755'
@@ -262,7 +262,7 @@
         mode: '0644'
 
     - name: Record log collection results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'log_collection_archival': {
             'status': 'PASS',
@@ -277,7 +277,7 @@
 
   rescue:
     - name: Record log collection failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'log_collection_archival': {
             'status': 'FAIL',

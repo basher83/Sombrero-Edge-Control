@@ -1,0 +1,16 @@
+---
+# Custom firewall rules configuration
+
+- name: Apply custom input rules
+  iptables:
+    chain: INPUT
+    protocol: "{{ item.protocol }}"
+    destination_port: "{{ item.port }}"
+    source: "{{ item.source | default('0.0.0.0/0') }}"
+    jump: ACCEPT
+    comment: "{{ item.comment | default(item.name) }}"
+  loop: "{{ firewall_custom_input_rules }}"
+  when:
+    - firewall_custom_input_rules is defined
+    - firewall_custom_input_rules | length > 0
+    - item.state == "enabled"

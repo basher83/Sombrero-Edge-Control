@@ -1,0 +1,110 @@
+---
+#SPDX-License-Identifier: MIT
+# Terraform Outputs Role - Main Tasks
+
+- name: Initialize terraform outputs session
+  set_fact:
+    terraform_outputs_session_id: "{{ ansible_date_time.epoch }}-{{ inventory_hostname }}"
+    terraform_outputs_start_time: "{{ ansible_date_time.epoch }}"
+    terraform_outputs_results: {}
+    terraform_parsed_outputs: {}
+    terraform_inventory_data: {}
+
+- name: Display terraform outputs session information
+  debug:
+    msg:
+      - "=== Terraform Outputs Integration ==="
+      - "Session ID: {{ terraform_outputs_session_id }}"
+      - "Project Path: {{ terraform_project_path }}"
+      - "Workspace: {{ terraform_workspace }}"
+      - "Parse All Outputs: {{ parse_all_outputs }}"
+      - "Generate Inventory: {{ inventory_generation.enabled }}"
+      - "Variable Integration: {{ variable_integration.enabled }}"
+
+- name: Validate terraform project prerequisites
+  include_tasks: validate_terraform_project.yml
+  tags: [validation, prerequisites]
+
+- name: Process single terraform project
+  include_tasks: parse_terraform_outputs.yml
+  vars:
+    project_path: "{{ terraform_project_path }}"
+    project_workspace: "{{ terraform_workspace }}"
+    project_environment: "{{ terraform_workspace }}"
+  when: terraform_projects | length == 0
+  tags: [parsing, single-project]
+
+- name: Process multiple terraform projects
+  include_tasks: parse_terraform_outputs.yml
+  vars:
+    project_path: "{{ item.path }}"
+    project_workspace: "{{ item.workspace | default('default') }}"
+    project_environment: "{{ item.environment | default(item.workspace) }}"
+  loop: "{{ terraform_projects }}"
+  when: terraform_projects | length > 0
+  tags: [parsing, multi-project]
+
+- name: Merge outputs from multiple projects
+  include_tasks: merge_project_outputs.yml
+  when:
+    - terraform_projects | length > 0
+    - merge_outputs | bool
+  tags: [merging, multi-project]
+
+- name: Validate parsed outputs
+  include_tasks: validate_outputs.yml
+  when: validate_outputs | bool
+  tags: [validation, outputs]
+
+- name: Generate Ansible inventory
+  include_tasks: generate_inventory.yml
+  when: inventory_generation.enabled | bool
+  tags: [inventory, generation]
+
+- name: Integrate variables with Ansible
+  include_tasks: integrate_variables.yml
+  when: variable_integration.enabled | bool
+  tags: [variables, integration]
+
+- name: Perform state validation
+  include_tasks: validate_state.yml
+  when: state_validation.enabled | bool
+  tags: [validation, state]
+
+- name: Cache outputs for performance
+  include_tasks: cache_outputs.yml
+  when: performance.cache_outputs | bool
+  tags: [caching, performance]
+
+- name: Cleanup temporary files
+  include_tasks: cleanup_temp_files.yml
+  when: cleanup.cleanup_temp_files | bool
+  tags: [cleanup, maintenance]
+
+- name: Display terraform outputs session summary
+  debug:
+    msg:
+      - "=== Terraform Outputs Session Complete ==="
+      - "Session ID: {{ terraform_outputs_session_id }}"
+      - "Duration: {{ (ansible_date_time.epoch | int) - (terraform_outputs_start_time | int) }} seconds"
+      - "Projects Processed: {{ terraform_projects | length if terraform_projects | length > 0 else 1 }}"
+      - "Outputs Parsed: {{ terraform_parsed_outputs | length }}"
+      - "Inventory Generated: {{ inventory_generation.enabled | default(false) }}"
+      - "Variables Integrated: {{ variable_integration.enabled | default(false) }}"
+
+- name: Set terraform outputs completion facts
+  set_fact:
+    terraform_outputs_completed: true
+    terraform_outputs_status: "{{ terraform_outputs_operation_status | default('SUCCESS') }}"
+    terraform_outputs_summary:
+      session_id: "{{ terraform_outputs_session_id }}"
+      start_time: "{{ terraform_outputs_start_time }}"
+      end_time: "{{ ansible_date_time.epoch }}"
+      duration: "{{ (ansible_date_time.epoch | int) - (terraform_outputs_start_time | int) }}"
+      projects_processed: "{{ (terraform_projects | default([])) | length if (terraform_projects | default([])) | length > 0 else 1 }}"
+      outputs_parsed: "{{ terraform_parsed_outputs | length }}"
+      inventory_generated: "{{ inventory_generation.enabled | default(false) }}"
+      inventory_location: "{{ inventory_generation.output_path | default(None) if inventory_generation.enabled | default(false) else None }}"
+      variables_integrated: "{{ variable_integration.enabled | default(false) }}"
+      parsed_outputs: "{{ terraform_parsed_outputs }}"
+      results: "{{ terraform_outputs_results }}"

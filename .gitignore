@@ -82,3 +82,4 @@ packer/output-*/
 # Thoughts directory (operational knowledge base)
 # This directory contains personal and team notes that should not be in the main repo
 thoughts/
+.ansible/

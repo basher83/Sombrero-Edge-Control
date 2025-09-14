@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # System Diagnostics Tasks
 
 - name: Gather system facts for diagnostics
@@ -16,25 +16,25 @@
 - name: System Hardware Information Collection
   block:
     - name: Collect CPU information
-      command: cat /proc/cpuinfo
+      ansible.builtin.command: cat /proc/cpuinfo
       register: cpu_info_raw
       changed_when: false
       failed_when: false
 
     - name: Collect memory information
-      command: cat /proc/meminfo
+      ansible.builtin.command: cat /proc/meminfo
       register: memory_info_raw
       changed_when: false
       failed_when: false
 
     - name: Collect disk information
-      command: lsblk -J
+      ansible.builtin.command: lsblk -J
       register: disk_info_raw
       changed_when: false
       failed_when: false
 
     - name: Process system hardware results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'system_hardware': {
             'status': 'PASS',
@@ -50,7 +50,7 @@
 
   rescue:
     - name: Record system hardware failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'system_hardware': {
             'status': 'FAIL',
@@ -64,22 +64,22 @@
 - name: System Resource Analysis
   block:
     - name: Check disk space usage
-      command: df -h
+      ansible.builtin.command: df -h
       register: disk_usage
       changed_when: false
 
     - name: Check memory usage
-      command: free -h
+      ansible.builtin.command: free -h
       register: memory_usage
       changed_when: false
 
     - name: Check system load
-      set_fact:
+      ansible.builtin.set_fact:
         current_load: "{{ ansible_loadavg[0] | default(ansible_loadavg['1min']) | default(0) }}"
       when: ansible_loadavg is defined
 
     - name: Analyze resource utilization
-      set_fact:
+      ansible.builtin.set_fact:
         resource_analysis:
           disk_usage_critical: "{{ (ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | default(0) / ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | default(1)) < 0.1 }}"
           memory_usage_critical: "{{ ((ansible_memtotal_mb - ansible_memfree_mb) / ansible_memtotal_mb) > 0.9 if ansible_memtotal_mb is defined and ansible_memfree_mb is defined else false }}"
@@ -87,7 +87,7 @@
       when: ansible_mounts is defined
 
     - name: Record resource analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'system_resources': {
             'status': 'PASS' if not (resource_analysis.disk_usage_critical | default(false) or resource_analysis.memory_usage_critical | default(false) or resource_analysis.load_average_critical | default(false)) else 'WARN',
@@ -99,7 +99,7 @@
         }) }}"
 
     - name: Add resource warnings if needed
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'system_resources': vm_diagnostic_results.system_resources | combine({
             'warnings': vm_diagnostic_results.system_resources.warnings + [
@@ -112,12 +112,12 @@
       when: resource_analysis is defined
 
     - name: Update diagnostic counters for resources
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + 1 }}"
 
   rescue:
     - name: Record system resource failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'system_resources': {
             'status': 'FAIL',
@@ -129,25 +129,25 @@
 - name: Kernel and Boot Analysis
   block:
     - name: Collect kernel information
-      command: uname -a
+      ansible.builtin.command: uname -a
       register: kernel_info
       changed_when: false
 
     - name: Check boot time and uptime
-      command: uptime -s
+      ansible.builtin.command: uptime -s
       register: boot_time
       changed_when: false
       failed_when: false
 
     - name: Collect kernel module information
-      command: lsmod
+      ansible.builtin.command: lsmod
       register: kernel_modules
       changed_when: false
       failed_when: false
       when: advanced_diagnostics.kernel_module_analysis | bool
 
     - name: Analyze boot and kernel status
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'kernel_boot_analysis': {
             'status': 'PASS',
@@ -162,7 +162,7 @@
 
   rescue:
     - name: Record kernel analysis failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'kernel_boot_analysis': {
             'status': 'FAIL',
@@ -176,26 +176,26 @@
 - name: Filesystem Health Checks
   block:
     - name: Check filesystem types and options
-      command: mount
+      ansible.builtin.command: mount
       register: mount_info
       changed_when: false
 
     - name: Check inode usage
-      shell: df -i | awk 'NR>1 {print $1, $5}' | sed 's/%//'
+      ansible.builtin.shell: df -i | awk 'NR>1 {print $1, $5}' | sed 's/%//'
       register: inode_usage
       changed_when: false
 
     - name: Analyze filesystem health
-      set_fact:
+      ansible.builtin.set_fact:
         filesystem_warnings: []
 
     - name: Check for high inode usage
-      set_fact:
+      ansible.builtin.set_fact:
         filesystem_warnings: "{{ filesystem_warnings + ['High inode usage detected on some filesystems'] }}"
       when: inode_usage.stdout_lines | map('regex_replace', '^\\S+\\s+(\\d+).*', '\\1') | map('int') | max > performance_thresholds.inode_usage_warning
 
     - name: Record filesystem analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'filesystem_health': {
             'status': 'PASS' if filesystem_warnings | length == 0 else 'WARN',
@@ -208,7 +208,7 @@
 
   rescue:
     - name: Record filesystem check failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'filesystem_health': {
             'status': 'FAIL',
@@ -222,19 +222,19 @@
 - name: SMART Disk Health Checks
   block:
     - name: Check for smartctl availability
-      command: which smartctl
+      ansible.builtin.command: which smartctl
       register: smartctl_available
       changed_when: false
       failed_when: false
 
     - name: Get list of disk devices
-      shell: lsblk -dno NAME | grep -v loop
+      ansible.builtin.shell: lsblk -dno NAME | grep -v loop
       register: disk_devices
       changed_when: false
       when: smartctl_available.rc == 0
 
     - name: Run SMART checks on disks
-      shell: smartctl -H /dev/{{ item }}
+      ansible.builtin.shell: smartctl -H /dev/{{ item }}
       register: smart_health
       changed_when: false
       failed_when: false
@@ -244,13 +244,13 @@
         - disk_devices is defined
 
     - name: Analyze SMART results
-      set_fact:
+      ansible.builtin.set_fact:
         smart_status: "{{ 'PASS' if smart_health.results | selectattr('rc', 'ne', 0) | list | length == 0 else 'WARN' }}"
         smart_details: "{{ smart_health.results | default([]) | map(attribute='stdout') | list }}"
       when: smart_health is defined
 
     - name: Record SMART analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'smart_disk_health': {
             'status': smart_status | default('SKIP'),
@@ -264,7 +264,7 @@
 
   rescue:
     - name: Record SMART check failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'smart_disk_health': {
             'status': 'FAIL',

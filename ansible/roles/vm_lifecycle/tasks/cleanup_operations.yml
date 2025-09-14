@@ -1,9 +1,9 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Cleanup Operations Tasks
 
 - name: Initialize cleanup operation
-  set_fact:
+  ansible.builtin.set_fact:
     lifecycle_operation_log: "{{ lifecycle_operation_log + ['Starting cleanup operation at ' + ansible_date_time.iso8601] }}"
     cleanup_results: {}
 
@@ -19,7 +19,7 @@
       when: "'terraform_state_backup' in cleanup_artifacts"
 
     - name: Clean Terraform cache directories
-      file:
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
       loop: "{{ terraform_cache_dirs.files | default([]) }}"
@@ -38,7 +38,7 @@
       when: "'terraform_state_backup' in cleanup_artifacts"
 
     - name: Clean Terraform plan files
-      file:
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
       loop: "{{ terraform_plan_files.files | default([]) }}"
@@ -48,7 +48,7 @@
         - not dry_run_mode | bool
 
     - name: Record Terraform cleanup results
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'terraform_cleanup': {
             'status': 'SUCCESS',
@@ -58,12 +58,12 @@
         }) }}"
 
     - name: Log Terraform cleanup completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Terraform artifacts cleanup completed at ' + ansible_date_time.iso8601] }}"
 
   rescue:
     - name: Record Terraform cleanup failure
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'terraform_cleanup': {
             'status': 'FAILED',
@@ -86,7 +86,7 @@
       when: "'ansible_facts_cache' in cleanup_artifacts"
 
     - name: Clean Ansible facts cache
-      file:
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
       loop: "{{ ansible_cache_files.files | default([]) }}"
@@ -96,7 +96,7 @@
         - not dry_run_mode | bool
 
     - name: Record Ansible cache cleanup results
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'ansible_cache_cleanup': {
             'status': 'SUCCESS',
@@ -105,12 +105,12 @@
         }) }}"
 
     - name: Log Ansible cache cleanup completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Ansible cache cleanup completed at ' + ansible_date_time.iso8601] }}"
 
   rescue:
     - name: Record Ansible cache cleanup failure
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'ansible_cache_cleanup': {
             'status': 'FAILED',
@@ -124,7 +124,7 @@
 - name: SSH known_hosts cleanup
   block:
     - name: Find SSH known_hosts entries for cleanup
-      shell: |
+      ansible.builtin.shell: |
         for host_pattern in {{ ssh_cleanup.host_patterns_to_remove | join(' ') }}; do
           grep -c "$host_pattern" {{ ssh_cleanup.ssh_config_locations | first }} || echo "0"
         done
@@ -147,7 +147,7 @@
       failed_when: false
 
     - name: Record SSH cleanup results
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'ssh_cleanup': {
             'status': 'SUCCESS',
@@ -156,12 +156,12 @@
         }) }}"
 
     - name: Log SSH cleanup completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['SSH known_hosts cleanup completed at ' + ansible_date_time.iso8601] }}"
 
   rescue:
     - name: Record SSH cleanup failure
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'ssh_cleanup': {
             'status': 'FAILED',
@@ -184,7 +184,7 @@
       when: "'temporary_files' in cleanup_artifacts"
 
     - name: Clean temporary files
-      file:
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
       loop: "{{ temp_files_found.files | default([]) }}"
@@ -195,7 +195,7 @@
         - filesystem_cleanup.clean_temp_files | bool
 
     - name: Record temporary files cleanup results
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'temp_files_cleanup': {
             'status': 'SUCCESS',
@@ -204,12 +204,12 @@
         }) }}"
 
     - name: Log temporary files cleanup completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Temporary files cleanup completed at ' + ansible_date_time.iso8601] }}"
 
   rescue:
     - name: Record temporary files cleanup failure
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'temp_files_cleanup': {
             'status': 'FAILED',
@@ -232,7 +232,7 @@
       when: backup_retention_days | int > 0
 
     - name: Clean old backup files
-      file:
+      ansible.builtin.file:
         path: "{{ item.path }}"
         state: absent
       loop: "{{ old_backups.files | default([]) }}"
@@ -242,7 +242,7 @@
         - not dry_run_mode | bool
 
     - name: Record backup cleanup results
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'backup_cleanup': {
             'status': 'SUCCESS',
@@ -251,12 +251,12 @@
         }) }}"
 
     - name: Log backup cleanup completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Old backup cleanup completed at ' + ansible_date_time.iso8601] }}"
 
   rescue:
     - name: Record backup cleanup failure
-      set_fact:
+      ansible.builtin.set_fact:
         cleanup_results: "{{ cleanup_results | combine({
           'backup_cleanup': {
             'status': 'FAILED',
@@ -268,24 +268,24 @@
   when: backup_retention_days | int > 0
 
 - name: Calculate cleanup success rate
-  set_fact:
+  ansible.builtin.set_fact:
     cleanup_success_count: "{{ cleanup_results | dict2items | selectattr('value.status', 'equalto', 'SUCCESS') | list | length }}"
     cleanup_total_count: "{{ cleanup_results | dict2items | list | length }}"
     cleanup_success_rate: "{{ ((cleanup_results | dict2items | selectattr('value.status', 'equalto', 'SUCCESS') | list | length / cleanup_results | dict2items | list | length) * 100) | round(2) if cleanup_results | dict2items | list | length > 0 else 100 }}"
 
 - name: Set cleanup operation status
-  set_fact:
+  ansible.builtin.set_fact:
     lifecycle_operation_status: "{{ 'SUCCESS' if cleanup_success_rate | float == 100 else ('PARTIAL' if cleanup_success_rate | float > 50 else 'FAILED') }}"
     lifecycle_operation_log: "{{ lifecycle_operation_log + ['Cleanup operation completed with ' + cleanup_success_rate | string + '% success rate at ' + ansible_date_time.iso8601] }}"
 
 - name: Set dry run cleanup status
-  set_fact:
+  ansible.builtin.set_fact:
     lifecycle_operation_status: "DRY_RUN_SUCCESS"
     lifecycle_operation_log: "{{ lifecycle_operation_log + ['Dry run cleanup operation completed at ' + ansible_date_time.iso8601] }}"
   when: dry_run_mode | bool
 
 - name: Display cleanup operation results
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Cleanup Operation Results ==="
       - "Overall Status: {{ lifecycle_operation_status }}"

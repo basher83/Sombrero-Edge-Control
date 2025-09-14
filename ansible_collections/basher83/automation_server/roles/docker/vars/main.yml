@@ -1,0 +1,22 @@
+---
+# Docker role internal variables
+# WARNING: These variables are for internal role use only and should not be overridden
+# User-configurable variables should be defined in defaults/main.yml
+
+# Docker system requirements (internal validation)
+docker_minimum_kernel_version: "3.10"
+docker_minimum_memory_mb: 512
+
+# Security defaults (internal recommendations)
+docker_security_opts_recommended:
+  - "no-new-privileges:true"
+  - "apparmor:docker-default"
+
+# System control settings required for Docker operation
+# These are applied when docker_configure_sysctl is enabled
+docker_sysctl_settings:
+  net.bridge.bridge-nf-call-iptables: 1
+  net.bridge.bridge-nf-call-ip6tables: 1
+  net.ipv4.ip_forward: 1
+  fs.inotify.max_user_watches: 524288
+  fs.inotify.max_user_instances: 512

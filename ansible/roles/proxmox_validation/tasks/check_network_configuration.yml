@@ -2,7 +2,7 @@
 # Check network configuration
 
 - name: Get network configuration from node
-  uri:
+  ansible.builtin.uri:
     url: "{{ proxmox_api_url }}/api2/json/nodes/{{ proxmox_node }}/network"
     method: GET
     headers:
@@ -12,14 +12,14 @@
   when: api_connectivity_passed | default(false)
 
 - name: Extract network interfaces
-  set_fact:
+  ansible.builtin.set_fact:
     network_interfaces: "{{ network_config.json.data | default([]) }}"
   when:
     - api_connectivity_passed | default(false)
     - network_config is not failed
 
 - name: Check for required bridge
-  set_fact:
+  ansible.builtin.set_fact:
     bridge_exists: "{{ network_interfaces | selectattr('iface', 'equalto', required_bridge) | list | length > 0 }}"
     bridge_info: "{{ network_interfaces | selectattr('iface', 'equalto', required_bridge) | list | first | default({}) }}"
   when:
@@ -27,13 +27,13 @@
     - required_bridge is defined
 
 - name: Check VLAN configuration if required
-  set_fact:
+  ansible.builtin.set_fact:
     vlan_configured: true
   when:
     - required_vlan is none or required_vlan == ""
 
 - name: Check specific VLAN if required
-  set_fact:
+  ansible.builtin.set_fact:
     vlan_configured: "{{ network_interfaces | selectattr('iface', 'match', '.*\\.' + (required_vlan | string)) | list | length > 0 }}"
   when:
     - required_vlan is defined
@@ -41,11 +41,11 @@
     - required_vlan != ""
 
 - name: Set network configuration status
-  set_fact:
+  ansible.builtin.set_fact:
     network_configured: "{{ bridge_exists | default(false) and vlan_configured | default(true) }}"
 
 - name: Display network configuration status
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Network Configuration:"
       - "  Required Bridge: {{ required_bridge }}"
@@ -56,7 +56,7 @@
       - "  Network Ready: {{ 'YES' if network_configured | default(false) else 'NO' }}"
 
 - name: List available bridges if required bridge not found
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Available bridges on node {{ proxmox_node }}:"
       - "{{ network_interfaces | selectattr('type', 'equalto', 'bridge') | map(attribute='iface') | list }}"
@@ -65,6 +65,6 @@
     - network_interfaces is defined
 
 - name: Warn if network not properly configured
-  debug:
+  ansible.builtin.debug:
     msg: "WARNING: Network configuration incomplete - deployment may fail"
   when: not (network_configured | default(false))

@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # System health validation tasks
 
 - name: Gather system facts for health checks
@@ -11,11 +11,11 @@
 - name: Check system load average
   block:
     - name: Get system load average
-      set_fact:
+      ansible.builtin.set_fact:
         current_load_1min: "{{ ansible_loadavg[0] | default(ansible_loadavg['1min'] | default(0)) | float }}"
 
     - name: Validate system load is within acceptable limits
-      assert:
+      ansible.builtin.assert:
         that:
           - current_load_1min <= max_load_average
         fail_msg: "System load too high: {{ current_load_1min }} (max: {{ max_load_average }})"
@@ -23,29 +23,29 @@
       register: load_check_result
 
     - name: Record load average test result
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'load_average': {'status': 'PASS', 'value': current_load_1min, 'threshold': max_load_average}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
 
   rescue:
     - name: Record load average test failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'load_average': {'status': 'FAIL', 'value': current_load_1min | default('N/A'), 'threshold': max_load_average, 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug load average failure
-      debug:
+      ansible.builtin.debug:
         msg: "Load average check failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
 - name: Check memory availability
   block:
     - name: Calculate memory usage percentage
-      set_fact:
+      ansible.builtin.set_fact:
         memory_free_percent: "{{ (ansible_memfree_mb / ansible_memtotal_mb * 100) | round(2) }}"
 
     - name: Validate sufficient memory available
-      assert:
+      ansible.builtin.assert:
         that:
           - memory_free_percent | float >= min_memory_percent
         fail_msg: "Low memory: {{ memory_free_percent }}% free (min: {{ min_memory_percent }}%)"
@@ -53,29 +53,29 @@
       register: memory_check_result
 
     - name: Record memory test result
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'memory_usage': {'status': 'PASS', 'free_percent': memory_free_percent, 'free_mb': ansible_memfree_mb, 'total_mb': ansible_memtotal_mb}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
 
   rescue:
     - name: Record memory test failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'memory_usage': {'status': 'FAIL', 'free_percent': memory_free_percent | default('N/A'), 'threshold': min_memory_percent, 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug memory failure
-      debug:
+      ansible.builtin.debug:
         msg: "Memory check failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
 - name: Check disk space on critical filesystems
   block:
     - name: Check if ansible_mounts is available
-      set_fact:
+      ansible.builtin.set_fact:
         mounts_available: "{{ ansible_mounts is defined }}"
 
     - name: Validate disk space for critical filesystems
-      assert:
+      ansible.builtin.assert:
         that:
           - (item.size_available / item.size_total * 100) >= min_disk_percent
         fail_msg: "Low disk space on {{ item.mount }}: {{ ((item.size_available / item.size_total) * 100) | round(2) }}% free (min: {{ min_disk_percent }}%)"
@@ -87,7 +87,7 @@
       register: disk_check_results
 
     - name: Record disk space test results
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'disk_space': {'status': 'PASS', 'filesystems': disk_space_details}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
       vars:
@@ -98,18 +98,18 @@
         - disk_check_results.results is defined
 
     - name: Skip disk space check if mounts not available
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'disk_space': {'status': 'SKIP', 'reason': 'ansible_mounts not available on this platform'}}) }}"
       when: not mounts_available
 
   rescue:
     - name: Record disk space test failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'disk_space': {'status': 'FAIL', 'threshold': min_disk_percent, 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug disk space failure
-      debug:
+      ansible.builtin.debug:
         msg: "Disk space check failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
@@ -124,23 +124,23 @@
       register: network_test_results
 
     - name: Record network connectivity test results
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'network_connectivity': {'status': 'PASS', 'tests': network_tests}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
 
   rescue:
     - name: Record network connectivity test failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'network_connectivity': {'status': 'FAIL', 'tests': network_tests, 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug network connectivity failure
-      debug:
+      ansible.builtin.debug:
         msg: "Network connectivity check failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
 - name: Display system health check summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "System Health Check Results:"
       - "  Load Average: {{ smoke_test_results.load_average.status | default('SKIP') }}"

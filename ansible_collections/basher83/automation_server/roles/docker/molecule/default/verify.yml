@@ -1,0 +1,137 @@
+---
+- name: Verify Docker installation
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Check Docker service is running
+      ansible.builtin.systemd:
+        name: docker
+      register: docker_service
+      check_mode: false
+
+    - name: Assert Docker service is active
+      ansible.builtin.assert:
+        that:
+          - docker_service.status.ActiveState == "active"
+        fail_msg: "Docker service is not active"
+        success_msg: "Docker service is running"
+
+    - name: Check Docker version
+      ansible.builtin.command: docker version
+      register: docker_version
+      changed_when: false
+
+    - name: Assert Docker is installed
+      ansible.builtin.assert:
+        that:
+          - docker_version.rc == 0
+        fail_msg: "Docker is not properly installed"
+        success_msg: "Docker is installed and accessible"
+
+    - name: Check Docker Compose plugin
+      ansible.builtin.command: docker compose version
+      register: compose_version
+      changed_when: false
+
+    - name: Assert Docker Compose plugin is installed
+      ansible.builtin.assert:
+        that:
+          - compose_version.rc == 0
+        fail_msg: "Docker Compose plugin is not installed"
+        success_msg: "Docker Compose plugin is installed"
+
+    - name: Check Docker socket permissions
+      ansible.builtin.stat:
+        path: /var/run/docker.sock
+      register: docker_socket
+
+    - name: Assert Docker socket has correct permissions
+      ansible.builtin.assert:
+        that:
+          - docker_socket.stat.exists
+          - docker_socket.stat.mode == "0660"
+        fail_msg: "Docker socket permissions are incorrect"
+        success_msg: "Docker socket permissions are correct"
+
+    - name: Test Docker functionality
+      community.docker.docker_container:
+        name: test-container
+        image: alpine:latest
+        command: echo "Docker is working"
+        state: started
+        auto_remove: true
+      register: container_test
+
+    - name: Assert Docker can run containers
+      ansible.builtin.assert:
+        that:
+          - container_test.changed
+        fail_msg: "Docker cannot run containers"
+        success_msg: "Docker can successfully run containers"
+
+    - name: Check Docker cleanup cron job
+      ansible.builtin.command: crontab -l
+      register: cron_jobs
+      changed_when: false
+      failed_when: false
+
+    - name: Assert cleanup cron job exists
+      ansible.builtin.assert:
+        that:
+          - "'docker system prune' in cron_jobs.stdout"
+        fail_msg: "Docker cleanup cron job not configured"
+        success_msg: "Docker cleanup cron job is configured"
+
+    - name: Check Docker daemon configuration
+      ansible.builtin.command: docker info --format json
+      register: docker_info_json
+      changed_when: false
+
+    - name: Parse Docker info
+      ansible.builtin.set_fact:
+        docker_info: "{{ docker_info_json.stdout | from_json }}"
+
+    - name: Assert log rotation is configured
+      ansible.builtin.assert:
+        that:
+          - docker_info.LoggingDriver == "json-file"
+        fail_msg: "Docker log rotation not properly configured"
+        success_msg: "Docker log rotation is configured"
+
+    - name: Test Docker network creation
+      community.docker.docker_network:
+        name: test_network
+        driver: bridge
+        state: present
+      register: network_test
+
+    - name: Assert Docker network can be created
+      ansible.builtin.assert:
+        that:
+          - network_test.changed or network_test.exists
+        fail_msg: "Docker network creation failed"
+        success_msg: "Docker network creation successful"
+
+    - name: Clean up test network
+      community.docker.docker_network:
+        name: test_network
+        state: absent
+
+    - name: Test Docker volume creation
+      community.docker.docker_volume:
+        name: test_volume
+        state: present
+      register: volume_test
+
+    - name: Assert Docker volume can be created
+      ansible.builtin.assert:
+        that:
+          - volume_test.changed or volume_test.volume.Name == "test_volume"
+        fail_msg: "Docker volume creation failed"
+        success_msg: "Docker volume creation successful"
+
+    - name: Clean up test volume
+      community.docker.docker_volume:
+        name: test_volume
+        state: absent

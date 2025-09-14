@@ -1,9 +1,9 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Generate Ansible Inventory from Terraform Outputs
 
 - name: Initialize inventory generation
-  set_fact:
+  ansible.builtin.set_fact:
     inventory_data: {}
     inventory_hosts: {}
     inventory_groups: {}
@@ -21,7 +21,7 @@
 - name: Process outputs for inventory generation
   block:
     - name: Build host entries from outputs
-      set_fact:
+      ansible.builtin.set_fact:
         inventory_hosts: "{{ inventory_hosts | combine({
           host_name: {
             'ansible_host': terraform_parsed_outputs[project_env][host_configuration.ip_source] | default(''),
@@ -38,7 +38,7 @@
       when: terraform_parsed_outputs[item.key] | length > 0
 
     - name: Add Terraform variables to hosts
-      set_fact:
+      ansible.builtin.set_fact:
         inventory_hosts: "{{ inventory_hosts | combine({
           host_name: inventory_hosts[host_name] | combine({
             (variable_integration.namespace + '_' + tf_var.key): tf_var.value
@@ -56,15 +56,15 @@
 
   rescue:
     - name: Handle host processing failure
-      debug:
+      ansible.builtin.debug:
         msg: "Failed to process hosts from outputs, continuing with empty inventory"
-      set_fact:
+      ansible.builtin.set_fact:
         inventory_hosts: {}
 
 - name: Generate inventory groups
   block:
     - name: Create default groups
-      set_fact:
+      ansible.builtin.set_fact:
         inventory_groups: "{{ inventory_groups | combine({
           item: {
             'hosts': {},
@@ -74,7 +74,7 @@
       loop: "{{ group_configuration.default_groups }}"
 
     - name: Group hosts by configured attributes
-      set_fact:
+      ansible.builtin.set_fact:
         inventory_groups: "{{ inventory_groups | combine({
           group_name: {
             'hosts': inventory_groups[group_name].hosts | default({}) | combine({
@@ -93,7 +93,7 @@
       when: group_attr in inventory_hosts[item.key]
 
     - name: Add all hosts to default groups
-      set_fact:
+      ansible.builtin.set_fact:
         inventory_groups: "{{ inventory_groups | combine({
           item: {
             'hosts': inventory_groups[item].hosts | combine(inventory_hosts),
@@ -104,16 +104,16 @@
 
   rescue:
     - name: Handle group processing failure
-      debug:
+      ansible.builtin.debug:
         msg: "Failed to process groups, using minimal group structure"
-      set_fact:
+      ansible.builtin.set_fact:
         inventory_groups:
           all:
             hosts: "{{ inventory_hosts }}"
             vars: {}
 
 - name: Build final inventory structure
-  set_fact:
+  ansible.builtin.set_fact:
     inventory_data:
       all:
         children: "{{ inventory_groups }}"
@@ -157,13 +157,13 @@
 - name: Validate generated inventory
   block:
     - name: Test inventory file syntax
-      shell: ansible-inventory -i {{ inventory_generation.output_path }} --list
+      ansible.builtin.shell: ansible-inventory -i {{ inventory_generation.output_path }} --list
       register: inventory_validation
       delegate_to: localhost
       when: inventory_generation.validate_generated | bool
 
     - name: Validate inventory content
-      assert:
+      ansible.builtin.assert:
         that:
           - inventory_validation.rc == 0
           - inventory_validation.stdout | from_json | length > 0
@@ -174,7 +174,7 @@
 
   rescue:
     - name: Handle inventory validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Inventory validation failed but continuing: {{ ansible_failed_result.msg }}"
       when: error_handling.continue_on_output_errors | bool
 
@@ -184,7 +184,7 @@
       when: not error_handling.continue_on_output_errors | bool
 
 - name: Store inventory generation results
-  set_fact:
+  ansible.builtin.set_fact:
     terraform_inventory_data: "{{ inventory_data }}"
     terraform_outputs_results: "{{ terraform_outputs_results | combine({
       'inventory_generation': {
@@ -197,7 +197,7 @@
     }) }}"
 
 - name: Display inventory generation summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Inventory Generation Complete ==="
       - "Output Path: {{ inventory_generation.output_path }}"

@@ -15,27 +15,27 @@
   when: api_connectivity_passed | default(false)
 
 - name: Filter for templates
-  set_fact:
+  ansible.builtin.set_fact:
     templates: "{{ vm_list.proxmox_vms | default([]) | selectattr('template', 'defined') | selectattr('template', 'equalto', 1) | list }}"
   when:
     - api_connectivity_passed | default(false)
     - vm_list is not failed
 
 - name: Check for required template by ID
-  set_fact:
+  ansible.builtin.set_fact:
     template_by_id: "{{ templates | selectattr('vmid', 'equalto', required_template_id | int) | list | first | default({}) }}"
     template_exists: false
   when: templates is defined
 
 - name: Check for template by name pattern
-  set_fact:
+  ansible.builtin.set_fact:
     template_by_name: "{{ templates | selectattr('name', 'match', template_name_pattern) | list }}"
   when:
     - templates is defined
     - template_name_pattern is defined
 
 - name: Set template existence status
-  set_fact:
+  ansible.builtin.set_fact:
     template_exists: true
     found_template_id: "{{ template_by_id.vmid | default(template_by_name[0].vmid | default(none)) }}"
     found_template_name: "{{ template_by_id.name | default(template_by_name[0].name | default('Not found')) }}"
@@ -43,7 +43,7 @@
     - template_by_id.vmid is defined or (template_by_name | default([]) | length > 0)
 
 - name: Display template validation results
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Template Validation:"
       - "  Required Template ID: {{ required_template_id }}"
@@ -52,7 +52,7 @@
       - "  Found Template: {{ found_template_name | default('None') }} (ID: {{ found_template_id | default('N/A') }})"
 
 - name: List available templates if required template not found
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Available templates on node {{ proxmox_node }}:"
       - "{{ templates | map(attribute='name') | list }}"

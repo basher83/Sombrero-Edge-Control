@@ -1,0 +1,102 @@
+---
+# Docker firewall compatibility tasks
+
+- name: Check if UFW is installed
+  ansible.builtin.command: which ufw
+  register: ufw_installed
+  changed_when: false
+  failed_when: false
+
+- name: Configure UFW for Docker
+  block:
+    - name: Add UFW rules for Docker
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - '2376'  # Docker TLS port
+        - '2377'  # Docker Swarm management
+        - '7946'  # Docker Swarm discovery
+      become: true
+      when: docker_enable_swarm | default(false) | bool
+
+    - name: Configure UFW DOCKER chain
+      ansible.builtin.blockinfile:
+        path: /etc/ufw/after.rules
+        block: |
+          # BEGIN UFW AND DOCKER
+          *filter
+          :ufw-user-forward - [0:0]
+          :DOCKER-USER - [0:0]
+          -A DOCKER-USER -j ufw-user-forward
+
+          -A DOCKER-USER -j RETURN -s 10.0.0.0/8
+          -A DOCKER-USER -j RETURN -s 172.16.0.0/12
+          -A DOCKER-USER -j RETURN -s 192.168.0.0/16
+
+          -A DOCKER-USER -j RETURN
+          COMMIT
+          # END UFW AND DOCKER
+        marker: "# {mark} UFW AND DOCKER"
+      become: true
+      notify: reload ufw
+  when: ufw_installed.rc == 0 and docker_configure_firewall | bool
+
+- name: Check if firewalld is installed
+  ansible.builtin.command: which firewall-cmd
+  register: firewalld_installed
+  changed_when: false
+  failed_when: false
+
+- name: Configure firewalld for Docker
+  block:
+    - name: Add Docker zone to firewalld
+      ansible.posix.firewalld:
+        zone: docker
+        state: present
+        permanent: true
+      become: true
+
+    - name: Add Docker interface to docker zone
+      ansible.posix.firewalld:
+        zone: docker
+        interface: docker0
+        state: enabled
+        permanent: true
+      become: true
+
+    - name: Configure firewalld masquerading for Docker
+      ansible.posix.firewalld:
+        zone: docker
+        masquerade: true
+        state: enabled
+        permanent: true
+      become: true
+      notify: reload firewalld
+  when: firewalld_installed.rc == 0 and docker_configure_firewall | bool
+
+- name: Configure iptables persistence
+  block:
+    - name: Install iptables-persistent
+      ansible.builtin.apt:
+        name: iptables-persistent
+        state: present
+      become: true
+      when: ansible_os_family == "Debian"
+
+    - name: Save iptables rules
+      ansible.builtin.shell: |
+        iptables-save > /etc/iptables/rules.v4
+        ip6tables-save > /etc/iptables/rules.v6
+      become: true
+      when: ansible_os_family == "Debian"
+  when: docker_persist_iptables | bool
+
+- name: Note about Docker and firewall interaction
+  ansible.builtin.debug:
+    msg: |
+      Docker manages its own iptables rules through the DOCKER chain.
+      Manual iptables modifications may interfere with Docker networking.
+      Use Docker's built-in security features when possible.
+  when: docker_debug_mode | bool

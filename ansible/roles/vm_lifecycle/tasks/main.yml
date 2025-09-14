@@ -1,15 +1,15 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # VM Lifecycle Role - Main Tasks
 
 - name: Initialize lifecycle operation session
-  set_fact:
+  ansible.builtin.set_fact:
     lifecycle_session_id: "{{ ansible_date_time.epoch }}-{{ inventory_hostname }}-{{ lifecycle_operation }}"
     lifecycle_start_time: "{{ ansible_date_time.epoch }}"
     lifecycle_operation_log: []
 
 - name: Display lifecycle operation information
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== VM Lifecycle Operation ==="
       - "Operation: {{ lifecycle_operation }}"
@@ -24,7 +24,7 @@
   tags: [validation, prerequisites]
 
 - name: Create backup directory structure
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     mode: '0755'
@@ -75,7 +75,7 @@
   tags: [monitoring, notifications]
 
 - name: Display lifecycle operation summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Lifecycle Operation Complete ==="
       - "Session ID: {{ lifecycle_session_id }}"
@@ -85,7 +85,7 @@
       - "Backup Location: {{ backup_location if backup_before_operation else 'No backup created' }}"
 
 - name: Set lifecycle operation completion facts
-  set_fact:
+  ansible.builtin.set_fact:
     vm_lifecycle_completed: true
     vm_lifecycle_operation: "{{ lifecycle_operation }}"
     vm_lifecycle_status: "{{ lifecycle_operation_status | default('UNKNOWN') }}"

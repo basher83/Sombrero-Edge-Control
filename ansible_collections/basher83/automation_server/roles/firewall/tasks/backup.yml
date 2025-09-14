@@ -1,0 +1,88 @@
+---
+# Backup tasks for firewall rules
+
+- name: Create backup directory
+  file:
+    path: "{{ firewall_rules_backup_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+  become: true
+
+- name: Check if existing rules exist
+  stat:
+    path: /etc/iptables/rules.v4
+  register: existing_rules_file
+
+- name: Backup existing rules
+  block:
+    - name: Create timestamped backup
+      shell: |
+        timestamp=$(date +%Y%m%d_%H%M%S)
+        if [ -f /etc/iptables/rules.v4 ]; then
+          cp /etc/iptables/rules.v4 "{{ firewall_rules_backup_dir }}/rules.v4.pre-ansible.${timestamp}"
+        fi
+        # Also backup current running rules
+        iptables-save > "{{ firewall_rules_backup_dir }}/rules.v4.running.${timestamp}"
+        echo "Backup created: {{ firewall_rules_backup_dir }}/rules.v4.running.${timestamp}"
+      register: backup_result
+      become: true
+
+    - name: Display backup location
+      debug:
+        msg: "Firewall rules backed up to: {{ firewall_rules_backup_dir }}"
+      when: firewall_debug_mode | bool
+
+- name: Create rollback script
+  copy:
+    content: |
+      #!/bin/bash
+      # Firewall rollback script
+      # Usage: ./rollback-firewall.sh [backup-file]
+
+      set -e
+
+      BACKUP_DIR="{{ firewall_rules_backup_dir }}"
+
+      if [ -z "$1" ]; then
+        echo "Available backups:"
+        ls -lt $BACKUP_DIR/rules.v4.* | head -10
+        echo ""
+        echo "Usage: $0 <backup-file>"
+        exit 1
+      fi
+
+      BACKUP_FILE="$1"
+
+      if [ ! -f "$BACKUP_FILE" ]; then
+        echo "Error: Backup file not found: $BACKUP_FILE"
+        exit 1
+      fi
+
+      echo "Rolling back to: $BACKUP_FILE"
+
+      # Create safety backup of current rules
+      iptables-save > /tmp/rules.current.$(date +%s)
+
+      # Restore from backup
+      iptables-restore < "$BACKUP_FILE"
+
+      # Save restored rules
+      iptables-save > /etc/iptables/rules.v4
+
+      echo "✓ Firewall rules restored from backup"
+      echo "✓ Rules saved to /etc/iptables/rules.v4"
+
+      # Check if Docker needs restart
+      if command -v docker &>/dev/null && ! iptables -L DOCKER -n >/dev/null 2>&1; then
+        echo "⚠️  Docker chains missing - restarting Docker..."
+        systemctl restart docker
+      fi
+
+      echo "Rollback complete!"
+    dest: /usr/local/bin/rollback-firewall
+    owner: root
+    group: root
+    mode: '0755'
+  become: true

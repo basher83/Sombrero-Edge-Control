@@ -1,0 +1,40 @@
+---
+galaxy_info:
+  author: DevOps Team
+  description: Docker CE installation and configuration role for Ubuntu
+  company: basher83
+  license: MIT
+  min_ansible_version: "2.19"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal     # 20.04
+        - jammy     # 22.04
+        - noble     # 24.04
+  galaxy_tags:
+    - docker
+    - containers
+    - devops
+    - ubuntu
+
+dependencies:
+  # Use the well-maintained geerlingguy.docker role for actual installation
+  # This allows us to leverage a battle-tested implementation while adding
+  # our specific configurations and validations
+  - role: geerlingguy.docker
+    vars:
+      docker_edition: 'ce'
+      docker_packages:
+        - "docker-{{ docker_edition }}"
+        - "docker-{{ docker_edition }}-cli"
+        - "containerd.io"
+        - "docker-buildx-plugin"
+        - "docker-compose-plugin"
+      docker_install_compose: false  # We use compose plugin instead
+      docker_install_compose_plugin: true
+      docker_users: "{{ docker_users_list | default([]) }}"
+    when: docker_installation_mode == 'install'
+
+collections:
+  # Use community.docker for container management operations
+  - community.docker

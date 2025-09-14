@@ -1,0 +1,226 @@
+---
+#SPDX-License-Identifier: MIT
+# Performance monitoring and validation tasks
+
+- name: CPU performance monitoring
+  block:
+    - name: Get current CPU usage
+      shell: |
+        top -bn1 | grep "Cpu(s)" | awk '{print $2}' | sed 's/%us,//'
+      register: cpu_usage_result
+      changed_when: false
+
+    - name: Parse CPU usage
+      set_fact:
+        current_cpu_usage: "{{ cpu_usage_result.stdout | float }}"
+
+    - name: Validate CPU usage is within acceptable limits
+      assert:
+        that:
+          - current_cpu_usage <= max_cpu_usage
+        fail_msg: "CPU usage too high: {{ current_cpu_usage }}% (max: {{ max_cpu_usage }}%)"
+        success_msg: "CPU usage OK: {{ current_cpu_usage }}%"
+      register: cpu_performance_check
+
+    - name: Record CPU performance results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'cpu_performance': {'status': 'PASS', 'usage_percent': current_cpu_usage, 'threshold': max_cpu_usage}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+
+  rescue:
+    - name: Record CPU performance failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'cpu_performance': {'status': 'FAIL', 'usage_percent': current_cpu_usage | default('N/A'), 'threshold': max_cpu_usage, 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug CPU performance failure
+      debug:
+        msg: "CPU performance check failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+  when: performance_checks.enable_resource_monitoring | default(true)
+
+- name: Memory performance monitoring
+  block:
+    - name: Get detailed memory information
+      shell: |
+        free -m | awk 'NR==2{printf "%.2f", $3*100/$2}'
+      register: memory_usage_result
+      changed_when: false
+
+    - name: Parse memory usage
+      set_fact:
+        current_memory_usage: "{{ memory_usage_result.stdout | float }}"
+        available_memory_mb: "{{ ansible_memfree_mb | default(0) }}"
+
+    - name: Validate memory availability
+      assert:
+        that:
+          - available_memory_mb >= performance_checks.min_available_memory_mb
+        fail_msg: "Insufficient available memory: {{ available_memory_mb }}MB (min: {{ performance_checks.min_available_memory_mb }}MB)"
+        success_msg: "Memory availability OK: {{ available_memory_mb }}MB available"
+      register: memory_performance_check
+
+    - name: Record memory performance results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'memory_performance': {'status': 'PASS', 'usage_percent': current_memory_usage, 'available_mb': available_memory_mb, 'threshold_mb': performance_checks.min_available_memory_mb}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+
+  rescue:
+    - name: Record memory performance failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'memory_performance': {'status': 'FAIL', 'available_mb': available_memory_mb | default('N/A'), 'threshold_mb': performance_checks.min_available_memory_mb, 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug memory performance failure
+      debug:
+        msg: "Memory performance check failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+  when: performance_checks.enable_resource_monitoring | default(true)
+
+- name: HTTP response time monitoring
+  block:
+    - name: Test HTTP response times
+      uri:
+        url: "{{ item.url }}"
+        method: "{{ item.method | default('GET') }}"
+        status_code: "{{ item.expected_status | default(200) }}"
+        timeout: "{{ item.timeout | default(test_config.timeout_default) }}"
+        return_content: false
+      loop: "{{ health_check_endpoints }}"
+      register: response_time_results
+      when: health_check_endpoints | length > 0
+
+    - name: Calculate average response time
+      set_fact:
+        average_response_time: "{{ (response_time_results.results | map(attribute='elapsed') | map('int') | sum / response_time_results.results | length * 1000) | round }}"
+      when:
+        - health_check_endpoints | length > 0
+        - response_time_results is defined
+        - response_time_results.results | length > 0
+
+    - name: Validate response times are acceptable
+      assert:
+        that:
+          - average_response_time <= performance_checks.max_response_time
+        fail_msg: "Average response time too high: {{ average_response_time }}ms (max: {{ performance_checks.max_response_time }}ms)"
+        success_msg: "Response times OK: {{ average_response_time }}ms average"
+      when:
+        - health_check_endpoints | length > 0
+        - average_response_time is defined
+
+    - name: Record response time performance results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'response_time_performance': {'status': 'PASS', 'average_ms': average_response_time, 'threshold_ms': performance_checks.max_response_time, 'endpoints_tested': health_check_endpoints | length}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+      when:
+        - health_check_endpoints | length > 0
+        - average_response_time is defined
+
+    - name: Skip response time check if no endpoints defined
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'response_time_performance': {'status': 'SKIP', 'reason': 'No HTTP endpoints configured for testing'}}) }}"
+      when: health_check_endpoints | length == 0
+
+  rescue:
+    - name: Record response time performance failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'response_time_performance': {'status': 'FAIL', 'threshold_ms': performance_checks.max_response_time, 'endpoints': health_check_endpoints, 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug response time performance failure
+      debug:
+        msg: "Response time performance check failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+- name: Disk I/O performance monitoring
+  block:
+    - name: Test disk write performance
+      shell: |
+        dd if=/dev/zero of=/tmp/testfile bs=1M count=100 oflag=direct 2>&1 | grep -o '[0-9.]\+ MB/s' | tail -1
+      register: disk_write_performance
+      changed_when: false
+
+    - name: Clean up test file
+      file:
+        path: /tmp/testfile
+        state: absent
+
+    - name: Test disk read performance
+      shell: |
+        dd if=/dev/zero of=/tmp/testfile bs=1M count=100 2>/dev/null && sync && dd if=/tmp/testfile of=/dev/null bs=1M 2>&1 | grep -o '[0-9.]\+ MB/s' | tail -1
+      register: disk_read_performance
+      changed_when: false
+
+    - name: Clean up test file again
+      file:
+        path: /tmp/testfile
+        state: absent
+
+    - name: Parse disk performance results
+      set_fact:
+        write_speed_mb: "{{ disk_write_performance.stdout | regex_replace(' MB/s', '') | float }}"
+        read_speed_mb: "{{ disk_read_performance.stdout | regex_replace(' MB/s', '') | float }}"
+
+    - name: Record disk I/O performance results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'disk_io_performance': {'status': 'PASS', 'write_speed_mb_s': write_speed_mb, 'read_speed_mb_s': read_speed_mb}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+
+  rescue:
+    - name: Record disk I/O performance failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'disk_io_performance': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug disk I/O performance failure
+      debug:
+        msg: "Disk I/O performance check failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+    - name: Ensure test file cleanup on failure
+      file:
+        path: /tmp/testfile
+        state: absent
+      ignore_errors: yes
+
+  when: performance_checks.enable_resource_monitoring | default(true)
+
+- name: System uptime and stability check
+  block:
+    - name: Get system uptime
+      command: uptime -s
+      register: system_uptime
+      changed_when: false
+
+    - name: Calculate uptime duration
+      set_fact:
+        uptime_seconds: "{{ (ansible_date_time.epoch | int) - (system_uptime.stdout | to_datetime('%Y-%m-%d %H:%M:%S')).strftime('%s') | int }}"
+
+    - name: Record system stability results
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'system_stability': {'status': 'PASS', 'uptime_seconds': uptime_seconds, 'uptime_hours': (uptime_seconds | int / 3600) | round(2), 'boot_time': system_uptime.stdout}}) }}"
+        smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
+
+  rescue:
+    - name: Record system stability failure
+      set_fact:
+        smoke_test_results: "{{ smoke_test_results | combine({'system_stability': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
+        smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
+
+    - name: Debug system stability failure
+      debug:
+        msg: "System stability check failed: {{ ansible_failed_result.msg }}"
+      when: test_config.collect_debug_info | default(true)
+
+- name: Display performance monitoring summary
+  debug:
+    msg:
+      - "Performance Monitoring Results:"
+      - "  CPU Performance: {{ smoke_test_results.cpu_performance.status | default('SKIP') }}"
+      - "  Memory Performance: {{ smoke_test_results.memory_performance.status | default('SKIP') }}"
+      - "  Response Time Performance: {{ smoke_test_results.response_time_performance.status | default('SKIP') }}"
+      - "  Disk I/O Performance: {{ smoke_test_results.disk_io_performance.status | default('SKIP') }}"
+      - "  System Stability: {{ smoke_test_results.system_stability.status | default('SKIP') }}"
+  when: reporting.log_level in ['debug', 'info']

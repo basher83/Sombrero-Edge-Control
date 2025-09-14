@@ -19,7 +19,7 @@
   vars:
     item:
       name: "{{ validation_results.results[ansible_loop.index0].item.description }}"
-      command: "{{ validation_results.results[ansible_loop.index0].item.command }}"
+      ansible.builtin.command: "{{ validation_results.results[ansible_loop.index0].item.command }}"
       expected: "{{ validation_results.results[ansible_loop.index0].item.expected_pattern }}"
       actual: "{{ validation_results.results[ansible_loop.index0].stdout }}"
       passed: "{{ validation_results.results[ansible_loop.index0].stdout | regex_search(validation_results.results[ansible_loop.index0].item.expected_pattern) is not none }}"

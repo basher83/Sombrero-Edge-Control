@@ -1,0 +1,66 @@
+---
+#SPDX-License-Identifier: MIT
+# Main tasks for VM smoke tests role
+
+- name: Initialize smoke test execution
+  set_fact:
+    smoke_test_results: {}
+    smoke_test_start_time: "{{ ansible_date_time.epoch }}"
+    smoke_test_failed_count: 0
+    smoke_test_passed_count: 0
+
+- name: Display smoke test configuration
+  debug:
+    msg:
+      - "VM Smoke Tests Starting"
+      - "Target Host: {{ inventory_hostname }}"
+      - "Test Phases: {{ smoke_test_phases | join(', ') }}"
+      - "Start Time: {{ ansible_date_time.iso8601 }}"
+  when: reporting.log_level in ['debug', 'info']
+
+- name: Phase 1 - System Health Checks
+  include_tasks: system_health_checks.yml
+  when: "'system_health' in smoke_test_phases"
+  tags: ['smoke_test', 'system_health']
+
+- name: Phase 2 - Service Validation
+  include_tasks: service_validation.yml
+  when: "'service_validation' in smoke_test_phases"
+  tags: ['smoke_test', 'service_validation']
+
+- name: Phase 3 - Application Health Checks
+  include_tasks: application_health_checks.yml
+  when: "'application_health' in smoke_test_phases"
+  tags: ['smoke_test', 'application_health']
+
+- name: Phase 4 - Security Validation
+  include_tasks: security_validation.yml
+  when: "'security_validation' in smoke_test_phases"
+  tags: ['smoke_test', 'security_validation']
+
+- name: Phase 5 - Performance Monitoring
+  include_tasks: performance_monitoring.yml
+  when: "'performance_monitoring' in smoke_test_phases"
+  tags: ['smoke_test', 'performance_monitoring']
+
+- name: Generate smoke test summary
+  include_tasks: generate_test_summary.yml
+  tags: ['smoke_test', 'summary']
+
+- name: Display final test results
+  debug:
+    msg:
+      - "VM Smoke Tests Completed"
+      - "Target Host: {{ inventory_hostname }}"
+      - "Tests Passed: {{ smoke_test_passed_count }}"
+      - "Tests Failed: {{ smoke_test_failed_count }}"
+      - "Total Duration: {{ (ansible_date_time.epoch | int) - (smoke_test_start_time | int) }} seconds"
+      - "Overall Status: {{ 'PASS' if smoke_test_failed_count == 0 else 'FAIL' }}"
+  when: reporting.log_level in ['debug', 'info']
+
+- name: Fail playbook if tests failed and fail_fast enabled
+  fail:
+    msg: "VM smoke tests failed: {{ smoke_test_failed_count }} test(s) failed"
+  when:
+    - smoke_test_failed_count > 0
+    - (test_config is defined and (test_config.fail_fast | default(false)))

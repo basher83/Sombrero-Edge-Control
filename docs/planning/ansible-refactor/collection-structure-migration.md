@@ -1,17 +1,18 @@
 # Ansible Collection Structure Migration Plan
 
-**Status**: 🔵 Proposed  
-**Date**: 2025-09-10  
-**Author**: Development Team  
+**Status**: 🔵 Proposed
+**Date**: 2025-09-10
+**Author**: Development Team
 **Impact**: High - Restructures entire Ansible codebase
 
 ## Executive Summary
 
-Migrate the current Ansible directory structure to a proper Ansible Collection format to enforce better compliance with ansible-lint, improve code organization, and align with Ansible best practices.
+Migrate the current Ansible directory structure to a proper Ansible Collection format to enforce better compliance with
+ansible-lint, improve code organization, and align with Ansible best practices.
 
 ## Current State
 
-```
+```text
 ansible/
 ├── playbooks/
 ├── roles/
@@ -23,10 +24,10 @@ ansible/
 
 ## Proposed Collection Structure
 
-```
+```text
 ansible_collections/
-└── sombrero/
-    └── edge_control/
+└── basher83/
+    └── automation_server/
         ├── docs/
         ├── galaxy.yml
         ├── meta/
@@ -41,7 +42,7 @@ ansible_collections/
         │   ├── docker_validation/
         │   ├── development-tools/
         │   ├── firewall/
-        │   ├── jump_host_base/
+        │   ├── automation_server_base/
         │   ├── security_hardening/
         │   └── smoke_test/
         ├── playbooks/
@@ -68,7 +69,7 @@ ansible_collections/
 - Self-contained, distributable unit
 - Versioned releases possible
 - Can be published to Ansible Galaxy (private or public)
-- Clear namespace: `sombrero.edge_control`
+- Clear namespace: `basher83.automation_server`
 
 ### 3. **Better Testing**
 
@@ -119,15 +120,15 @@ ansible_collections/
 ### galaxy.yml Content
 
 ```yaml
-namespace: sombrero
-name: edge_control
+namespace: basher83
+name: automation_server
 version: 1.0.0
 readme: README.md
 authors:
-  - Sombrero Edge Control Team
+  - basher83
 description: Ansible collection for managing jump host infrastructure
 license:
-  - GPL-3.0-or-later
+  - MIT
 tags:
   - infrastructure
   - proxmox
@@ -159,8 +160,8 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 - name: Configure jump host
   hosts: jump_hosts
   roles:
-    - sombrero.edge_control.docker
-    - sombrero.edge_control.firewall
+    - basher83.automation_server.docker
+    - basher83.automation_server.firewall
 ```
 
 ## Impact Analysis
@@ -193,10 +194,10 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 
 ## Implementation Checklist
 
-- [ ] Create ADR for architectural decision
-- [ ] Set up collection directory structure
-- [ ] Create galaxy.yml and meta files
-- [ ] Migrate first role (docker) as proof of concept
+- [x] Create ADR for architectural decision
+- [x] Set up collection directory structure
+- [x] Create galaxy.yml and meta files
+- [x] Migrate first role (docker) as proof of concept
 - [ ] Update ansible-lint configuration
 - [ ] Create migration script for automation
 - [ ] Update mise tasks for new structure

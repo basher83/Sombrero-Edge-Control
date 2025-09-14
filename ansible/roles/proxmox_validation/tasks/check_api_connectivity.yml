@@ -15,12 +15,12 @@
   timeout: "{{ validation_timeout }}"
 
 - name: Set API connectivity status
-  set_fact:
+  ansible.builtin.set_fact:
     api_connectivity_passed: "{{ node_info is not failed }}"
     proxmox_node_info: "{{ node_info.proxmox_node_info | default({}) }}"
 
 - name: Display API connection status
-  debug:
+  ansible.builtin.debug:
     msg: "API Connection: {{ 'SUCCESS' if api_connectivity_passed else 'FAILED' }} - {{ proxmox_api_url }}"
 
 - name: Fail if API not accessible

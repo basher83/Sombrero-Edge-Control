@@ -1,0 +1,215 @@
+---
+# Test playbook for vm_diagnostics role
+
+- name: Test VM Diagnostics Role
+  hosts: localhost
+  gather_facts: yes
+
+  vars:
+    # Basic test configuration with minimal requirements
+    diagnostic_categories:
+      - system
+      - network
+      - services
+      - logs
+      - performance
+      - troubleshooting
+
+    diagnostic_depth: "standard"  # basic, standard, comprehensive
+
+    # System diagnostics configuration
+    system_diagnostics:
+      collect_hardware_info: true
+      collect_memory_info: true
+      collect_disk_info: true
+      collect_network_interfaces: true
+      collect_kernel_info: true
+      collect_boot_info: true
+      ipmi_monitoring: false  # Requires IPMI tools
+      smart_disk_checks: false  # Disabled for testing - requires root access
+      filesystem_analysis: true
+
+    # Log collection (minimal for testing)
+    collect_logs: true
+    log_collection_paths:
+      - /var/log/system.log  # macOS
+      - /var/log/syslog      # Linux (if available)
+      - /tmp/test.log        # Test file
+
+    log_analysis:
+      error_pattern_detection: true
+      historical_analysis: false  # Disabled for faster testing
+      log_rotation_check: false   # Disabled for testing
+      max_log_size_mb: 100
+      retention_days: 7
+
+    # Network diagnostics (basic)
+    network_diagnostics:
+      connectivity_tests: true
+      dns_resolution_tests: true
+      routing_analysis: true
+      firewall_analysis: false    # Disabled - requires root access
+      bandwidth_testing: false    # Disabled - can be intensive
+      interface_diagnostics: true
+
+    network_test_targets:
+      - "8.8.8.8"
+      - "google.com"
+
+    # Service diagnostics (basic services)
+    service_diagnostics:
+      status_analysis: true
+      dependency_analysis: false  # Disabled for testing
+      configuration_validation: false  # Disabled for testing
+      performance_monitoring: false    # Disabled for testing
+      docker_integration: false        # Disabled unless Docker is available
+      restart_analysis: false          # Disabled for testing
+
+    monitored_services:
+      - ssh
+      # Note: Fewer services for cross-platform testing
+
+    # Performance analysis (safe settings)
+    performance_analysis:
+      resource_trends: true
+      bottleneck_detection: true
+      io_testing: false  # Can be disruptive
+      memory_leak_detection: false  # Disabled for testing
+      historical_data_collection: false  # Disabled for testing
+      real_time_monitoring: false
+
+    performance_thresholds:
+      cpu_usage_warning: 80
+      memory_usage_warning: 85
+      disk_usage_warning: 90
+      load_average_warning: 2.0
+      inode_usage_warning: 80
+
+    # Troubleshooting automation (basic)
+    troubleshooting_automation:
+      automated_workflows: true
+      common_issue_detection: true
+      remediation_recommendations: true
+      monitoring_integration: false  # Disabled for testing
+      self_healing: false  # Disabled for safety
+
+    # Output and reporting
+    diagnostic_output_dir: "/tmp/vm_diagnostics_test"
+    compress_output: true
+    generate_report: true
+    report_format: "json"  # json, yaml, text, all
+    retain_diagnostics_days: 1
+
+    # Monitoring tools (disabled for basic test)
+    enable_monitoring_tools: false
+    monitoring_tools: []
+
+    # Advanced diagnostics (minimal for testing)
+    advanced_diagnostics:
+      kernel_module_analysis: false
+      process_tree_analysis: true
+      file_descriptor_analysis: false
+      socket_analysis: false
+      container_diagnostics: false
+      virtualization_checks: true
+
+    # Security and performance settings
+    security_settings:
+      respect_file_permissions: true
+      secure_temp_files: true
+      no_sensitive_data_collection: true
+      audit_diagnostic_access: false
+
+    performance_impact:
+      max_concurrent_checks: 3
+      check_timeout_seconds: 15  # Shorter for testing
+      resource_limit_cpu: 50
+      nice_priority: 10
+
+    # Platform compatibility (important for cross-platform testing)
+    platform_compatibility:
+      handle_macos_differences: true
+      handle_container_environment: true
+      graceful_degradation: true
+      skip_unavailable_features: true
+
+    # Integration settings (disabled for testing)
+    integration:
+      prometheus_metrics: false
+      grafana_dashboards: false
+      elk_stack_integration: false
+      custom_webhooks: []
+
+  pre_tasks:
+    - name: Create test log file
+      copy:
+        content: |
+          {{ ansible_date_time.iso8601 }} INFO Test log entry for diagnostics
+          {{ ansible_date_time.iso8601 }} ERROR Test error entry for pattern detection
+          {{ ansible_date_time.iso8601 }} WARN Test warning entry
+        dest: /tmp/test.log
+        mode: '0644'
+      delegate_to: localhost
+
+    - name: Display test configuration
+      debug:
+        msg:
+          - "=== VM Diagnostics Role Test ==="
+          - "Categories: {{ diagnostic_categories | join(', ') }}"
+          - "Depth: {{ diagnostic_depth }}"
+          - "Output Directory: {{ diagnostic_output_dir }}"
+          - "Platform Compatibility: Enabled"
+          - "Test Mode: Basic functionality testing"
+
+  roles:
+    - role: basher83.automation_server.vm_diagnostics
+
+  post_tasks:
+    - name: Display test results
+      debug:
+        msg:
+          - "=== VM Diagnostics Test Complete ==="
+          - "Status: {{ vm_diagnostics_status | default('Unknown') }}"
+          - "Report Location: {{ diagnostic_output_dir }}"
+          - "Session ID: {{ vm_diagnostic_session_id | default('N/A') }}"
+      when: vm_diagnostics_completed | default(false)
+
+    - name: Verify diagnostic outputs were created
+      stat:
+        path: "{{ diagnostic_output_dir }}"
+      register: output_dir_check
+
+    - name: List generated files
+      find:
+        paths: "{{ diagnostic_output_dir }}"
+        patterns: "*"
+      register: diagnostic_files
+      when: output_dir_check.stat.exists
+
+    - name: Display generated diagnostic files
+      debug:
+        msg:
+          - "Generated Files ({{ diagnostic_files.files | length if diagnostic_files.files is defined else 0 }}):"
+          - "{{ diagnostic_files.files | map(attribute='path') | list if diagnostic_files.files is defined else [] }}"
+      when: diagnostic_files.files is defined
+
+    - name: Show diagnostic summary if available
+      debug:
+        var: vm_diagnostics_summary
+      when: vm_diagnostics_summary is defined
+
+    - name: Test completion status
+      debug:
+        msg:
+          - "=== Test Status ==="
+          - "Diagnostic Role Completed: {{ vm_diagnostics_completed | default(false) }}"
+          - "Overall Status: {{ vm_diagnostics_status | default('Unknown') }}"
+          - "Output Directory Created: {{ output_dir_check.stat.exists }}"
+          - "Files Generated: {{ diagnostic_files.files | length if diagnostic_files.files is defined else 0 }}"
+
+    - name: Clean up test files (optional)
+      file:
+        path: /tmp/test.log
+        state: absent
+      delegate_to: localhost
+      when: false  # Set to true if you want to clean up automatically

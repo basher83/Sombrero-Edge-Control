@@ -1,0 +1,19 @@
+---
+# Process hierarchical numbered priority rules
+
+- name: Display priority rules being applied
+  debug:
+    msg: |
+      Applying firewall rules in priority order:
+      {% for priority, config in firewall_rules_priority | dictsort %}
+      {{ priority }}: {{ config.description | default('No description') }} - {{ 'Enabled' if config.enabled | default(true) else 'Disabled' }}
+      {% endfor %}
+  when: firewall_debug_mode | bool
+
+- name: Process priority rules in order
+  include_tasks: apply-priority-rule.yml
+  vars:
+    rule_priority: "{{ item.key }}"
+    rule_config: "{{ item.value }}"
+  loop: "{{ firewall_rules_priority | dictsort }}"
+  when: item.value.enabled | default(true) | bool

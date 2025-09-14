@@ -1,16 +1,16 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Main tasks for VM smoke tests role
 
 - name: Initialize smoke test execution
-  set_fact:
+  ansible.builtin.set_fact:
     smoke_test_results: {}
     smoke_test_start_time: "{{ ansible_date_time.epoch }}"
     smoke_test_failed_count: 0
     smoke_test_passed_count: 0
 
 - name: Display smoke test configuration
-  debug:
+  ansible.builtin.debug:
     msg:
       - "VM Smoke Tests Starting"
       - "Target Host: {{ inventory_hostname }}"
@@ -48,7 +48,7 @@
   tags: ['smoke_test', 'summary']
 
 - name: Display final test results
-  debug:
+  ansible.builtin.debug:
     msg:
       - "VM Smoke Tests Completed"
       - "Target Host: {{ inventory_hostname }}"

@@ -1,0 +1,103 @@
+---
+#SPDX-License-Identifier: MIT
+# VM Lifecycle Role - Main Tasks
+
+- name: Initialize lifecycle operation session
+  set_fact:
+    lifecycle_session_id: "{{ ansible_date_time.epoch }}-{{ inventory_hostname }}-{{ lifecycle_operation }}"
+    lifecycle_start_time: "{{ ansible_date_time.epoch }}"
+    lifecycle_operation_log: []
+
+- name: Display lifecycle operation information
+  debug:
+    msg:
+      - "=== VM Lifecycle Operation ==="
+      - "Operation: {{ lifecycle_operation }}"
+      - "Target: {{ inventory_hostname }}"
+      - "Session ID: {{ lifecycle_session_id }}"
+      - "Terraform Path: {{ terraform_project_path }}"
+      - "Dry Run Mode: {{ dry_run_mode }}"
+      - "Backup Enabled: {{ backup_before_operation }}"
+
+- name: Validate lifecycle operation prerequisites
+  include_tasks: validate_prerequisites.yml
+  tags: [validation, prerequisites]
+
+- name: Create backup directory structure
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ backup_location }}"
+    - "{{ state_management.state_backup_location }}"
+    - "{{ reporting.report_location }}"
+  delegate_to: localhost
+  when: backup_before_operation | bool
+
+- name: Pre-operation backup
+  include_tasks: backup_operations.yml
+  when: backup_before_operation | bool
+  tags: [backup, pre-operation]
+
+- name: Execute rollback operation
+  include_tasks: rollback_operations.yml
+  when: lifecycle_operation == "rollback"
+  tags: [rollback, destructive]
+
+- name: Execute cleanup operation
+  include_tasks: cleanup_operations.yml
+  when: lifecycle_operation == "cleanup"
+  tags: [cleanup, maintenance]
+
+- name: Execute reset operation
+  include_tasks: reset_operations.yml
+  when: lifecycle_operation == "reset"
+  tags: [reset, maintenance]
+
+- name: Execute validation operation
+  include_tasks: validate_operations.yml
+  when: lifecycle_operation == "validate"
+  tags: [validation, check]
+
+- name: Post-operation cleanup
+  include_tasks: post_operation_cleanup.yml
+  tags: [post-operation, cleanup]
+
+- name: Generate operation report
+  include_tasks: generate_operation_report.yml
+  when: reporting.generate_operation_report | bool
+  tags: [reporting, documentation]
+
+- name: Send operation notifications
+  include_tasks: send_notifications.yml
+  when: monitoring.send_notifications | bool
+  tags: [monitoring, notifications]
+
+- name: Display lifecycle operation summary
+  debug:
+    msg:
+      - "=== Lifecycle Operation Complete ==="
+      - "Session ID: {{ lifecycle_session_id }}"
+      - "Operation: {{ lifecycle_operation }}"
+      - "Duration: {{ (ansible_date_time.epoch | int) - (lifecycle_start_time | int) }} seconds"
+      - "Status: {{ lifecycle_operation_status | default('Unknown') }}"
+      - "Backup Location: {{ backup_location if backup_before_operation else 'No backup created' }}"
+
+- name: Set lifecycle operation completion facts
+  set_fact:
+    vm_lifecycle_completed: true
+    vm_lifecycle_operation: "{{ lifecycle_operation }}"
+    vm_lifecycle_status: "{{ lifecycle_operation_status | default('UNKNOWN') }}"
+    vm_lifecycle_session_id: "{{ lifecycle_session_id }}"
+    vm_lifecycle_summary:
+      session_id: "{{ lifecycle_session_id }}"
+      operation: "{{ lifecycle_operation }}"
+      start_time: "{{ lifecycle_start_time }}"
+      end_time: "{{ ansible_date_time.epoch }}"
+      duration: "{{ (ansible_date_time.epoch | int) - (lifecycle_start_time | int) }}"
+      status: "{{ lifecycle_operation_status | default('UNKNOWN') }}"
+      dry_run: "{{ dry_run_mode }}"
+      backup_created: "{{ backup_before_operation }}"
+      backup_location: "{{ backup_location if backup_before_operation else null }}"
+      operation_log: "{{ lifecycle_operation_log }}"

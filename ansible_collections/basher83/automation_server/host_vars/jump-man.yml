@@ -1,0 +1,45 @@
+---
+# Host-specific variables for jump-man VM
+# This file contains Docker-specific configurations for the jump host
+
+# Docker configuration
+docker_installation_mode: "install"
+docker_service_enabled: true
+docker_service_state: "started"
+
+# User management - add ansible_user to docker group for convenience
+docker_users_list:
+  - "{{ ansible_user }}"
+
+# Security configuration for jump host
+docker_enable_user_namespace_remapping: false  # Keep disabled for compatibility
+docker_enable_seccomp: true
+docker_socket_permissions: "0660"
+
+# Resource management
+docker_enable_cleanup_cron: true  # Enable for production jump host
+docker_cleanup_retention_hours: 72
+docker_configure_log_rotation: true
+docker_log_max_size: "10m"
+docker_log_max_files: "3"
+
+# Network configuration
+docker_registry_mirrors: []
+docker_insecure_registries: []
+
+# Daemon configuration
+docker_daemon_options:
+  log-driver: "json-file"
+  log-opts:
+    max-size: "10m"
+    max-file: "3"
+  storage-driver: "overlay2"
+  iptables: true
+  live-restore: true  # Keep containers running during Docker daemon downtime
+  userland-proxy: false  # Better performance
+
+# Debug mode (set to true for troubleshooting)
+docker_debug_mode: false
+
+# Export summary after installation
+docker_export_summary: true

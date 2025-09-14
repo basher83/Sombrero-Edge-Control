@@ -1,0 +1,89 @@
+---
+# Preflight checks before applying security hardening
+
+- name: Check if running on supported OS
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Ubuntu"
+      - ansible_distribution_version is version('20.04', '>=')
+    fail_msg: "This role requires Ubuntu 20.04 or later"
+    success_msg: "Running on supported OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+
+- name: Check if running as root or with sudo
+  ansible.builtin.assert:
+    that:
+      - ansible_user_id == "root" or ansible_become == true
+    fail_msg: "This role must be run as root or with sudo privileges"
+    success_msg: "Running with appropriate privileges"
+
+- name: Check available disk space
+  ansible.builtin.shell: df -BG / | awk 'NR==2 {print $4}' | sed 's/G//'
+  register: disk_space
+  changed_when: false
+
+- name: Verify sufficient disk space
+  ansible.builtin.assert:
+    that:
+      - disk_space.stdout | int > 1
+    fail_msg: "Insufficient disk space. At least 1GB required"
+    success_msg: "Sufficient disk space available: {{ disk_space.stdout }}GB"
+
+- name: Check system memory
+  ansible.builtin.set_fact:
+    memory_mb: "{{ ansible_memtotal_mb }}"
+
+- name: Verify sufficient memory
+  ansible.builtin.assert:
+    that:
+      - memory_mb | int > 512
+    fail_msg: "Insufficient memory. At least 512MB required"
+    success_msg: "Sufficient memory available: {{ memory_mb }}MB"
+
+- name: Check if critical services are running
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+  check_mode: true
+  register: service_status
+  loop:
+    - networking
+    - systemd-resolved
+  failed_when: false
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: /var/backups/security-hardening
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: Check network connectivity
+  ansible.builtin.wait_for:
+    host: "{{ item }}"
+    port: 53
+    timeout: 5
+  loop:
+    - 8.8.8.8
+    - 1.1.1.1
+  when: security_automatic_updates_enabled
+  failed_when: false
+
+- name: Check if Docker is present (for compatibility)
+  ansible.builtin.stat:
+    path: /usr/bin/docker
+  register: docker_binary
+
+- name: Set Docker compatibility flag
+  ansible.builtin.set_fact:
+    security_docker_present: "{{ docker_binary.stat.exists }}"
+
+- name: Display preflight summary
+  ansible.builtin.debug:
+    msg: |
+      Preflight checks completed:
+      - OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+      - Memory: {{ memory_mb }}MB
+      - Disk: {{ disk_space.stdout }}GB free
+      - Docker: {{ 'Present' if security_docker_present else 'Not present' }}
+      - Network: {{ 'Connected' if security_automatic_updates_enabled else 'Not checked' }}

@@ -1,0 +1,190 @@
+---
+# Audit and Logging Configuration Tasks
+
+- name: Install auditd and related packages
+  ansible.builtin.package:
+    name:
+      - auditd
+      - audispd-plugins
+      - rsyslog
+    state: present
+  when: security_auditd_enabled
+
+- name: Configure auditd main settings
+  ansible.builtin.lineinfile:
+    path: /etc/audit/auditd.conf
+    regexp: "^{{ item.key }}\\s*="
+    line: "{{ item.key }} = {{ item.value }}"
+    state: present
+  loop:
+    - { key: "max_log_file", value: "{{ security_auditd_max_log_file }}" }
+    - { key: "max_log_file_action", value: "{{ security_auditd_max_log_file_action }}" }
+    - { key: "num_logs", value: "{{ security_auditd_num_logs }}" }
+    - { key: "space_left_action", value: "{{ security_auditd_space_left_action }}" }
+    - { key: "action_mail_acct", value: "{{ security_auditd_action_mail_acct }}" }
+    - { key: "admin_space_left_action", value: "{{ security_auditd_admin_space_left_action }}" }
+  when: security_auditd_enabled
+  notify: restart auditd
+
+- name: Configure audit rules
+  ansible.builtin.copy:
+    content: |
+      # {{ ansible_managed }}
+      # Audit rules for security monitoring
+
+      # Remove any existing rules
+      -D
+
+      # Buffer size
+      -b 8192
+
+      # Failure handling
+      -f 1
+
+      # Monitor authentication events
+      -w /var/log/lastlog -p wa -k logins
+      -w /var/log/tallylog -p wa -k logins
+      -w /var/log/faillog -p wa -k logins
+      -w /var/log/btmp -p wa -k logins
+      -w /var/log/wtmp -p wa -k logins
+
+      # Monitor user/group changes
+      -w /etc/passwd -p wa -k passwd_changes
+      -w /etc/group -p wa -k group_changes
+      -w /etc/shadow -p wa -k shadow_changes
+      -w /etc/gshadow -p wa -k gshadow_changes
+      -w /etc/security/opasswd -p wa -k passwd_changes
+
+      # Monitor sudoers
+      -w /etc/sudoers -p wa -k sudoers_changes
+      -w /etc/sudoers.d/ -p wa -k sudoers_changes
+
+      # Monitor SSH configuration
+      -w /etc/ssh/sshd_config -p wa -k sshd_config
+      -w /root/.ssh/ -p wa -k ssh_keys
+
+      # Monitor system calls
+      -a always,exit -F arch=b64 -S execve -k command_execution
+      -a always,exit -F arch=b64 -S socket -S connect -k network_connections
+
+      # Monitor privileged commands
+      -a always,exit -F path=/usr/bin/passwd -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged_passwd
+      -a always,exit -F path=/usr/bin/sudo -F perm=x -F auid>=1000 -F auid!=4294967295 -k privileged_sudo
+
+      # Monitor file deletion
+      -a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k file_deletion
+
+      # Monitor kernel modules
+      -w /sbin/insmod -p x -k kernel_modules
+      -w /sbin/rmmod -p x -k kernel_modules
+      -w /sbin/modprobe -p x -k kernel_modules
+      -a always,exit -F arch=b64 -S init_module -S delete_module -k kernel_modules
+
+      # Monitor time changes
+      -a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time_change
+      -a always,exit -F arch=b64 -S clock_settime -k time_change
+      -w /etc/localtime -p wa -k time_change
+
+      # Make configuration immutable
+      -e 2
+    dest: /etc/audit/rules.d/security-hardening.rules
+    owner: root
+    group: root
+    mode: '0640'
+  when: security_auditd_enabled
+  notify: restart auditd
+
+- name: Configure rsyslog for security logging
+  ansible.builtin.blockinfile:
+    path: /etc/rsyslog.conf
+    block: |
+      # Security logging
+      auth,authpriv.*                 /var/log/auth.log
+      *.*;auth,authpriv.none          -/var/log/syslog
+      kern.*                           -/var/log/kern.log
+
+      # Log authentication failures
+      auth.warning                     /var/log/auth-failures.log
+
+      # Rotate logs
+      $outchannel log_rotation,/var/log/syslog,104857600,/usr/bin/logrotate
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Security Logging"
+  notify: restart rsyslog
+
+- name: Configure log rotation for security logs
+  ansible.builtin.copy:
+    content: |
+      /var/log/auth.log
+      /var/log/auth-failures.log
+      /var/log/audit/audit.log
+      {
+          daily
+          rotate 30
+          compress
+          delaycompress
+          missingok
+          notifempty
+          create 0640 root adm
+          sharedscripts
+          postrotate
+              /usr/lib/rsyslog/rsyslog-rotate
+              if [ -f /var/run/auditd.pid ]; then
+                  kill -USR1 $(cat /var/run/auditd.pid)
+              fi
+          endscript
+      }
+    dest: /etc/logrotate.d/security-logs
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Set permissions on log files
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "/var/log/auth.log", owner: "syslog", group: "adm", mode: "0640" }
+    - { path: "/var/log/syslog", owner: "syslog", group: "adm", mode: "0640" }
+    - { path: "/var/log/kern.log", owner: "syslog", group: "adm", mode: "0640" }
+    - { path: "/var/log/audit", owner: "root", group: "root", mode: "0750" }
+  failed_when: false
+
+- name: Enable process accounting
+  block:
+    - name: Install process accounting package
+      ansible.builtin.package:
+        name: acct
+        state: present
+
+    - name: Enable process accounting service
+      ansible.builtin.systemd:
+        name: acct
+        state: started
+        enabled: true
+  when: security_process_accounting_enabled
+
+- name: Configure systemd journal settings
+  ansible.builtin.lineinfile:
+    path: /etc/systemd/journald.conf
+    regexp: "^#?{{ item.key }}="
+    line: "{{ item.key }}={{ item.value }}"
+    state: present
+  loop:
+    - { key: "Storage", value: "persistent" }
+    - { key: "Compress", value: "yes" }
+    - { key: "MaxRetentionSec", value: "3month" }
+    - { key: "SystemMaxUse", value: "500M" }
+    - { key: "ForwardToSyslog", value: "yes" }
+  notify: restart systemd-journald
+
+- name: Ensure audit services are running
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - auditd
+    - rsyslog
+  when: security_auditd_enabled

@@ -1,15 +1,15 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Generate Comprehensive Diagnostic Report
 
 - name: Calculate final diagnostic session metrics
-  set_fact:
+  ansible.builtin.set_fact:
     vm_diagnostic_end_time: "{{ ansible_date_time.epoch }}"
     vm_diagnostic_duration: "{{ (ansible_date_time.epoch | int) - (vm_diagnostic_start_time | int) }}"
     vm_diagnostic_total_checks: "{{ vm_diagnostic_passed_count + vm_diagnostic_failed_count + vm_diagnostic_skipped_count }}"
 
 - name: Generate comprehensive diagnostic summary
-  set_fact:
+  ansible.builtin.set_fact:
     vm_diagnostic_summary:
       metadata:
         target_host: "{{ inventory_hostname }}"
@@ -55,7 +55,7 @@
   when: report_format in ['json', 'all']
 
 - name: Generate human-readable text report
-  set_fact:
+  ansible.builtin.set_fact:
     human_readable_report: |
       ================================================================================
       VM DIAGNOSTICS REPORT
@@ -116,7 +116,7 @@
       =============================
 
 - name: Add detailed results to report
-  set_fact:
+  ansible.builtin.set_fact:
     detailed_results: |
       {% for category, result in vm_diagnostic_results.items() %}
 
@@ -146,7 +146,7 @@
   when: report_format in ['yaml', 'all']
 
 - name: Generate executive summary for management
-  set_fact:
+  ansible.builtin.set_fact:
     executive_summary: |
       VM DIAGNOSTICS EXECUTIVE SUMMARY
       ================================
@@ -198,7 +198,7 @@
     mode: '0644'
 
 - name: Generate CI/CD integration artifact
-  set_fact:
+  ansible.builtin.set_fact:
     ci_diagnostic_result:
       test_suite: "vm_diagnostics"
       target_host: "{{ inventory_hostname }}"
@@ -233,7 +233,7 @@
   when: compress_output | bool
 
 - name: Set diagnostic report completion facts
-  set_fact:
+  ansible.builtin.set_fact:
     vm_diagnostics_report_completed: true
     vm_diagnostics_report_files:
       json_report: "{{ diagnostic_output_dir }}/vm_diagnostics_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
@@ -243,7 +243,7 @@
       archive: "{{ diagnostic_output_dir }}_{{ vm_diagnostic_session_id }}.tar.gz if compress_output else 'Not created' }}"
 
 - name: Display report generation summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Diagnostic Reports Generated ==="
       - "JSON Report: {{ vm_diagnostics_report_files.json_report }}"

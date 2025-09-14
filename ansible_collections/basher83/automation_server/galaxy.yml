@@ -1,0 +1,52 @@
+---
+# This collection is initialized by https://github.com/ansible/ansible-creator 25.8.0
+
+# See https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
+
+namespace: "basher83"
+name: "automation_server"
+version: 1.0.0
+readme: README.md
+authors:
+  - basher83
+
+description: Ansible collection for automation server infrastructure management
+license:
+  - MIT
+
+tags:
+  - infrastructure
+  - configuration
+  - automation
+  - docker
+  - terraform
+  - proxmox
+  - vm
+  - devops
+  - linux
+
+# TO-DO: maintain this list to reflect the collection's dependencies
+dependencies:
+  "ansible.utils": "*" # note: "*" selects the latest version available
+  "community.docker": "*"
+  "community.general": "*"
+  "ansible.posix": "*"
+
+repository: https://github.com/basher83/Sombrero-Edge-Control
+documentation: https://github.com/basher83/Sombrero-Edge-Control#readme
+homepage: https://github.com/basher83/Sombrero-Edge-Control
+issues: https://github.com/basher83/Sombrero-Edge-Control/issues
+
+# A list of file glob-like patterns used to filter any files or directories that should not be included in the build
+# artifact. A pattern is matched from the relative path of the file or directory of the collection directory. This
+# uses 'fnmatch' to match the files or directories. Some directories and files like 'galaxy.yml', '*.pyc', '*.retry',
+# and '.git' are always filtered. Mutually exclusive with 'manifest'
+build_ignore:
+  - .gitignore
+  - changelogs/.plugin-cache.yaml
+# A dict controlling use of manifest directives used in building the collection artifact. The key 'directives' is a
+# list of MANIFEST.in style
+# L(directives,https://packaging.python.org/en/latest/guides/using-manifest-in/#manifest-in-commands). The key
+# 'omit_default_directives' is a boolean that controls whether the default directives are used. Mutually exclusive
+# with 'build_ignore'
+# manifest: null

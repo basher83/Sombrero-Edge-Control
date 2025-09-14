@@ -6,11 +6,14 @@
 
 ## Context and Problem Statement
 
-The current Ansible codebase uses a traditional directory structure that ansible-lint cannot fully validate. According to Ansible best practices, playbooks and roles should be organized within a collection structure to enforce better compliance, improve modularity, and enable comprehensive linting.
+The current Ansible codebase uses a traditional directory structure that ansible-lint cannot fully validate. According to
+Ansible best practices, playbooks and roles should be organized within a collection structure to enforce better compliance,
+improve modularity, and enable comprehensive linting.
 
 ## Decision Outcome
 
-Chosen option: "Migrate to Ansible Collection Structure", because it provides complete ansible-lint compliance, better code organization, and aligns with modern Ansible development practices.
+Chosen option: "Migrate to Ansible Collection Structure", because it provides complete ansible-lint compliance, better code
+organization, and aligns with modern Ansible development practices.
 
 ### Positive Consequences
 
@@ -22,7 +25,7 @@ Chosen option: "Migrate to Ansible Collection Structure", because it provides co
 
 2. **Improved Code Organization**
    - Self-contained, distributable unit
-   - Clear namespace (sombrero.edge_control)
+   - Clear namespace (basher83.automation_server)
    - Versioned releases possible
    - Plugin development support
 
@@ -48,10 +51,10 @@ Chosen option: "Migrate to Ansible Collection Structure", because it provides co
 
 ### Collection Structure
 
-```
+```text
 ansible_collections/
-└── sombrero/
-    └── edge_control/
+└── basher83/
+    └── automation_server/
         ├── galaxy.yml          # Collection metadata
         ├── meta/runtime.yml    # Runtime requirements
         ├── roles/              # All roles
@@ -62,10 +65,10 @@ ansible_collections/
 
 ### Key Changes Required
 
-1. **Namespace Introduction**: All roles referenced as `sombrero.edge_control.role_name`
+1. **Namespace Introduction**: All roles referenced as `basher83.automation_server.role_name`
 2. **Galaxy Metadata**: Define collection version, dependencies, and requirements
 3. **FQCN Usage**: Update all playbook role references to use Fully Qualified Collection Names
-4. **Directory Migration**: Move from `ansible/` to `ansible_collections/sombrero/edge_control/`
+4. **Directory Migration**: Move from `ansible/` to `ansible_collections/basher83/automation_server/`
 
 ### Migration Phases
 

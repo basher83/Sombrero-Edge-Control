@@ -2,7 +2,7 @@
 # Docker daemon configuration tasks
 
 - name: Ensure Docker configuration directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/docker
     state: directory
     mode: '0755'
@@ -21,7 +21,7 @@
   when: docker_daemon_options | length > 0
 
 - name: Ensure Docker data directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ docker_data_directory }}"
     state: directory
     owner: root

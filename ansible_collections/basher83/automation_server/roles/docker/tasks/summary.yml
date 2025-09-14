@@ -1,0 +1,90 @@
+---
+# Docker installation and configuration summary
+
+- name: Gather Docker facts
+  block:
+    - name: Get Docker version
+      ansible.builtin.command: docker version --format json
+      register: docker_version_final
+      changed_when: false
+      failed_when: false
+
+    - name: Get Docker info
+      ansible.builtin.command: docker info --format json
+      register: docker_info_final
+      changed_when: false
+      failed_when: false
+
+    - name: List Docker networks
+      ansible.builtin.command: docker network ls --format json
+      register: docker_networks_final
+      changed_when: false
+      failed_when: false
+
+    - name: Check Docker Compose version
+      ansible.builtin.command: docker compose version
+      register: compose_version_final
+      changed_when: false
+      failed_when: false
+  become: true
+
+- name: Parse Docker information
+  ansible.builtin.set_fact:
+    docker_summary:
+      installed: "{{ docker_version_final.rc == 0 }}"
+      version: "{{ (docker_version_final.stdout | from_json).Client.Version | default('Not installed') if docker_version_final.rc == 0 else 'Not installed' }}"
+      compose_version: "{{ compose_version_final.stdout | default('Not installed') if compose_version_final.rc == 0 else 'Not installed' }}"
+      storage_driver: "{{ (docker_info_final.stdout | from_json).Driver | default('Unknown') if docker_info_final.rc == 0 else 'Unknown' }}"
+      root_dir: "{{ (docker_info_final.stdout | from_json).DockerRootDir | default('Unknown') if docker_info_final.rc == 0 else 'Unknown' }}"
+      containers_running: "{{ (docker_info_final.stdout | from_json).ContainersRunning | default(0) if docker_info_final.rc == 0 else 0 }}"
+      images_count: "{{ (docker_info_final.stdout | from_json).Images | default(0) if docker_info_final.rc == 0 else 0 }}"
+
+- name: Display Docker installation summary
+  ansible.builtin.debug:
+    msg: |
+      =====================================
+      Docker Installation Summary
+      =====================================
+      Status: {{ 'Installed' if docker_summary.installed else 'Not Installed' }}
+      Version: {{ docker_summary.version }}
+      Compose: {{ docker_summary.compose_version }}
+      Storage Driver: {{ docker_summary.storage_driver }}
+      Root Directory: {{ docker_summary.root_dir }}
+      Running Containers: {{ docker_summary.containers_running }}
+      Images: {{ docker_summary.images_count }}
+
+      Configuration:
+      - Mode: {{ docker_installation_mode }}
+      - Users in docker group: {{ docker_users_list | join(', ') if docker_users_list else 'None' }}
+      - User namespace remapping: {{ 'Enabled' if docker_enable_user_namespace_remapping else 'Disabled' }}
+      - Seccomp: {{ 'Enabled' if docker_enable_seccomp else 'Disabled' }}
+      - Cleanup cron: {{ 'Enabled' if docker_enable_cleanup_cron else 'Disabled' }}
+      - Log rotation: {{ 'Configured' if docker_configure_log_rotation else 'Default' }}
+
+      Validation Results:
+      {% if docker_validation_results is defined %}
+      - Service Active: {{ docker_validation_results.service_active | default(false) }}
+      - Socket Exists: {{ docker_validation_results.socket_exists | default(false) }}
+      - Bridge Network: {{ docker_validation_results.bridge_network_exists | default(false) }}
+      {% else %}
+      - Validation not performed (mode: {{ docker_installation_mode }})
+      {% endif %}
+      =====================================
+
+- name: Export summary to file
+  ansible.builtin.copy:
+    content: |
+      Docker Installation Summary
+      Generated: {{ ansible_date_time.iso8601 }}
+
+      Status: {{ 'Installed' if docker_summary.installed else 'Not Installed' }}
+      Version: {{ docker_summary.version }}
+      Compose Version: {{ docker_summary.compose_version }}
+      Storage Driver: {{ docker_summary.storage_driver }}
+      Root Directory: {{ docker_summary.root_dir }}
+
+      Configuration Mode: {{ docker_installation_mode }}
+      Users in docker group: {{ docker_users_list | join(', ') if docker_users_list else 'None' }}
+    dest: /tmp/docker-installation-summary.txt
+    mode: '0644'
+  when: docker_export_summary | bool

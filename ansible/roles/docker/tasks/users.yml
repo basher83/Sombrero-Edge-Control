@@ -2,7 +2,7 @@
 # Docker user management tasks
 
 - name: Display security warning about docker group
-  debug:
+  ansible.builtin.debug:
     msg: |
       WARNING: Users in the 'docker' group have root-equivalent access!
       The docker group grants privileges equivalent to the root user.
@@ -31,14 +31,14 @@
     - ansible_user in docker_users_list
 
 - name: Verify user docker group membership
-  command: "groups {{ item }}"
+  ansible.builtin.command: "groups {{ item }}"
   register: user_groups
   changed_when: false
   loop: "{{ docker_users_list }}"
   become: true
 
 - name: Display user group membership
-  debug:
+  ansible.builtin.debug:
     msg: "User {{ item.item }} groups: {{ item.stdout }}"
   loop: "{{ user_groups.results }}"
   when: docker_debug_mode | bool

@@ -1,0 +1,254 @@
+---
+#SPDX-License-Identifier: MIT
+# Generate Comprehensive Diagnostic Report
+
+- name: Calculate final diagnostic session metrics
+  set_fact:
+    vm_diagnostic_end_time: "{{ ansible_date_time.epoch }}"
+    vm_diagnostic_duration: "{{ (ansible_date_time.epoch | int) - (vm_diagnostic_start_time | int) }}"
+    vm_diagnostic_total_checks: "{{ vm_diagnostic_passed_count + vm_diagnostic_failed_count + vm_diagnostic_skipped_count }}"
+
+- name: Generate comprehensive diagnostic summary
+  set_fact:
+    vm_diagnostic_summary:
+      metadata:
+        target_host: "{{ inventory_hostname }}"
+        ansible_host: "{{ ansible_host | default('N/A') }}"
+        session_id: "{{ vm_diagnostic_session_id }}"
+        start_time: "{{ vm_diagnostic_start_time }}"
+        end_time: "{{ vm_diagnostic_end_time }}"
+        duration_seconds: "{{ vm_diagnostic_duration }}"
+        diagnostic_categories: "{{ diagnostic_categories }}"
+        diagnostic_depth: "{{ diagnostic_depth }}"
+        ansible_version: "{{ ansible_version.full }}"
+      statistics:
+        total_checks: "{{ vm_diagnostic_total_checks }}"
+        checks_passed: "{{ vm_diagnostic_passed_count }}"
+        checks_failed: "{{ vm_diagnostic_failed_count }}"
+        checks_skipped: "{{ vm_diagnostic_skipped_count }}"
+        success_rate: "{{ ((vm_diagnostic_passed_count / vm_diagnostic_total_checks) * 100) | round(2) if vm_diagnostic_total_checks > 0 else 0 }}"
+        overall_status: "{{ 'PASS' if vm_diagnostic_failed_count == 0 else 'FAIL' }}"
+        health_score: "{{ overall_health_score | default('N/A') }}"
+        health_status: "{{ health_status | default('N/A') }}"
+      system_information:
+        os_distribution: "{{ ansible_distribution | default('Unknown') }}"
+        os_version: "{{ ansible_distribution_version | default('Unknown') }}"
+        kernel_version: "{{ ansible_kernel | default('Unknown') }}"
+        architecture: "{{ ansible_architecture | default('Unknown') }}"
+        cpu_cores: "{{ ansible_processor_cores | default(ansible_processor_count) | default('Unknown') }}"
+        total_memory_mb: "{{ ansible_memtotal_mb | default('Unknown') }}"
+        virtualization_type: "{{ ansible_virtualization_type | default('Unknown') }}"
+        virtualization_role: "{{ ansible_virtualization_role | default('Unknown') }}"
+      issues_summary:
+        issues_detected: "{{ issues_detected | length | default(0) }}"
+        critical_issues: "{{ issues_detected | select('search', 'CRITICAL') | list | length | default(0) }}"
+        warning_issues: "{{ issues_detected | select('search', 'WARN') | list | length | default(0) }}"
+        issue_list: "{{ issues_detected | default([]) }}"
+        remediation_actions: "{{ remediation_actions | default([]) }}"
+      diagnostic_results: "{{ vm_diagnostic_results }}"
+
+- name: Write comprehensive JSON report
+  copy:
+    content: "{{ vm_diagnostic_summary | to_nice_json }}"
+    dest: "{{ diagnostic_output_dir }}/vm_diagnostics_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
+    mode: '0644'
+  when: report_format in ['json', 'all']
+
+- name: Generate human-readable text report
+  set_fact:
+    human_readable_report: |
+      ================================================================================
+      VM DIAGNOSTICS REPORT
+      ================================================================================
+
+      HOST INFORMATION
+      ----------------
+      Target Host: {{ inventory_hostname }}
+      IP Address: {{ ansible_host | default(ansible_default_ipv4.address) | default('N/A') }}
+      Session ID: {{ vm_diagnostic_session_id }}
+      Report Generated: {{ ansible_date_time.iso8601 }}
+      Diagnostic Duration: {{ vm_diagnostic_duration }} seconds
+
+      SYSTEM SPECIFICATIONS
+      ---------------------
+      Operating System: {{ ansible_distribution | default('Unknown') }} {{ ansible_distribution_version | default('') }}
+      Kernel Version: {{ ansible_kernel | default('Unknown') }}
+      Architecture: {{ ansible_architecture | default('Unknown') }}
+      CPU Cores: {{ ansible_processor_cores | default(ansible_processor_count) | default('Unknown') }}
+      Total Memory: {{ ansible_memtotal_mb | default('Unknown') }}MB
+      Virtualization: {{ ansible_virtualization_type | default('Unknown') }} ({{ ansible_virtualization_role | default('Unknown') }})
+
+      DIAGNOSTIC SUMMARY
+      ------------------
+      Categories Analyzed: {{ diagnostic_categories | join(', ') }}
+      Diagnostic Depth: {{ diagnostic_depth }}
+      Total Checks Performed: {{ vm_diagnostic_total_checks }}
+      Checks Passed: {{ vm_diagnostic_passed_count }}
+      Checks Failed: {{ vm_diagnostic_failed_count }}
+      Checks Skipped: {{ vm_diagnostic_skipped_count }}
+      Success Rate: {{ ((vm_diagnostic_passed_count / vm_diagnostic_total_checks) * 100) | round(2) if vm_diagnostic_total_checks > 0 else 0 }}%
+      Overall Status: {{ 'PASS' if vm_diagnostic_failed_count == 0 else 'FAIL' }}
+      {% if overall_health_score is defined %}
+      System Health Score: {{ overall_health_score }}/100 ({{ health_status | default('N/A') }})
+      {% endif %}
+
+      ISSUES DETECTED
+      ---------------
+      {% if issues_detected is defined and issues_detected | length > 0 %}
+      {% for issue in issues_detected %}
+      - {{ issue }}
+      {% endfor %}
+      {% else %}
+      No critical issues detected.
+      {% endif %}
+
+      REMEDIATION ACTIONS
+      -------------------
+      {% if remediation_actions is defined and remediation_actions | length > 0 %}
+      {% for action in remediation_actions %}
+      - {{ action }}
+      {% endfor %}
+      {% else %}
+      No immediate remediation actions required.
+      {% endif %}
+
+      DETAILED RESULTS BY CATEGORY
+      =============================
+
+- name: Add detailed results to report
+  set_fact:
+    detailed_results: |
+      {% for category, result in vm_diagnostic_results.items() %}
+
+      {{ category.replace('_', ' ').upper() }}
+      {{ '-' * (category.replace('_', ' ') | length) }}
+      Status: {{ result.status | default('N/A') }}
+      {% if result.error is defined %}
+      Error: {{ result.error }}
+      {% endif %}
+      {% if result.status == 'PASS' and result.get('detailed_analysis') %}
+      Details: Analysis completed successfully
+      {% endif %}
+      {% endfor %}
+
+- name: Write human-readable text report
+  copy:
+    content: "{{ human_readable_report }}{{ detailed_results }}"
+    dest: "{{ diagnostic_output_dir }}/vm_diagnostics_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+    mode: '0644'
+  when: report_format in ['text', 'all']
+
+- name: Generate YAML report (if requested)
+  copy:
+    content: "{{ vm_diagnostic_summary | to_nice_yaml }}"
+    dest: "{{ diagnostic_output_dir }}/vm_diagnostics_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.yml"
+    mode: '0644'
+  when: report_format in ['yaml', 'all']
+
+- name: Generate executive summary for management
+  set_fact:
+    executive_summary: |
+      VM DIAGNOSTICS EXECUTIVE SUMMARY
+      ================================
+      Host: {{ inventory_hostname }}
+      Date: {{ ansible_date_time.date }}
+
+      OVERALL STATUS: {{ 'HEALTHY' if vm_diagnostic_failed_count == 0 else 'REQUIRES ATTENTION' }}
+      {% if overall_health_score is defined %}
+      Health Score: {{ overall_health_score }}/100 ({{ health_status }})
+      {% endif %}
+
+      KEY METRICS:
+      - Diagnostic Success Rate: {{ ((vm_diagnostic_passed_count / vm_diagnostic_total_checks) * 100) | round(1) if vm_diagnostic_total_checks > 0 else 0 }}%
+      - Issues Detected: {{ issues_detected | length | default(0) }}
+      - Critical Services Status: {{ 'OK' if failed_services_list | default([]) | length == 0 else (failed_services_list | length | string + ' services failed') }}
+      {% if memory_usage_percent is defined %}
+      - Memory Utilization: {{ memory_usage_percent | round(1) }}%
+      {% endif %}
+      {% if root_disk_usage is defined %}
+      - Disk Utilization: {{ root_disk_usage | round(1) }}%
+      {% endif %}
+      {% if network_success_rate is defined %}
+      - Network Connectivity: {{ network_success_rate | round(1) }}%
+      {% endif %}
+
+      {% if issues_detected is defined and issues_detected | length > 0 %}
+      ATTENTION REQUIRED:
+      {% for issue in issues_detected %}
+      - {{ issue }}
+      {% endfor %}
+      {% else %}
+      STATUS: All systems operating normally
+      {% endif %}
+
+      NEXT STEPS:
+      {% if remediation_actions is defined and remediation_actions | length > 0 %}
+      {% for action in remediation_actions[:3] %}
+      - {{ action }}
+      {% endfor %}
+      {% else %}
+      - Continue regular monitoring
+      - Schedule next diagnostic review
+      {% endif %}
+
+- name: Write executive summary
+  copy:
+    content: "{{ executive_summary }}"
+    dest: "{{ diagnostic_output_dir }}/executive_summary_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+    mode: '0644'
+
+- name: Generate CI/CD integration artifact
+  set_fact:
+    ci_diagnostic_result:
+      test_suite: "vm_diagnostics"
+      target_host: "{{ inventory_hostname }}"
+      timestamp: "{{ ansible_date_time.iso8601 }}"
+      duration_seconds: "{{ vm_diagnostic_duration }}"
+      status: "{{ 'passed' if vm_diagnostic_failed_count == 0 else 'failed' }}"
+      total_checks: "{{ vm_diagnostic_total_checks }}"
+      passed_checks: "{{ vm_diagnostic_passed_count }}"
+      failed_checks: "{{ vm_diagnostic_failed_count }}"
+      skipped_checks: "{{ vm_diagnostic_skipped_count }}"
+      success_rate: "{{ ((vm_diagnostic_passed_count / vm_diagnostic_total_checks) * 100) | round(2) if vm_diagnostic_total_checks > 0 else 0 }}"
+      health_score: "{{ overall_health_score | default('N/A') }}"
+      categories_analyzed: "{{ diagnostic_categories }}"
+      issues_detected: "{{ issues_detected | default([]) }}"
+      system_info:
+        os: "{{ ansible_distribution | default('Unknown') }} {{ ansible_distribution_version | default('') }}"
+        kernel: "{{ ansible_kernel | default('Unknown') }}"
+        memory_mb: "{{ ansible_memtotal_mb | default('Unknown') }}"
+        cpu_cores: "{{ ansible_processor_cores | default(ansible_processor_count) | default('Unknown') }}"
+
+- name: Write CI/CD integration result
+  copy:
+    content: "{{ ci_diagnostic_result | to_nice_json }}"
+    dest: "{{ diagnostic_output_dir }}/ci_vm_diagnostics_result_{{ inventory_hostname }}.json"
+    mode: '0644'
+
+- name: Create archive of all diagnostic outputs (if requested)
+  archive:
+    path: "{{ diagnostic_output_dir }}/*"
+    dest: "{{ diagnostic_output_dir }}_{{ vm_diagnostic_session_id }}.tar.gz"
+    format: gz
+  when: compress_output | bool
+
+- name: Set diagnostic report completion facts
+  set_fact:
+    vm_diagnostics_report_completed: true
+    vm_diagnostics_report_files:
+      json_report: "{{ diagnostic_output_dir }}/vm_diagnostics_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.json"
+      text_report: "{{ diagnostic_output_dir }}/vm_diagnostics_report_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+      executive_summary: "{{ diagnostic_output_dir }}/executive_summary_{{ inventory_hostname }}_{{ ansible_date_time.epoch }}.txt"
+      ci_integration: "{{ diagnostic_output_dir }}/ci_vm_diagnostics_result_{{ inventory_hostname }}.json"
+      archive: "{{ diagnostic_output_dir }}_{{ vm_diagnostic_session_id }}.tar.gz if compress_output else 'Not created' }}"
+
+- name: Display report generation summary
+  debug:
+    msg:
+      - "=== Diagnostic Reports Generated ==="
+      - "JSON Report: {{ vm_diagnostics_report_files.json_report }}"
+      - "Text Report: {{ vm_diagnostics_report_files.text_report }}"
+      - "Executive Summary: {{ vm_diagnostics_report_files.executive_summary }}"
+      - "CI Integration: {{ vm_diagnostics_report_files.ci_integration }}"
+      - "Archive: {{ vm_diagnostics_report_files.archive if compress_output else 'Not requested' }}"
+      - "Session ID: {{ vm_diagnostic_session_id }}"

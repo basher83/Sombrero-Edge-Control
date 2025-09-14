@@ -42,7 +42,7 @@
   listen: "restart docker after firewall"
 
 - name: validate firewall rules
-  command: iptables-restore -t < /etc/iptables/rules.v4
+  ansible.builtin.command: iptables-restore -t < /etc/iptables/rules.v4
   become: true
   listen: "validate firewall"
 

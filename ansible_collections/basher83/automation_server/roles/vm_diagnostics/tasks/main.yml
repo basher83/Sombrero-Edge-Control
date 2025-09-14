@@ -1,0 +1,115 @@
+---
+#SPDX-License-Identifier: MIT
+# VM Diagnostics Role - Main Tasks
+
+- name: Initialize diagnostic session
+  set_fact:
+    vm_diagnostic_start_time: "{{ ansible_date_time.epoch }}"
+    vm_diagnostic_session_id: "{{ ansible_date_time.epoch }}-{{ inventory_hostname }}"
+    vm_diagnostic_results: {}
+    vm_diagnostic_failed_count: 0
+    vm_diagnostic_passed_count: 0
+    vm_diagnostic_skipped_count: 0
+
+- name: Display diagnostic session information
+  debug:
+    msg:
+      - "=== VM Diagnostics Session ==="
+      - "Host: {{ inventory_hostname }}"
+      - "Session ID: {{ vm_diagnostic_session_id }}"
+      - "Categories: {{ diagnostic_categories }}"
+      - "Depth: {{ diagnostic_depth }}"
+      - "Output Directory: {{ diagnostic_output_dir }}"
+  when: diagnostic_depth in ['standard', 'comprehensive']
+
+- name: Create diagnostic output directory
+  ansible.builtin.file:
+    path: "{{ diagnostic_output_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Phase 1 - System Diagnostics
+  include_tasks: system_diagnostics.yml
+  when: "'system' in diagnostic_categories"
+  tags: [system, diagnostics]
+
+- name: Phase 2 - Log Collection & Analysis
+  include_tasks: log_collection.yml
+  when:
+    - "'logs' in diagnostic_categories"
+    - collect_logs | bool
+  tags: [logs, diagnostics]
+
+- name: Phase 3 - Network Diagnostics
+  include_tasks: network_diagnostics.yml
+  when: "'network' in diagnostic_categories"
+  tags: [network, diagnostics]
+
+- name: Phase 4 - Service Diagnostics
+  include_tasks: service_diagnostics.yml
+  when: "'services' in diagnostic_categories"
+  tags: [services, diagnostics]
+
+- name: Phase 5 - Performance Analysis
+  include_tasks: performance_analysis.yml
+  when: "'performance' in diagnostic_categories"
+  tags: [performance, diagnostics]
+
+- name: Phase 6 - Troubleshooting Automation
+  include_tasks: troubleshooting_automation.yml
+  when:
+    - "'troubleshooting' in diagnostic_categories"
+    - troubleshooting_automation.automated_workflows | bool
+  tags: [troubleshooting, diagnostics]
+
+- name: Install monitoring tools (if requested)
+  include_tasks: install_monitoring_tools.yml
+  when:
+    - enable_monitoring_tools | bool
+    - diagnostic_depth == 'comprehensive'
+  tags: [tools, monitoring]
+
+- name: Generate comprehensive diagnostic report
+  include_tasks: generate_diagnostic_report.yml
+  when: generate_report | bool
+  tags: [reporting, diagnostics]
+
+- name: Clean up temporary diagnostic files
+  include_tasks: cleanup_diagnostics.yml
+  when:
+    - retain_diagnostics_days | int > 0
+    - diagnostic_depth in ['standard', 'comprehensive']
+  tags: [cleanup, diagnostics]
+
+- name: Display diagnostic session summary
+  debug:
+    msg:
+      - "=== Diagnostic Session Complete ==="
+      - "Session ID: {{ vm_diagnostic_session_id }}"
+      - "Duration: {{ (ansible_date_time.epoch | int) - (vm_diagnostic_start_time | int) }} seconds"
+      - "Categories Processed: {{ diagnostic_categories | length }}"
+      - "Total Checks: {{ vm_diagnostic_passed_count + vm_diagnostic_failed_count + vm_diagnostic_skipped_count }}"
+      - "Passed: {{ vm_diagnostic_passed_count }}"
+      - "Failed: {{ vm_diagnostic_failed_count }}"
+      - "Skipped: {{ vm_diagnostic_skipped_count }}"
+      - "Success Rate: {{ ((vm_diagnostic_passed_count / (vm_diagnostic_passed_count + vm_diagnostic_failed_count)) * 100) | round(2) if (vm_diagnostic_passed_count + vm_diagnostic_failed_count) > 0 else 100 }}%"
+      - "Report Location: {{ diagnostic_output_dir }}"
+  when: diagnostic_depth in ['standard', 'comprehensive']
+
+- name: Set diagnostic completion facts
+  set_fact:
+    vm_diagnostics_completed: true
+    vm_diagnostics_status: "{{ 'PASS' if vm_diagnostic_failed_count == 0 else 'FAIL' }}"
+    vm_diagnostics_summary:
+      session_id: "{{ vm_diagnostic_session_id }}"
+      start_time: "{{ vm_diagnostic_start_time }}"
+      end_time: "{{ ansible_date_time.epoch }}"
+      duration: "{{ (ansible_date_time.epoch | int) - (vm_diagnostic_start_time | int) }}"
+      categories: "{{ diagnostic_categories }}"
+      results: "{{ vm_diagnostic_results }}"
+      statistics:
+        total: "{{ vm_diagnostic_passed_count + vm_diagnostic_failed_count + vm_diagnostic_skipped_count }}"
+        passed: "{{ vm_diagnostic_passed_count }}"
+        failed: "{{ vm_diagnostic_failed_count }}"
+        skipped: "{{ vm_diagnostic_skipped_count }}"
+        success_rate: "{{ ((vm_diagnostic_passed_count / (vm_diagnostic_passed_count + vm_diagnostic_failed_count)) * 100) | round(2) if (vm_diagnostic_passed_count + vm_diagnostic_failed_count) > 0 else 100 }}"

@@ -1,0 +1,134 @@
+---
+# Development tools installation validation
+
+- name: Initialize validation results
+  ansible.builtin.set_fact:
+    devtools_validation_results: []
+    devtools_validation_failed: []
+
+- name: Run validation commands
+  ansible.builtin.shell: "{{ item.command }}"
+  register: validation_results
+  changed_when: false
+  failed_when: false
+  loop: "{{ devtools_validation_commands }}"
+
+- name: Process validation results
+  ansible.builtin.set_fact:
+    devtools_validation_results: "{{ devtools_validation_results + [item] }}"
+  vars:
+    item:
+      name: "{{ validation_results.results[ansible_loop.index0].item.description }}"
+      command: "{{ validation_results.results[ansible_loop.index0].item.command }}"
+      expected: "{{ validation_results.results[ansible_loop.index0].item.expected_pattern }}"
+      actual: "{{ validation_results.results[ansible_loop.index0].stdout }}"
+      passed: "{{ validation_results.results[ansible_loop.index0].stdout | regex_search(validation_results.results[ansible_loop.index0].item.expected_pattern) is not none }}"
+      optional: "{{ validation_results.results[ansible_loop.index0].item.optional | default(false) }}"
+      rc: "{{ validation_results.results[ansible_loop.index0].rc }}"
+  loop: "{{ devtools_validation_commands }}"
+  loop_control:
+    extended: true
+
+- name: Check for failed validations
+  ansible.builtin.set_fact:
+    devtools_validation_failed: "{{ devtools_validation_failed + [item] }}"
+  loop: "{{ devtools_validation_results }}"
+  when:
+    - not item.passed
+    - not item.optional
+- name: Validate Node.js npm packages
+  ansible.builtin.shell: npm list -g --depth=0 | grep {{ item }}
+  register: npm_package_check
+  changed_when: false
+  failed_when: false
+  loop: "{{ devtools_npm_global_packages }}"
+  become_user: "{{ devtools_user }}"
+
+- name: Check npm packages validation
+  ansible.builtin.set_fact:
+    npm_packages_status: "{{ npm_package_check.results | selectattr('rc', 'equalto', 0) | list | length }}/{{ devtools_npm_global_packages | length }}"
+
+- name: Validate Python pip packages
+  ansible.builtin.shell: pip3 list | grep -i {{ item }}
+  register: pip_package_check
+  changed_when: false
+  failed_when: false
+  loop: "{{ devtools_pip_packages }}"
+
+- name: Check pip packages validation
+  ansible.builtin.set_fact:
+    pip_packages_status: "{{ pip_package_check.results | selectattr('rc', 'equalto', 0) | list | length }}/{{ devtools_pip_packages | length }}"
+
+- name: Test mise functionality
+  ansible.builtin.shell: |
+    export MISE_CONFIG_DIR="{{ devtools_mise_config_dir }}"
+    export MISE_DATA_DIR="/home/{{ devtools_user }}/.local/share/mise"
+    mise --help >/dev/null 2>&1
+  register: mise_functionality_test
+  changed_when: false
+  failed_when: false
+  become_user: "{{ devtools_user }}"
+  when: devtools_mise_enabled
+
+- name: Test uv functionality
+  ansible.builtin.shell: uv --help >/dev/null 2>&1
+  register: uv_functionality_test
+  changed_when: false
+  failed_when: false
+  when: devtools_uv_enabled
+
+- name: Check shell configuration
+  ansible.builtin.shell: |
+    source /home/{{ devtools_user }}/.bashrc
+    echo "Shell configuration loaded successfully"
+  register: shell_config_test
+  changed_when: false
+  failed_when: false
+  become_user: "{{ devtools_user }}"
+
+- name: Calculate validation score
+  ansible.builtin.set_fact:
+    validation_passed: "{{ devtools_validation_results | selectattr('passed') | list | length }}"
+    validation_total: "{{ devtools_validation_results | length }}"
+    critical_failed: "{{ devtools_validation_failed | length }}"
+
+- name: Display validation summary
+  ansible.builtin.debug:
+    msg: |
+      ====================================
+      Development Tools Validation Results
+      ====================================
+      {% for result in devtools_validation_results %}
+      {{ '✓' if result.passed else '✗' }} {{ result.name }}: {{ result.actual }}
+      {% endfor %}
+
+      Package Installations:
+      {% if devtools_npm_global_packages | length > 0 %}
+      {{ '✓' if npm_packages_status.split('/')[0] == npm_packages_status.split('/')[1] else '⚠' }} npm packages: {{ npm_packages_status }}
+      {% endif %}
+      {% if devtools_pip_packages | length > 0 %}
+      {{ '✓' if pip_packages_status.split('/')[0] == pip_packages_status.split('/')[1] else '⚠' }} pip packages: {{ pip_packages_status }}
+      {% endif %}
+
+      Modern Tools:
+      {% if devtools_mise_enabled %}
+      {{ '✓' if mise_functionality_test.rc == 0 else '✗' }} mise: {{ 'Working' if mise_functionality_test.rc == 0 else 'Failed' }}
+      {% endif %}
+      {% if devtools_uv_enabled %}
+      {{ '✓' if uv_functionality_test.rc == 0 else '✗' }} uv: {{ 'Working' if uv_functionality_test.rc == 0 else 'Failed' }}
+      {% endif %}
+
+      Shell Configuration:
+      {{ '✓' if shell_config_test.rc == 0 else '✗' }} bashrc: {{ 'Loaded' if shell_config_test.rc == 0 else 'Failed' }}
+      ====================================
+      Overall Score: {{ validation_passed }}/{{ validation_total }}
+      Critical Issues: {{ critical_failed }}
+      Status: {{ 'PASSED' if critical_failed == 0 else 'ATTENTION NEEDED' }}
+      ====================================
+
+- name: Fail if critical validations failed
+  ansible.builtin.fail:
+    msg: "Critical development tools validation failed. Please check the installation."
+  when:
+    - critical_failed > 0
+    - devtools_validate_installation

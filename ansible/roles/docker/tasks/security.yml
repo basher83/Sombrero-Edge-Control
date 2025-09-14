@@ -4,7 +4,7 @@
 - name: Configure user namespace remapping
   block:
     - name: Ensure subuid and subgid files exist
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: touch
         mode: '0644'
@@ -28,19 +28,19 @@
 - name: Configure seccomp profiles
   block:
     - name: Ensure seccomp directory exists
-      file:
+      ansible.builtin.file:
         path: /etc/docker/seccomp
         state: directory
         mode: '0755'
       become: true
 
     - name: Note about seccomp
-      debug:
+      ansible.builtin.debug:
         msg: "Seccomp is enabled by default in Docker. Custom profiles can be added to /etc/docker/seccomp/"
   when: docker_enable_seccomp | bool
 
 - name: Set Docker socket permissions
-  file:
+  ansible.builtin.file:
     path: /var/run/docker.sock
     mode: "{{ docker_socket_permissions }}"
   become: true
