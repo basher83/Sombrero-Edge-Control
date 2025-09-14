@@ -16,6 +16,9 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
   to mise.toml for enhanced Ansible development workflow
 - **Ansible Collection Structure**: Complete basher83.automation_server collection with 10 migrated roles,
   8 playbooks, inventory, and CI/CD configuration
+- **Docker Role Enhancements**: Complete refactoring with log rotation, error handling, and Molecule testing framework
+- **Docker Log Rotation**: Implemented json-file driver configuration with max-size and max-file limits
+- **Molecule Testing**: Added complete test framework for Docker role validation
 - **ADR System**: Architectural Decision Records for tracking important technical decisions
 - **MegaLinter Integration**: Enhanced linting and code quality checks with MegaLinter runner script
 - **Claude Code Commands**: ADR creation slash command and other Claude Code integrations
@@ -26,6 +29,9 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Changed
 
+- **Docker Role Structure**: Applied FQCN (Fully Qualified Collection Names) throughout all tasks
+- **Variable Management**: Moved all Docker role variables from vars/ to defaults/ for proper precedence
+- **Error Handling**: Added comprehensive block/rescue/always patterns with backup and rollback mechanisms
 - **MegaLinter Configuration**: Optimized performance with fast mode and non-blocking errors
 - **Documentation Structure**: Added comprehensive guides for Ansible collection migration
 - **Namespace References**: Updated all documentation from 'sombrero.edge_control' to 'basher83.automation_server' namespace
@@ -33,6 +39,12 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Fixed
 
+- **Docker Role Variables**: Added all missing variable definitions preventing role execution
+- **Docker Socket Permissions**: Fixed validation logic with proper stat check and octal format comparison
+- **User Namespace Remapping**: Implemented dockremap user creation and verification
+- **Network and Volume Tests**: Added missing validation implementations
+- **Registry Validation**: Enhanced with proper connectivity testing
+- **Handler Syntax**: Updated all handlers to use FQCN format
 - **CI/CD Issues**: Resolved MegaLinter workflow failures and duplicate workflow files
 - **Terraform Configuration**: Removed duplicate version requirements
 - **DevContainer**: Improved structure and property ordering
