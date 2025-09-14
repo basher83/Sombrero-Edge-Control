@@ -18,11 +18,11 @@ for details.
 
 You can use [antsibull-docs](https://pypi.org/project/antsibull-docs) to build a Sphinx-based docsite for your collection:
 
-#. Create your collection and make sure you can use it with ansible-core by adding it to your `COLLECTIONS_PATHS`.
-#. Create a directory `dest` and run `antsibull-docs sphinx-init --use-current --dest-dir dest namespace.name`, where `namespace.name` is the name of your collection.
-#. Go into `dest` and run `pip install -r requirements.txt`. You might want to create a venv and activate it first to avoid installing this globally.
-#. Then run `./build.sh`.
-#. Open `build/html/index.html` in a browser of your choice.
+# . Create your collection and make sure you can use it with ansible-core by adding it to your `COLLECTIONS_PATHS`.
+# . Create a directory `dest` and run `antsibull-docs sphinx-init --use-current --dest-dir dest namespace.name`, where `namespace.name` is the name of your collection.
+# . Go into `dest` and run `pip install -r requirements.txt`. You might want to create a venv and activate it first to avoid installing this globally.
+# . Then run `./build.sh`.
+# . Open `build/html/index.html` in a browser of your choice.
 
 See [antsibull-docs documentation](https://ansible.readthedocs.io/projects/antsibull-docs/) for complete details.
 

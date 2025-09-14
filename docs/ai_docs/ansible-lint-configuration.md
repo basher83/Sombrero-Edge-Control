@@ -121,6 +121,4 @@ repos:
     the hook.
 
 [pre-commit]: https://pre-commit.com/
-[Ansible package]: https://pypi.org/project/ansible/
-[ansible-core]: https://pypi.org/project/ansible-core/
 [pre-commit.ci]: https://pre-commit.ci/

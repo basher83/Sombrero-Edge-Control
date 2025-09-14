@@ -11,13 +11,13 @@ Note that plugins (inventory plugins and connection plugins) are always executed
 You can install the Docker SDK for Python for Python 3.6 or later as follows:
 
 ```console
-$ pip install docker
+pip install docker
 ```
 
 For Python 2.7, you need to use a version between 2.0.0 and 4.4.4 since the Python package for Docker removed support for Python 2.7 on 5.0.0. You can install the specific version of the Docker SDK for Python as follows:
 
 ```console
-$ pip install 'docker==4.4.4'
+pip install 'docker==4.4.4'
 ```
 
 Note that the Docker SDK for Python was called `docker-py` on PyPi before version 2.0.0. Please avoid installing this really old version, and make sure to not install both `docker` and `docker-py`. Installing both will result in a broken installation. If this happens, Ansible will detect it and inform you about it. If that happens, you must uninstall both and reinstall the correct version. If in doubt, always install `docker` and never `docker-py`.
