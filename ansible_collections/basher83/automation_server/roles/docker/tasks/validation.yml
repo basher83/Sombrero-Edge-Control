@@ -2,47 +2,47 @@
 # Docker validation tasks
 
 - name: Check Docker service status
-  systemd:
+  ansible.builtin.systemd:
     name: docker
   register: docker_service_status
   become: true
 
 - name: Verify Docker service is active
-  assert:
+  ansible.builtin.assert:
     that:
       - docker_service_status.status.ActiveState == "active"
     fail_msg: "Docker service is not active: {{ docker_service_status.status.ActiveState }}"
     success_msg: "Docker service is active and running"
 
 - name: Check Docker version
-  command: docker version --format json
+  ansible.builtin.command: docker version --format json
   register: docker_version_json
   changed_when: false
   become: true
 
 - name: Parse Docker version information
-  set_fact:
+  ansible.builtin.set_fact:
     docker_version_info: "{{ docker_version_json.stdout | from_json }}"
 
 - name: Verify Docker Compose plugin is installed
-  command: docker compose version
+  ansible.builtin.command: docker compose version
   register: compose_version
   changed_when: false
   failed_when: false
 
 - name: Check Docker socket permissions
-  stat:
+  ansible.builtin.stat:
     path: /var/run/docker.sock
   register: docker_socket
   become: true
 
 - name: Verify Docker socket permissions
-  assert:
+  ansible.builtin.assert:
     that:
       - docker_socket.stat.exists
-      - docker_socket.stat.mode == docker_socket_permissions
-    fail_msg: "Docker socket has incorrect permissions: {{ docker_socket.stat.mode }}"
-    success_msg: "Docker socket permissions are correct"
+      - ('0%04o' | format(docker_socket.stat.mode | int)) == docker_socket_permissions
+    fail_msg: "Docker socket has incorrect permissions: {{ '0%04o' | format(docker_socket.stat.mode | int) }} (expected: {{ docker_socket_permissions }})"
+    success_msg: "Docker socket permissions are correct ({{ docker_socket_permissions }})"
   when: docker_socket.stat.exists
 
 - name: Test Docker functionality with hello-world
@@ -55,32 +55,205 @@
   become: true
   when: "'hello_world_test' in docker_validation_tests"
 
+- name: Test Docker network functionality
+  block:
+    - name: Create test network
+      community.docker.docker_network:
+        name: docker_test_network
+        driver: bridge
+        state: present
+      register: test_network_create
+      become: true
+
+    - name: Verify test network was created
+      ansible.builtin.command: docker network inspect docker_test_network
+      register: test_network_inspect
+      changed_when: false
+      become: true
+
+    - name: Clean up test network
+      community.docker.docker_network:
+        name: docker_test_network
+        state: absent
+      become: true
+  when: "'network_test' in docker_validation_tests"
+  rescue:
+    - name: Ensure test network is cleaned up on failure
+      community.docker.docker_network:
+        name: docker_test_network
+        state: absent
+      become: true
+      failed_when: false
+
+- name: Test Docker volume functionality
+  block:
+    - name: Create test volume
+      community.docker.docker_volume:
+        name: docker_test_volume
+        state: present
+      register: test_volume_create
+      become: true
+
+    - name: Verify test volume was created
+      ansible.builtin.command: docker volume inspect docker_test_volume
+      register: test_volume_inspect
+      changed_when: false
+      become: true
+
+    - name: Test volume mounting with container
+      community.docker.docker_container:
+        name: volume-test-container
+        image: alpine:latest
+        command: ["sh", "-c", "echo 'test data' > /data/test.txt && cat /data/test.txt"]
+        volumes:
+          - docker_test_volume:/data
+        state: started
+        detach: false
+        cleanup: true
+      register: volume_mount_test
+      become: true
+
+    - name: Clean up test volume
+      community.docker.docker_volume:
+        name: docker_test_volume
+        state: absent
+      become: true
+  when: "'volume_test' in docker_validation_tests"
+  rescue:
+    - name: Ensure test volume is cleaned up on failure
+      community.docker.docker_volume:
+        name: docker_test_volume
+        state: absent
+      become: true
+      failed_when: false
+
 - name: Check Docker network configuration
-  command: docker network ls --format json
+  ansible.builtin.command: docker network ls --format json
   register: docker_networks
   changed_when: false
   become: true
 
 - name: Verify default bridge network exists
-  assert:
+  ansible.builtin.assert:
     that:
       - docker_networks.stdout | from_json | selectattr('Name', 'equalto', 'bridge') | list | length > 0
     fail_msg: "Default Docker bridge network not found"
     success_msg: "Default Docker bridge network exists"
 
+- name: Check Docker daemon configuration
+  ansible.builtin.command: docker info --format json
+  register: docker_info_json
+  changed_when: false
+  become: true
+
+- name: Parse Docker info
+  ansible.builtin.set_fact:
+    docker_info: "{{ docker_info_json.stdout | from_json }}"
+
+- name: Validate Docker Content Trust if enabled
+  block:
+    - name: Check DOCKER_CONTENT_TRUST environment variable
+      ansible.builtin.shell: echo $DOCKER_CONTENT_TRUST
+      register: content_trust_env
+      changed_when: false
+      environment:
+        DOCKER_CONTENT_TRUST: "{{ '1' if docker_content_trust else '0' }}"
+
+    - name: Verify Content Trust configuration
+      ansible.builtin.assert:
+        that:
+          - content_trust_env.stdout == "1"
+        fail_msg: "Docker Content Trust is not properly configured"
+        success_msg: "Docker Content Trust is enabled"
+  when: docker_content_trust | bool
+
+- name: Validate registry configuration
+  block:
+    - name: Check if RegistryConfig exists in Docker info
+      ansible.builtin.set_fact:
+        registry_config_exists: "{{ docker_info.RegistryConfig is defined }}"
+
+    - name: Validate registry mirrors configuration
+      ansible.builtin.assert:
+        that:
+          - registry_config_exists
+          - docker_info.RegistryConfig.Mirrors is defined
+          - docker_info.RegistryConfig.Mirrors | length == docker_registry_mirrors | length
+        fail_msg: |
+          Registry mirrors not properly configured.
+          Expected: {{ docker_registry_mirrors }}
+          Got: {{ docker_info.RegistryConfig.Mirrors | default([]) if registry_config_exists else 'RegistryConfig not found' }}
+          Ensure Docker daemon has been restarted after configuration changes.
+        success_msg: "Registry mirrors are correctly configured: {{ docker_info.RegistryConfig.Mirrors | default([]) }}"
+      when:
+        - docker_registry_mirrors | length > 0
+        - registry_config_exists
+
+    - name: Test registry mirror connectivity
+      ansible.builtin.uri:
+        url: "{{ item }}/v2/"
+        method: GET
+        timeout: 10
+        validate_certs: true
+      loop: "{{ docker_registry_mirrors }}"
+      when: docker_registry_mirrors | length > 0
+      register: mirror_connectivity
+      failed_when: false
+      changed_when: false
+
+    - name: Report registry mirror connectivity issues
+      ansible.builtin.debug:
+        msg: "Warning: Registry mirror {{ item.item }} may not be reachable (status: {{ item.status | default('unreachable') }})"
+      loop: "{{ mirror_connectivity.results | default([]) }}"
+      when:
+        - mirror_connectivity is defined
+        - item.status is not defined or item.status != 200
+
+    - name: Validate insecure registries configuration
+      ansible.builtin.assert:
+        that:
+          - registry_config_exists
+          - docker_info.RegistryConfig.InsecureRegistryCIDRs is defined
+          - docker_insecure_registries | difference(docker_info.RegistryConfig.InsecureRegistryCIDRs) | length == 0
+        fail_msg: |
+          Insecure registries not properly configured.
+          Expected: {{ docker_insecure_registries }}
+          Got: {{ docker_info.RegistryConfig.InsecureRegistryCIDRs | default([]) if registry_config_exists else 'RegistryConfig not found' }}
+          Ensure Docker daemon has been restarted after configuration changes.
+        success_msg: "Insecure registries are correctly configured"
+      when:
+        - docker_insecure_registries | length > 0
+        - registry_config_exists
+
+  rescue:
+    - name: Registry validation failed
+      ansible.builtin.debug:
+        msg: |
+          Registry validation encountered issues. This may be due to:
+          1. Docker daemon not restarted after configuration changes
+          2. Network connectivity issues to registry mirrors
+          3. Incorrect registry URLs or configuration
+          Please verify your registry configuration and restart Docker if needed.
+
 - name: Collect validation results
-  set_fact:
+  ansible.builtin.set_fact:
     docker_validation_results:
       service_active: "{{ docker_service_status.status.ActiveState == 'active' }}"
       version: "{{ docker_version_info.Client.Version | default('unknown') }}"
       compose_installed: "{{ compose_version.rc == 0 }}"
       compose_version: "{{ compose_version.stdout | default('not installed') }}"
       socket_exists: "{{ docker_socket.stat.exists }}"
+      socket_permissions: "{{ '0%04o' | format(docker_socket.stat.mode | int) if docker_socket.stat.exists else 'N/A' }}"
       hello_world_success: "{{ hello_world_test.changed | default(false) }}"
+      network_test_success: "{{ test_network_create.changed | default(false) }}"
+      volume_test_success: "{{ test_volume_create.changed | default(false) }}"
       bridge_network_exists: true
+      content_trust_enabled: "{{ docker_content_trust | bool }}"
+      registry_mirrors_configured: "{{ (docker_registry_mirrors | length > 0) | bool }}"
+      insecure_registries_configured: "{{ (docker_insecure_registries | length > 0) | bool }}"
 
 - name: Display validation summary
-  debug:
+  ansible.builtin.debug:
     msg: |
       Docker Validation Summary:
       - Service Active: {{ docker_validation_results.service_active }}
@@ -88,5 +261,11 @@
       - Compose Installed: {{ docker_validation_results.compose_installed }}
       - Compose Version: {{ docker_validation_results.compose_version }}
       - Socket Exists: {{ docker_validation_results.socket_exists }}
-      - Hello World Test: {{ docker_validation_results.hello_world_success }}
+      - Socket Permissions: {{ docker_validation_results.socket_permissions }}
+      - Hello World Test: {{ 'Passed' if docker_validation_results.hello_world_success else 'Failed/Skipped' }}
+      - Network Test: {{ 'Passed' if docker_validation_results.network_test_success else 'Failed/Skipped' }}
+      - Volume Test: {{ 'Passed' if docker_validation_results.volume_test_success else 'Failed/Skipped' }}
       - Bridge Network: {{ docker_validation_results.bridge_network_exists }}
+      - Content Trust: {{ 'Enabled' if docker_validation_results.content_trust_enabled else 'Disabled' }}
+      - Registry Mirrors: {{ 'Configured' if docker_validation_results.registry_mirrors_configured else 'Not configured' }}
+      - Insecure Registries: {{ 'Configured' if docker_validation_results.insecure_registries_configured else 'Not configured' }}

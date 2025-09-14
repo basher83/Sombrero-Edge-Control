@@ -3,8 +3,26 @@
 
 - name: Configure user namespace remapping
   block:
+    - name: Check if dockremap user exists
+      ansible.builtin.getent:
+        database: passwd
+        key: dockremap
+      register: dockremap_user
+      failed_when: false
+
+    - name: Create dockremap user for namespace remapping
+      ansible.builtin.user:
+        name: dockremap
+        system: true
+        shell: /bin/false
+        home: /var/lib/docker/dockremap
+        create_home: false
+        comment: "Docker user namespace remapping"
+      become: true
+      when: dockremap_user.failed | default(false)
+
     - name: Ensure subuid and subgid files exist
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: touch
         mode: '0644'
@@ -13,10 +31,11 @@
         - /etc/subgid
       become: true
 
-    - name: Configure dockremap user
-      lineinfile:
+    - name: Configure dockremap user namespace mapping
+      ansible.builtin.lineinfile:
         path: "{{ item }}"
         line: "dockremap:100000:65536"
+        regexp: "^dockremap:"
         create: true
       loop:
         - /etc/subuid
@@ -28,20 +47,26 @@
 - name: Configure seccomp profiles
   block:
     - name: Ensure seccomp directory exists
-      file:
+      ansible.builtin.file:
         path: /etc/docker/seccomp
         state: directory
         mode: '0755'
       become: true
 
     - name: Note about seccomp
-      debug:
+      ansible.builtin.debug:
         msg: "Seccomp is enabled by default in Docker. Custom profiles can be added to /etc/docker/seccomp/"
   when: docker_enable_seccomp | bool
 
+- name: Check Docker socket exists
+  ansible.builtin.stat:
+    path: /var/run/docker.sock
+  register: docker_socket_check
+  become: true
+
 - name: Set Docker socket permissions
-  file:
+  ansible.builtin.file:
     path: /var/run/docker.sock
     mode: "{{ docker_socket_permissions }}"
   become: true
-  when: docker_socket.stat.exists | default(false)
+  when: docker_socket_check.stat.exists | default(false)
