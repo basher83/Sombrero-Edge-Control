@@ -1,45 +1,22 @@
 ---
-# Docker role variables (higher precedence than defaults)
-# These should generally not be overridden
+# Docker role internal variables
+# WARNING: These variables are for internal role use only and should not be overridden
+# User-configurable variables should be defined in defaults/main.yml
 
-# Docker system requirements
+# Docker system requirements (internal validation)
 docker_minimum_kernel_version: "3.10"
 docker_minimum_memory_mb: 512
 
-# Docker registry settings
-docker_registry_mirrors_default:
-  - "https://mirror.gcr.io"
-  - "https://docker.mirrors.ustc.edu.cn"
-
-# Security defaults that should not be changed
+# Security defaults (internal recommendations)
 docker_security_opts_recommended:
   - "no-new-privileges:true"
   - "apparmor:docker-default"
 
-# Validation test names
-docker_validation_tests:
-  - hello_world_test
-  - network_test
-  - volume_test
-
-# Log rotation settings
-docker_log_max_size: "10m"
-docker_log_max_files: "3"
-
-# Resource cleanup settings
-docker_cleanup_retention_hours: 72
-
-# System control settings for Docker
+# System control settings required for Docker operation
+# These are applied when docker_configure_sysctl is enabled
 docker_sysctl_settings:
   net.bridge.bridge-nf-call-iptables: 1
   net.bridge.bridge-nf-call-ip6tables: 1
   net.ipv4.ip_forward: 1
   fs.inotify.max_user_watches: 524288
   fs.inotify.max_user_instances: 512
-
-# Feature flags
-docker_configure_sysctl: true
-docker_configure_firewall: false  # Disabled by default to avoid conflicts
-docker_persist_iptables: false
-docker_enable_memory_limits: false
-docker_export_summary: false

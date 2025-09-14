@@ -31,17 +31,42 @@ docker_daemon_options:
 docker_enable_user_namespace_remapping: false
 docker_enable_seccomp: true
 docker_socket_permissions: "0660"
+docker_content_trust: false  # Enable Docker Content Trust for image verification
 
 # Resource management
 docker_data_directory: "/var/lib/docker"
 docker_enable_cleanup_cron: true
 docker_cleanup_schedule: "0 2 * * 0"  # Weekly at 2 AM Sunday
 docker_cleanup_flags: "--all --force --volumes"
+docker_cleanup_retention_hours: 72
+
+# Log rotation configuration
+docker_configure_log_rotation: true
+docker_log_max_size: "10m"
+docker_log_max_files: "3"
+
+# Memory and system limits
+docker_enable_memory_limits: false
+docker_configure_sysctl: true
 
 # Networking
 docker_default_bridge_subnet: "172.17.0.0/16"
 docker_enable_ipv6: false
 docker_dns_servers: []  # Empty = use system DNS
+docker_registry_mirrors: []  # List of registry mirrors (e.g., ["https://mirror.gcr.io"])
+docker_insecure_registries: []  # List of insecure registries (e.g., ["localhost:5000"])
+
+# Docker networks to create
+docker_networks: []
+# Example:
+# docker_networks:
+#   - name: app_network
+#     driver: bridge
+#     subnet: "172.20.0.0/16"
+#     gateway: "172.20.0.1"
+#   - name: db_network
+#     driver: bridge
+#     internal: true
 
 # Service configuration
 docker_service_enabled: true
@@ -55,11 +80,15 @@ docker_validation_tests:
   - service_status
   - socket_permissions
   - hello_world_test
+  - network_test
+  - volume_test
 
 # Firewall compatibility
 # WARNING: Docker requires iptables and is incompatible with pure nftables
 docker_configure_firewall: false
 docker_preserve_iptables_chains: true
+docker_persist_iptables: false  # Persist iptables rules across reboots
+docker_enable_swarm: false  # Enable Docker Swarm mode ports
 
 # Package management
 docker_apt_release_channel: stable
@@ -74,5 +103,6 @@ docker_apt_repository: >-
 docker_enable_health_checks: true
 docker_health_check_interval: 60  # seconds
 
-# Debug mode
+# Debug mode and reporting
 docker_debug_mode: false
+docker_export_summary: false  # Export installation summary to file
