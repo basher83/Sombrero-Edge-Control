@@ -2,46 +2,23 @@
 # Docker resource management tasks
 
 - name: Configure Docker cleanup cron job
-  cron:
+  ansible.builtin.cron:
     name: "Docker system prune"
     minute: "0"
     hour: "2"
-    job: "docker system prune -af --volumes --filter 'until=72h' > /dev/null 2>&1"
+    job: "docker system prune -af --volumes --filter 'until={{ docker_cleanup_retention_hours }}h' > /dev/null 2>&1"
     user: root
     state: "{{ 'present' if docker_enable_cleanup_cron else 'absent' }}"
   become: true
 
-- name: Configure Docker log rotation
-  copy:
-    content: |
-      {
-        "log-driver": "json-file",
-        "log-opts": {
-          "max-size": "{{ docker_log_max_size }}",
-          "max-file": "{{ docker_log_max_files }}",
-          "compress": "true"
-        }
-      }
-    dest: /etc/docker/daemon.json.d/logging.json
-    owner: root
-    group: root
-    mode: '0644'
-  become: true
-  when: docker_configure_log_rotation | bool
-  notify: restart docker
-
-- name: Create Docker daemon config directory
-  file:
-    path: /etc/docker/daemon.json.d
-    state: directory
-    owner: root
-    group: root
-    mode: '0755'
-  become: true
-  when: docker_configure_log_rotation | bool
+# Note: Log rotation is configured in configuration.yml via daemon.json
+# Docker handles log rotation internally when using json-file or local drivers
+# with max-size and max-file options. This is the recommended approach per
+# Docker best practices - no external logrotate needed.
+# Reference: https://docs.docker.com/engine/logging/drivers/json-file/
 
 - name: Set Docker storage driver limits
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.key }}"
     value: "{{ item.value }}"
     state: present
@@ -53,7 +30,7 @@
   when: docker_configure_sysctl | bool
 
 - name: Configure Docker memory limits
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
     line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet cgroup_enable=memory swapaccount=1"'
@@ -63,12 +40,12 @@
   notify: update grub
 
 - name: Monitor Docker disk usage
-  command: docker system df
+  ansible.builtin.command: docker system df
   register: docker_disk_usage
   changed_when: false
   when: docker_debug_mode | bool
 
 - name: Display Docker disk usage
-  debug:
+  ansible.builtin.debug:
     msg: "{{ docker_disk_usage.stdout_lines }}"
   when: docker_debug_mode | bool

@@ -4,32 +4,32 @@
 - name: Gather Docker facts
   block:
     - name: Get Docker version
-      command: docker version --format json
+      ansible.builtin.command: docker version --format json
       register: docker_version_final
       changed_when: false
       failed_when: false
 
     - name: Get Docker info
-      command: docker info --format json
+      ansible.builtin.command: docker info --format json
       register: docker_info_final
       changed_when: false
       failed_when: false
 
     - name: List Docker networks
-      command: docker network ls --format json
+      ansible.builtin.command: docker network ls --format json
       register: docker_networks_final
       changed_when: false
       failed_when: false
 
     - name: Check Docker Compose version
-      command: docker compose version
+      ansible.builtin.command: docker compose version
       register: compose_version_final
       changed_when: false
       failed_when: false
   become: true
 
 - name: Parse Docker information
-  set_fact:
+  ansible.builtin.set_fact:
     docker_summary:
       installed: "{{ docker_version_final.rc == 0 }}"
       version: "{{ (docker_version_final.stdout | from_json).Client.Version | default('Not installed') if docker_version_final.rc == 0 else 'Not installed' }}"
@@ -40,7 +40,7 @@
       images_count: "{{ (docker_info_final.stdout | from_json).Images | default(0) if docker_info_final.rc == 0 else 0 }}"
 
 - name: Display Docker installation summary
-  debug:
+  ansible.builtin.debug:
     msg: |
       =====================================
       Docker Installation Summary
@@ -72,7 +72,7 @@
       =====================================
 
 - name: Export summary to file
-  copy:
+  ansible.builtin.copy:
     content: |
       Docker Installation Summary
       Generated: {{ ansible_date_time.iso8601 }}

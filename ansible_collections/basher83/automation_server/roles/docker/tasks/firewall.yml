@@ -2,7 +2,7 @@
 # Docker firewall compatibility tasks
 
 - name: Check if UFW is installed
-  command: which ufw
+  ansible.builtin.command: which ufw
   register: ufw_installed
   changed_when: false
   failed_when: false
@@ -10,7 +10,7 @@
 - name: Configure UFW for Docker
   block:
     - name: Add UFW rules for Docker
-      ufw:
+      community.general.ufw:
         rule: allow
         port: "{{ item }}"
         proto: tcp
@@ -22,7 +22,7 @@
       when: docker_enable_swarm | default(false) | bool
 
     - name: Configure UFW DOCKER chain
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/ufw/after.rules
         block: |
           # BEGIN UFW AND DOCKER
@@ -44,7 +44,7 @@
   when: ufw_installed.rc == 0 and docker_configure_firewall | bool
 
 - name: Check if firewalld is installed
-  command: which firewall-cmd
+  ansible.builtin.command: which firewall-cmd
   register: firewalld_installed
   changed_when: false
   failed_when: false
@@ -52,14 +52,14 @@
 - name: Configure firewalld for Docker
   block:
     - name: Add Docker zone to firewalld
-      firewalld:
+      ansible.posix.firewalld:
         zone: docker
         state: present
         permanent: true
       become: true
 
     - name: Add Docker interface to docker zone
-      firewalld:
+      ansible.posix.firewalld:
         zone: docker
         interface: docker0
         state: enabled
@@ -67,7 +67,7 @@
       become: true
 
     - name: Configure firewalld masquerading for Docker
-      firewalld:
+      ansible.posix.firewalld:
         zone: docker
         masquerade: true
         state: enabled
@@ -79,14 +79,14 @@
 - name: Configure iptables persistence
   block:
     - name: Install iptables-persistent
-      apt:
+      ansible.builtin.apt:
         name: iptables-persistent
         state: present
       become: true
       when: ansible_os_family == "Debian"
 
     - name: Save iptables rules
-      shell: |
+      ansible.builtin.shell: |
         iptables-save > /etc/iptables/rules.v4
         ip6tables-save > /etc/iptables/rules.v6
       become: true
@@ -94,7 +94,7 @@
   when: docker_persist_iptables | bool
 
 - name: Note about Docker and firewall interaction
-  debug:
+  ansible.builtin.debug:
     msg: |
       Docker manages its own iptables rules through the DOCKER chain.
       Manual iptables modifications may interfere with Docker networking.
