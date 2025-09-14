@@ -2,26 +2,81 @@
 # Docker daemon configuration tasks
 
 - name: Ensure Docker configuration directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/docker
     state: directory
     mode: '0755'
   become: true
 
-- name: Configure Docker daemon
-  copy:
-    content: "{{ docker_daemon_options | to_nice_json }}"
-    dest: /etc/docker/daemon.json
-    owner: root
-    group: root
-    mode: '0644'
-    backup: true
-  become: true
-  notify: restart docker
-  when: docker_daemon_options | length > 0
+- name: Build Docker daemon configuration
+  ansible.builtin.set_fact:
+    docker_daemon_config: >-
+      {{
+        docker_daemon_options | combine(
+          {
+            'log-driver': 'json-file',
+            'log-opts': {
+              'max-size': docker_log_max_size,
+              'max-file': docker_log_max_files | string,
+              'compress': 'true'
+            }
+          } if docker_configure_log_rotation else {},
+          recursive=true
+        ) | combine(
+          {
+            'registry-mirrors': docker_registry_mirrors
+          } if docker_registry_mirrors | length > 0 else {},
+          recursive=true
+        ) | combine(
+          {
+            'insecure-registries': docker_insecure_registries
+          } if docker_insecure_registries | length > 0 else {},
+          recursive=true
+        )
+      }}
+
+- name: Configure Docker daemon with error handling
+  block:
+    - name: Backup existing daemon.json if present
+      ansible.builtin.copy:
+        src: /etc/docker/daemon.json
+        dest: /etc/docker/daemon.json.backup
+        remote_src: true
+        force: true
+      become: true
+      failed_when: false
+      register: daemon_backup
+
+    - name: Configure Docker daemon
+      ansible.builtin.copy:
+        content: "{{ docker_daemon_config | to_nice_json }}"
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+        backup: true
+        validate: 'docker --config=%s --validate || true'
+      become: true
+      notify: restart docker
+      register: daemon_config_result
+
+  rescue:
+    - name: Restore previous daemon.json on failure
+      ansible.builtin.copy:
+        src: /etc/docker/daemon.json.backup
+        dest: /etc/docker/daemon.json
+        remote_src: true
+      become: true
+      when: daemon_backup is succeeded
+
+    - name: Report configuration error
+      ansible.builtin.fail:
+        msg: "Failed to configure Docker daemon. Previous configuration restored if available."
+
+  when: docker_daemon_config | length > 0
 
 - name: Ensure Docker data directory exists
-  file:
+  ansible.builtin.file:
     path: "{{ docker_data_directory }}"
     state: directory
     owner: root
@@ -30,23 +85,14 @@
   become: true
   when: docker_data_directory != '/var/lib/docker'
 
-- name: Configure Docker systemd service
-  template:
-    src: docker.service.j2
-    dest: /etc/systemd/system/docker.service.d/override.conf
-    owner: root
-    group: root
-    mode: '0644'
-  become: true
-  notify:
-    - reload systemd
-    - restart docker
-  when: false  # Disabled by default, enable if custom service config needed
-
 - name: Ensure Docker service is in desired state
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     enabled: "{{ docker_service_enabled }}"
     state: "{{ docker_service_state }}"
     daemon_reload: true
   become: true
+  register: docker_service_result
+  retries: 3
+  delay: 5
+  until: docker_service_result is succeeded
