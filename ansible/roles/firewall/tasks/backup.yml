@@ -2,7 +2,7 @@
 # Backup tasks for firewall rules
 
 - name: Create backup directory
-  file:
+  ansible.builtin.file:
     path: "{{ firewall_rules_backup_dir }}"
     state: directory
     owner: root
@@ -18,7 +18,7 @@
 - name: Backup existing rules
   block:
     - name: Create timestamped backup
-      shell: |
+      ansible.builtin.shell: |
         timestamp=$(date +%Y%m%d_%H%M%S)
         if [ -f /etc/iptables/rules.v4 ]; then
           cp /etc/iptables/rules.v4 "{{ firewall_rules_backup_dir }}/rules.v4.pre-ansible.${timestamp}"
@@ -30,7 +30,7 @@
       become: true
 
     - name: Display backup location
-      debug:
+      ansible.builtin.debug:
         msg: "Firewall rules backed up to: {{ firewall_rules_backup_dir }}"
       when: firewall_debug_mode | bool
 

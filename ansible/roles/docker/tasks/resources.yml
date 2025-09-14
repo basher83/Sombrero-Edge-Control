@@ -31,7 +31,7 @@
   notify: restart docker
 
 - name: Create Docker daemon config directory
-  file:
+  ansible.builtin.file:
     path: /etc/docker/daemon.json.d
     state: directory
     owner: root
@@ -63,12 +63,12 @@
   notify: update grub
 
 - name: Monitor Docker disk usage
-  command: docker system df
+  ansible.builtin.command: docker system df
   register: docker_disk_usage
   changed_when: false
   when: docker_debug_mode | bool
 
 - name: Display Docker disk usage
-  debug:
+  ansible.builtin.debug:
     msg: "{{ docker_disk_usage.stdout_lines }}"
   when: docker_debug_mode | bool

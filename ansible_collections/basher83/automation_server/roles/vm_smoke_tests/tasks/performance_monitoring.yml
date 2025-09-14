@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Performance monitoring and validation tasks
 
 - name: CPU performance monitoring

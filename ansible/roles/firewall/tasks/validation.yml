@@ -4,14 +4,14 @@
 - name: Validate firewall rules syntax
   block:
     - name: Check iptables rules syntax
-      shell: |
+      ansible.builtin.shell: |
         iptables-save | iptables-restore -t
       register: syntax_check
       changed_when: false
       failed_when: syntax_check.rc != 0
 
     - name: Validate specific chains exist
-      shell: |
+      ansible.builtin.shell: |
         for chain in INPUT OUTPUT FORWARD; do
           iptables -L $chain -n >/dev/null 2>&1 || echo "Missing chain: $chain"
         done
@@ -19,7 +19,7 @@
       changed_when: false
 
     - name: Check for Docker chain preservation
-      shell: |
+      ansible.builtin.shell: |
         if [ "{{ firewall_docker_present }}" = "true" ]; then
           for chain in DOCKER DOCKER-USER DOCKER-ISOLATION-STAGE-1; do
             iptables -L $chain -n >/dev/null 2>&1 || echo "WARNING: Docker chain missing: $chain"
@@ -45,14 +45,14 @@
 - name: Test Docker functionality if present
   block:
     - name: Test Docker daemon connectivity
-      command: docker version
+      ansible.builtin.command: docker version
       register: docker_test
       changed_when: false
       failed_when: false
       when: firewall_docker_present | bool
 
     - name: Test Docker networking
-      shell: |
+      ansible.builtin.shell: |
         # Test Docker networking is not broken
         docker run --rm hello-world 2>&1 | grep -q "Hello from Docker" && echo "Docker networking: OK" || echo "Docker networking: FAILED"
       register: docker_network_test
@@ -60,7 +60,7 @@
       when: firewall_docker_present | bool
 
     - name: Display Docker test results
-      debug:
+      ansible.builtin.debug:
         msg: |
           Docker daemon: {{ 'OK' if docker_test.rc == 0 else 'FAILED' }}
           Docker networking: {{ docker_network_test.stdout }}
@@ -69,7 +69,7 @@
         - firewall_debug_mode | bool
 
 - name: Validate rule counts
-  shell: |
+  ansible.builtin.shell: |
     echo "=== Current iptables rule counts ==="
     echo "INPUT chain: $(iptables -L INPUT -n | tail -n +3 | wc -l) rules"
     echo "OUTPUT chain: $(iptables -L OUTPUT -n | tail -n +3 | wc -l) rules"
@@ -81,7 +81,7 @@
   changed_when: false
 
 - name: Display rule counts
-  debug:
+  ansible.builtin.debug:
     msg: "{{ rule_counts.stdout_lines }}"
   when: firewall_debug_mode | bool
 
@@ -132,7 +132,7 @@
     mode: '0644'
 
 - name: Display validation summary
-  debug:
+  ansible.builtin.debug:
     msg: |
       ====================================
       Firewall Validation Complete

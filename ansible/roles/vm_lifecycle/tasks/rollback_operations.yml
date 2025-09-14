@@ -1,9 +1,9 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Rollback Operations Tasks
 
 - name: Initialize rollback operation
-  set_fact:
+  ansible.builtin.set_fact:
     lifecycle_operation_log: "{{ lifecycle_operation_log + ['Starting rollback operation at ' + ansible_date_time.iso8601] }}"
 
 - name: Confirm rollback operation (interactive)
@@ -37,7 +37,7 @@
     - rollback_confirmation.user_input | default('no') | lower != 'yes'
 
 - name: Log rollback confirmation
-  set_fact:
+  ansible.builtin.set_fact:
     lifecycle_operation_log: "{{ lifecycle_operation_log + ['Rollback confirmed by user at ' + ansible_date_time.iso8601] }}"
   when:
     - not dry_run_mode | bool
@@ -57,7 +57,7 @@
 - name: Get current Terraform state information
   block:
     - name: Initialize Terraform (if needed)
-      shell: |
+      ansible.builtin.shell: |
         cd "{{ terraform_project_path }}"
         if [ ! -d ".terraform" ]; then
           terraform init
@@ -67,14 +67,14 @@
       when: not dry_run_mode | bool
 
     - name: Get Terraform workspace
-      shell: terraform workspace show
+      ansible.builtin.shell: terraform workspace show
       args:
         chdir: "{{ terraform_project_path }}"
       register: current_workspace
       delegate_to: localhost
 
     - name: Switch to target workspace (if needed)
-      shell: terraform workspace select {{ terraform_workspace }}
+      ansible.builtin.shell: terraform workspace select {{ terraform_workspace }}
       args:
         chdir: "{{ terraform_project_path }}"
       register: workspace_switch
@@ -85,7 +85,7 @@
         - not dry_run_mode | bool
 
     - name: Get current Terraform state
-      shell: terraform show -json
+      ansible.builtin.shell: terraform show -json
       args:
         chdir: "{{ terraform_project_path }}"
       register: terraform_state
@@ -94,7 +94,7 @@
 
   rescue:
     - name: Log Terraform state retrieval failure
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Failed to retrieve Terraform state: ' + ansible_failed_result.msg] }}"
         lifecycle_operation_status: "FAILED"
 
@@ -103,7 +103,7 @@
         msg: "Cannot proceed with rollback: {{ ansible_failed_result.msg }}"
 
 - name: Plan Terraform destroy operation
-  shell: terraform plan -destroy {{ '-target=' + rollback_targets | join(' -target=') if rollback_targets | length > 0 else '' }}
+  ansible.builtin.shell: terraform plan -destroy {{ '-target=' + rollback_targets | join(' -target=') if rollback_targets | length > 0 else '' }}
   args:
     chdir: "{{ terraform_project_path }}"
   register: terraform_destroy_plan
@@ -111,7 +111,7 @@
   when: not dry_run_mode | bool
 
 - name: Display destroy plan (dry run or confirmation)
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Terraform Destroy Plan ==="
       - "{{ terraform_destroy_plan.stdout if terraform_destroy_plan is defined else 'DRY RUN MODE - No actual plan generated' }}"
@@ -121,7 +121,7 @@
 - name: Execute Terraform destroy
   block:
     - name: Run Terraform destroy
-      shell: |
+      ansible.builtin.shell: |
         timeout {{ timeouts.terraform_operation }} terraform destroy -auto-approve \
         {{ '-target=' + rollback_targets | join(' -target=') if rollback_targets | length > 0 else '' }}
       args:
@@ -131,25 +131,25 @@
       when: not dry_run_mode | bool
 
     - name: Log successful destroy
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Terraform destroy completed successfully at ' + ansible_date_time.iso8601] }}"
         lifecycle_operation_status: "SUCCESS"
 
   rescue:
     - name: Log Terraform destroy failure
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Terraform destroy failed: ' + ansible_failed_result.msg] }}"
         lifecycle_operation_status: "FAILED"
 
     - name: Handle destroy failure
-      debug:
+      ansible.builtin.debug:
         msg:
           - "⚠️  Terraform destroy failed!"
           - "Error: {{ ansible_failed_result.msg }}"
           - "Manual intervention may be required"
 
     - name: Continue with cleanup (best effort)
-      debug:
+      ansible.builtin.debug:
         msg: "Continuing with cleanup operations despite Terraform destroy failure"
       when: rollback_settings.ignore_errors | bool
 
@@ -183,18 +183,18 @@
       failed_when: false
 
     - name: Log SSH cleanup completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['SSH known_hosts cleanup completed at ' + ansible_date_time.iso8601] }}"
 
   rescue:
     - name: Log SSH cleanup issues
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['SSH cleanup encountered issues (non-critical): ' + ansible_failed_result.msg] }}"
 
 - name: Clean up Ansible facts cache
   block:
     - name: Remove Ansible facts cache entries
-      file:
+      ansible.builtin.file:
         path: "{{ item }}/{{ inventory_hostname }}"
         state: absent
       loop: "{{ ansible_cleanup.facts_cache_locations }}"
@@ -205,18 +205,18 @@
       failed_when: false
 
     - name: Log Ansible cache cleanup completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Ansible facts cache cleanup completed at ' + ansible_date_time.iso8601] }}"
 
   rescue:
     - name: Log Ansible cache cleanup issues
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Ansible cache cleanup encountered issues (non-critical): ' + ansible_failed_result.msg] }}"
 
 - name: Validate rollback success
   block:
     - name: Verify resources are destroyed
-      shell: terraform show -json
+      ansible.builtin.shell: terraform show -json
       args:
         chdir: "{{ terraform_project_path }}"
       register: post_destroy_state
@@ -224,14 +224,14 @@
       when: not dry_run_mode | bool
 
     - name: Analyze post-destroy state
-      set_fact:
+      ansible.builtin.set_fact:
         remaining_resources: "{{ (post_destroy_state.stdout | from_json).values.root_module.resources | default([]) | length if post_destroy_state.stdout else 0 }}"
       when:
         - not dry_run_mode | bool
         - post_destroy_state is defined
 
     - name: Check rollback completion
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_status: "{{ 'SUCCESS' if remaining_resources | int == 0 else 'PARTIAL' }}"
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Rollback validation completed: ' + remaining_resources | string + ' resources remaining'] }}"
       when:
@@ -240,17 +240,17 @@
 
   rescue:
     - name: Log validation issues
-      set_fact:
+      ansible.builtin.set_fact:
         lifecycle_operation_log: "{{ lifecycle_operation_log + ['Post-rollback validation failed: ' + ansible_failed_result.msg] }}"
 
 - name: Set dry run status
-  set_fact:
+  ansible.builtin.set_fact:
     lifecycle_operation_status: "DRY_RUN_SUCCESS"
     lifecycle_operation_log: "{{ lifecycle_operation_log + ['Dry run rollback completed successfully at ' + ansible_date_time.iso8601] }}"
   when: dry_run_mode | bool
 
 - name: Display rollback operation results
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Rollback Operation Results ==="
       - "Status: {{ lifecycle_operation_status }}"

@@ -3,7 +3,7 @@
 # CRITICAL: Docker manages its own iptables chains - we must not interfere!
 
 - name: Display Docker firewall integration warning
-  debug:
+  ansible.builtin.debug:
     msg: |
       =====================================
       DOCKER FIREWALL INTEGRATION ACTIVE
@@ -21,13 +21,13 @@
       =====================================
 
 - name: Check if Docker chains exist
-  shell: |
+  ansible.builtin.shell: |
     iptables -L DOCKER -n >/dev/null 2>&1 && echo "exists" || echo "missing"
   register: docker_chain_check
   changed_when: false
 
 - name: Check if DOCKER-USER chain exists
-  shell: |
+  ansible.builtin.shell: |
     iptables -L DOCKER-USER -n >/dev/null 2>&1 && echo "exists" || echo "missing"
   register: docker_user_chain_check
   changed_when: false
@@ -52,7 +52,7 @@
 - name: Apply Docker-USER chain rules for container restrictions
   block:
     - name: Clear existing DOCKER-USER rules (if configured)
-      shell: |
+      ansible.builtin.shell: |
         # Save the default RETURN rule if it exists
         iptables -S DOCKER-USER | grep -E "^-A DOCKER-USER -j RETURN$" > /tmp/docker-user-return.tmp || true
         # Flush the chain
@@ -134,13 +134,13 @@
 - name: Test Docker networking functionality
   block:
     - name: Check docker0 bridge exists
-      command: ip link show docker0
+      ansible.builtin.command: ip link show docker0
       register: docker_bridge_check
       changed_when: false
       failed_when: false
 
     - name: Verify Docker iptables chains
-      shell: |
+      ansible.builtin.shell: |
         for chain in DOCKER DOCKER-ISOLATION-STAGE-1 DOCKER-ISOLATION-STAGE-2 DOCKER-USER; do
           iptables -L $chain -n >/dev/null 2>&1 || echo "Missing: $chain"
         done
@@ -148,7 +148,7 @@
       changed_when: false
 
     - name: Display Docker chain verification results
-      debug:
+      ansible.builtin.debug:
         msg: |
           Docker bridge status: {{ 'OK' if docker_bridge_check.rc == 0 else 'MISSING' }}
           Docker chains status: {{ 'OK' if docker_chains_verify.stdout == '' else docker_chains_verify.stdout }}

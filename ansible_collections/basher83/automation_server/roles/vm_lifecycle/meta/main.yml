@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # VM Lifecycle Role - Metadata
 
 galaxy_info:
@@ -12,7 +12,7 @@ galaxy_info:
     systematic approaches to infrastructure recovery and maintenance operations.
 
   company: Sombrero Edge Control
-  license: MIT-0
+  license: MIT
 
   min_ansible_version: "2.15"
 

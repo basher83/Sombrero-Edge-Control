@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Log Collection and Analysis Tasks
 
 - name: Log File Availability Check

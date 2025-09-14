@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Terraform Outputs Role - Metadata
 
 galaxy_info:
@@ -13,7 +13,7 @@ galaxy_info:
     variable integration capabilities.
 
   company: Sombrero Edge Control
-  license: MIT-0
+  license: MIT
 
   min_ansible_version: "2.15"
 

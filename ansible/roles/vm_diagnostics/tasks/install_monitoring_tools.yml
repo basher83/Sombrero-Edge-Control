@@ -1,9 +1,9 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Install Additional Monitoring Tools (Optional)
 
 - name: Check if monitoring tools should be installed
-  debug:
+  ansible.builtin.debug:
     msg: "Installing additional monitoring tools for comprehensive diagnostics"
   when: enable_monitoring_tools | bool
 
@@ -83,7 +83,7 @@
 
   rescue:
     - name: Log monitoring tools installation issues
-      debug:
+      ansible.builtin.debug:
         msg: "Some monitoring tools failed to install - this is expected on some distributions"
 
   when: enable_monitoring_tools | bool
@@ -91,7 +91,7 @@
 - name: Verify installed monitoring tools
   block:
     - name: Check which monitoring tools are available
-      command: which {{ item }}
+      ansible.builtin.command: which {{ item }}
       register: tool_availability
       changed_when: false
       failed_when: false
@@ -99,12 +99,12 @@
       when: enable_monitoring_tools | bool
 
     - name: Create monitoring tools availability report
-      set_fact:
+      ansible.builtin.set_fact:
         monitoring_tools_status: "{{ tool_availability.results | default([]) | map(attribute='item') | zip(tool_availability.results | default([]) | map(attribute='rc') | map('equalto', 0)) | list }}"
       when: enable_monitoring_tools | bool
 
     - name: Record monitoring tools installation results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'monitoring_tools_installation': {
             'status': 'PASS',
@@ -119,7 +119,7 @@
   when: enable_monitoring_tools | bool
 
 - name: Skip monitoring tools installation
-  set_fact:
+  ansible.builtin.set_fact:
     vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
       'monitoring_tools_installation': {
         'status': 'SKIP',

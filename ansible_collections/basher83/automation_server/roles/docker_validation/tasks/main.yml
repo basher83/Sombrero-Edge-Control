@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Main tasks for Docker validation role
 
 - name: Initialize Docker validation execution

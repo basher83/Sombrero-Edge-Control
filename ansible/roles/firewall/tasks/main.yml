@@ -6,17 +6,17 @@
   failed_when: false
 
 - name: Check if Docker is installed
-  command: which docker
+  ansible.builtin.command: which docker
   register: docker_installed
   changed_when: false
   failed_when: false
 
 - name: Set Docker presence fact
-  set_fact:
+  ansible.builtin.set_fact:
     firewall_docker_present: "{{ docker_installed.rc == 0 }}"
 
 - name: Display Docker compatibility warning
-  debug:
+  ansible.builtin.debug:
     msg: |
       ⚠️  WARNING: Docker is {{ 'installed' if firewall_docker_present else 'not installed' }}
       {% if firewall_docker_present %}

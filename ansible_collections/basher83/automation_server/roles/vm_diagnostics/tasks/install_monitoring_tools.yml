@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Install Additional Monitoring Tools (Optional)
 
 - name: Check if monitoring tools should be installed

@@ -8,24 +8,24 @@
   become: true
 
 - name: Verify Docker service is active
-  assert:
+  ansible.builtin.assert:
     that:
       - docker_service_status.status.ActiveState == "active"
     fail_msg: "Docker service is not active: {{ docker_service_status.status.ActiveState }}"
     success_msg: "Docker service is active and running"
 
 - name: Check Docker version
-  command: docker version --format json
+  ansible.builtin.command: docker version --format json
   register: docker_version_json
   changed_when: false
   become: true
 
 - name: Parse Docker version information
-  set_fact:
+  ansible.builtin.set_fact:
     docker_version_info: "{{ docker_version_json.stdout | from_json }}"
 
 - name: Verify Docker Compose plugin is installed
-  command: docker compose version
+  ansible.builtin.command: docker compose version
   register: compose_version
   changed_when: false
   failed_when: false
@@ -37,7 +37,7 @@
   become: true
 
 - name: Verify Docker socket permissions
-  assert:
+  ansible.builtin.assert:
     that:
       - docker_socket.stat.exists
       - docker_socket.stat.mode == docker_socket_permissions
@@ -56,20 +56,20 @@
   when: "'hello_world_test' in docker_validation_tests"
 
 - name: Check Docker network configuration
-  command: docker network ls --format json
+  ansible.builtin.command: docker network ls --format json
   register: docker_networks
   changed_when: false
   become: true
 
 - name: Verify default bridge network exists
-  assert:
+  ansible.builtin.assert:
     that:
       - docker_networks.stdout | from_json | selectattr('Name', 'equalto', 'bridge') | list | length > 0
     fail_msg: "Default Docker bridge network not found"
     success_msg: "Default Docker bridge network exists"
 
 - name: Collect validation results
-  set_fact:
+  ansible.builtin.set_fact:
     docker_validation_results:
       service_active: "{{ docker_service_status.status.ActiveState == 'active' }}"
       version: "{{ docker_version_info.Client.Version | default('unknown') }}"
@@ -80,7 +80,7 @@
       bridge_network_exists: true
 
 - name: Display validation summary
-  debug:
+  ansible.builtin.debug:
     msg: |
       Docker Validation Summary:
       - Service Active: {{ docker_validation_results.service_active }}

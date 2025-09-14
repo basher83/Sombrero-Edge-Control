@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Terraform Outputs Role - Main Tasks
 
 - name: Initialize terraform outputs session
@@ -11,7 +11,7 @@
     terraform_inventory_data: {}
 
 - name: Display terraform outputs session information
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Terraform Outputs Integration ==="
       - "Session ID: {{ terraform_outputs_session_id }}"
@@ -82,7 +82,7 @@
   tags: [cleanup, maintenance]
 
 - name: Display terraform outputs session summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Terraform Outputs Session Complete ==="
       - "Session ID: {{ terraform_outputs_session_id }}"

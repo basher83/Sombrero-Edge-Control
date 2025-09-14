@@ -1,9 +1,9 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # VM Diagnostics Role - Main Tasks
 
 - name: Initialize diagnostic session
-  set_fact:
+  ansible.builtin.set_fact:
     vm_diagnostic_start_time: "{{ ansible_date_time.epoch }}"
     vm_diagnostic_session_id: "{{ ansible_date_time.epoch }}-{{ inventory_hostname }}"
     vm_diagnostic_results: {}
@@ -12,7 +12,7 @@
     vm_diagnostic_skipped_count: 0
 
 - name: Display diagnostic session information
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== VM Diagnostics Session ==="
       - "Host: {{ inventory_hostname }}"
@@ -23,7 +23,7 @@
   when: diagnostic_depth in ['standard', 'comprehensive']
 
 - name: Create diagnostic output directory
-  file:
+  ansible.builtin.file:
     path: "{{ diagnostic_output_dir }}"
     state: directory
     mode: '0755'
@@ -83,7 +83,7 @@
   tags: [cleanup, diagnostics]
 
 - name: Display diagnostic session summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "=== Diagnostic Session Complete ==="
       - "Session ID: {{ vm_diagnostic_session_id }}"
@@ -98,7 +98,7 @@
   when: diagnostic_depth in ['standard', 'comprehensive']
 
 - name: Set diagnostic completion facts
-  set_fact:
+  ansible.builtin.set_fact:
     vm_diagnostics_completed: true
     vm_diagnostics_status: "{{ 'PASS' if vm_diagnostic_failed_count == 0 else 'FAIL' }}"
     vm_diagnostics_summary:

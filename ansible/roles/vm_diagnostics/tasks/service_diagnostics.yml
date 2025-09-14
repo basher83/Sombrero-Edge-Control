@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Service Diagnostics Tasks
 
 - name: Service Status Analysis
@@ -24,13 +24,13 @@
       become: true
 
     - name: Analyze service status results
-      set_fact:
+      ansible.builtin.set_fact:
         running_services: "{{ service_status_detail.results | selectattr('state', 'defined') | selectattr('state', 'equalto', 'started') | list | length }}"
         total_monitored: "{{ monitored_services | length }}"
         failed_services: "{{ service_status_detail.results | selectattr('state', 'defined') | selectattr('state', 'equalto', 'failed') | map(attribute='name') | list }}"
 
     - name: Record service status results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_status_analysis': {
             'status': 'PASS' if failed_services | length == 0 else 'FAIL',
@@ -43,13 +43,13 @@
         }) }}"
 
     - name: Update diagnostic counters for services
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + (1 if failed_services | length == 0 else 0) }}"
         vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + (1 if failed_services | length > 0 else 0) }}"
 
   rescue:
     - name: Record service status failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_status_analysis': {
             'status': 'FAIL',
@@ -71,11 +71,11 @@
       become: true
 
     - name: Analyze service dependencies
-      set_fact:
+      ansible.builtin.set_fact:
         dependency_analysis: "{{ service_dependencies.results | default([]) | map(attribute='stdout_lines') | map('length') | list }}"
 
     - name: Record dependency analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_dependency_analysis': {
             'status': 'PASS',
@@ -88,7 +88,7 @@
 
   rescue:
     - name: Record dependency analysis failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_dependency_analysis': {
             'status': 'FAIL',
@@ -130,7 +130,7 @@
       become: true
 
     - name: Analyze Docker integration
-      set_fact:
+      ansible.builtin.set_fact:
         docker_analysis:
           docker_service_running: "{{ docker_service_status.state | default('') == 'started' }}"
           docker_daemon_accessible: "{{ docker_host_info is defined and docker_host_info.host_info is defined }}"
@@ -138,7 +138,7 @@
           running_container_count: "{{ docker_host_info.host_info.ContainersRunning | default(0) if docker_host_info is defined else 0 }}"
 
     - name: Record Docker integration results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'docker_service_integration': {
             'status': 'PASS' if docker_analysis.docker_service_running else 'WARN',
@@ -153,7 +153,7 @@
 
   rescue:
     - name: Record Docker integration failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'docker_service_integration': {
             'status': 'FAIL',
@@ -180,13 +180,13 @@
       loop: "{{ monitored_services }}"
 
     - name: Analyze service configurations
-      set_fact:
+      ansible.builtin.set_fact:
         config_analysis:
           services_with_configs: "{{ service_config_files.results | selectattr('stat.exists', 'equalto', true) | list | length }}"
           services_with_overrides: "{{ service_overrides.results | selectattr('files', 'defined') | selectattr('files', '!=', []) | list | length }}"
 
     - name: Record configuration validation results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_configuration_validation': {
             'status': 'PASS',
@@ -200,7 +200,7 @@
 
   rescue:
     - name: Record configuration validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_configuration_validation': {
             'status': 'FAIL',
@@ -237,13 +237,13 @@
       become: true
 
     - name: Analyze service performance
-      set_fact:
+      ansible.builtin.set_fact:
         performance_analysis:
           services_monitored: "{{ monitored_services | length }}"
           resource_data_available: "{{ service_resource_usage.results | selectattr('rc', 'equalto', 0) | list | length }}"
 
     - name: Record service performance results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_performance_monitoring': {
             'status': 'PASS',
@@ -258,7 +258,7 @@
 
   rescue:
     - name: Record service performance failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_performance_monitoring': {
             'status': 'FAIL',
@@ -288,13 +288,13 @@
       become: true
 
     - name: Analyze restart policies
-      set_fact:
+      ansible.builtin.set_fact:
         restart_analysis:
           services_with_restart_policy: "{{ service_restart_policies.results | selectattr('stdout', 'search', 'Restart=') | selectattr('stdout', 'search', '(?!Restart=no)') | list | length }}"
           services_with_failures: "{{ service_failure_info.results | selectattr('stdout', 'search', 'NRestarts=[1-9]') | list | length }}"
 
     - name: Record restart analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_restart_analysis': {
             'status': 'PASS' if restart_analysis.services_with_failures == 0 else 'WARN',
@@ -309,7 +309,7 @@
 
   rescue:
     - name: Record restart analysis failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'service_restart_analysis': {
             'status': 'FAIL',

@@ -1,27 +1,27 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Network Diagnostics Tasks
 
 - name: Network Interface Analysis
   block:
     - name: Get network interface information
-      command: ip addr show
+      ansible.builtin.command: ip addr show
       register: network_interfaces
       changed_when: false
 
     - name: Get routing table
-      command: ip route show
+      ansible.builtin.command: ip route show
       register: routing_table
       changed_when: false
 
     - name: Analyze network interfaces
-      set_fact:
+      ansible.builtin.set_fact:
         interface_count: "{{ ansible_interfaces | length | default(0) }}"
         default_gateway: "{{ ansible_default_ipv4.gateway | default('Not configured') }}"
         primary_interface: "{{ ansible_default_ipv4.interface | default('Unknown') }}"
 
     - name: Record interface analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'network_interfaces': {
             'status': 'PASS',
@@ -36,7 +36,7 @@
 
   rescue:
     - name: Record network interface failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'network_interfaces': {
             'status': 'FAIL',
@@ -50,7 +50,7 @@
 - name: Network Connectivity Tests
   block:
     - name: Test connectivity to external targets
-      command: ping -c 3 -W 5 {{ item }}
+      ansible.builtin.command: ping -c 3 -W 5 {{ item }}
       register: connectivity_tests
       changed_when: false
       failed_when: false
@@ -58,13 +58,13 @@
       when: network_diagnostics.connectivity_tests | bool
 
     - name: Analyze connectivity results
-      set_fact:
+      ansible.builtin.set_fact:
         connectivity_results: "{{ connectivity_tests.results | default([]) | map(attribute='rc') | list }}"
         successful_connections: "{{ connectivity_tests.results | default([]) | selectattr('rc', 'equalto', 0) | list | length }}"
         total_connections: "{{ network_test_targets | length }}"
 
     - name: Record connectivity test results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'network_connectivity': {
             'status': 'PASS' if successful_connections == total_connections else ('WARN' if successful_connections > 0 else 'FAIL'),
@@ -76,13 +76,13 @@
         }) }}"
 
     - name: Update diagnostic counters for connectivity
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + (1 if successful_connections == total_connections else 0) }}"
         vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + (1 if successful_connections == 0 else 0) }}"
 
   rescue:
     - name: Record connectivity test failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'network_connectivity': {
             'status': 'FAIL',
@@ -96,7 +96,7 @@
 - name: DNS Resolution Tests
   block:
     - name: Test DNS resolution for targets
-      command: nslookup {{ item }}
+      ansible.builtin.command: nslookup {{ item }}
       register: dns_tests
       changed_when: false
       failed_when: false
@@ -104,18 +104,18 @@
       when: network_diagnostics.dns_resolution_tests | bool
 
     - name: Get DNS configuration
-      command: cat /etc/resolv.conf
+      ansible.builtin.command: cat /etc/resolv.conf
       register: dns_config
       changed_when: false
       failed_when: false
 
     - name: Analyze DNS results
-      set_fact:
+      ansible.builtin.set_fact:
         dns_successful: "{{ dns_tests.results | default([]) | selectattr('rc', 'equalto', 0) | list | length }}"
         dns_total: "{{ network_test_targets | select('match', '[a-zA-Z]') | list | length }}"
 
     - name: Record DNS test results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'dns_resolution': {
             'status': 'PASS' if dns_successful == dns_total else ('WARN' if dns_successful > 0 else 'FAIL'),
@@ -127,13 +127,13 @@
         }) }}"
 
     - name: Update diagnostic counters for DNS
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_passed_count: "{{ vm_diagnostic_passed_count + (1 if dns_successful == dns_total else 0) }}"
         vm_diagnostic_failed_count: "{{ vm_diagnostic_failed_count + (1 if dns_successful == 0 and dns_total > 0 else 0) }}"
 
   rescue:
     - name: Record DNS test failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'dns_resolution': {
             'status': 'FAIL',
@@ -147,14 +147,14 @@
 - name: Firewall Analysis
   block:
     - name: Check iptables rules (if available)
-      command: iptables -L -n
+      ansible.builtin.command: iptables -L -n
       register: iptables_rules
       changed_when: false
       failed_when: false
       become: true
 
     - name: Check ufw status (if available)
-      command: ufw status
+      ansible.builtin.command: ufw status
       register: ufw_status
       changed_when: false
       failed_when: false
@@ -171,14 +171,14 @@
       become: true
 
     - name: Analyze firewall configuration
-      set_fact:
+      ansible.builtin.set_fact:
         firewall_analysis:
           iptables_available: "{{ iptables_rules.rc == 0 }}"
           ufw_available: "{{ ufw_status.rc == 0 }}"
           firewall_services_active: "{{ firewall_services.results | selectattr('state', 'defined') | selectattr('state', 'equalto', 'started') | list | length }}"
 
     - name: Record firewall analysis results
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'firewall_analysis': {
             'status': 'PASS',
@@ -193,7 +193,7 @@
 
   rescue:
     - name: Record firewall analysis failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'firewall_analysis': {
             'status': 'FAIL',
@@ -207,12 +207,12 @@
 - name: Network Performance Testing
   block:
     - name: Check network interface statistics
-      command: cat /proc/net/dev
+      ansible.builtin.command: cat /proc/net/dev
       register: network_stats
       changed_when: false
 
     - name: Get network interface speeds (if available)
-      shell: |
+      ansible.builtin.shell: |
         for iface in $(ls /sys/class/net/ | grep -v lo); do
           if [ -r /sys/class/net/$iface/speed ]; then
             echo "$iface: $(cat /sys/class/net/$iface/speed 2>/dev/null || echo 'Unknown') Mbps"
@@ -223,7 +223,7 @@
       failed_when: false
 
     - name: Analyze network performance
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'network_performance': {
             'status': 'PASS',
@@ -236,7 +236,7 @@
 
   rescue:
     - name: Record network performance failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'network_performance': {
             'status': 'FAIL',
@@ -250,18 +250,18 @@
 - name: Advanced Network Analysis
   block:
     - name: Check network socket status
-      command: ss -tuln
+      ansible.builtin.command: ss -tuln
       register: socket_status
       changed_when: false
 
     - name: Check network connections
-      command: netstat -i
+      ansible.builtin.command: netstat -i
       register: network_connections
       changed_when: false
       failed_when: false
 
     - name: Analyze advanced network metrics
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'advanced_network_analysis': {
             'status': 'PASS',
@@ -274,7 +274,7 @@
 
   rescue:
     - name: Record advanced network analysis failure
-      set_fact:
+      ansible.builtin.set_fact:
         vm_diagnostic_results: "{{ vm_diagnostic_results | combine({
           'advanced_network_analysis': {
             'status': 'FAIL',

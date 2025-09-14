@@ -2,7 +2,7 @@
 # Process hierarchical numbered priority rules
 
 - name: Display priority rules being applied
-  debug:
+  ansible.builtin.debug:
     msg: |
       Applying firewall rules in priority order:
       {% for priority, config in firewall_rules_priority | dictsort %}

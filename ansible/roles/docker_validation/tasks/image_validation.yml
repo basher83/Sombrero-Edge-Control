@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Docker image validation tasks
 
 - name: Validate expected images are available
@@ -12,7 +12,7 @@
       when: expected_images | length > 0
 
     - name: Validate required images exist
-      assert:
+      ansible.builtin.assert:
         that:
           - item.images | length > 0
         fail_msg: "Required image not found: {{ item.item.name }}"
@@ -25,7 +25,7 @@
       register: image_existence_checks
 
     - name: Validate image sizes within limits
-      assert:
+      ansible.builtin.assert:
         that:
           - (item.images[0].Size / 1024 / 1024) <= (item.item.max_size_mb | default(1000))
         fail_msg: "Image {{ item.item.name }} size {{ (item.images[0].Size / 1024 / 1024) | round(2) }}MB exceeds limit {{ item.item.max_size_mb | default(1000) }}MB"
@@ -58,14 +58,14 @@
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug image validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Image validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Validate Docker registry connectivity
   block:
     - name: Test registry connectivity
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ item.url }}/v2/"
         method: GET
         status_code: [200, 401]  # 401 is OK, means registry is accessible but needs auth
@@ -76,7 +76,7 @@
       when: docker_registries | length > 0
 
     - name: Validate registry authentication (if configured)
-      uri:
+      ansible.builtin.uri:
         url: "https://{{ item.url }}/v2/"
         method: GET
         user: "{{ item.username }}"
@@ -111,7 +111,7 @@
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug registry validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Registry validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
@@ -125,7 +125,7 @@
       when: expected_images | length > 0
 
     - name: Validate image has expected layers
-      assert:
+      ansible.builtin.assert:
         that:
           - item.images[0].RootFS.Layers | length > 0
         fail_msg: "Image {{ item.item.name }} has no layers or is corrupted"
@@ -149,14 +149,14 @@
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug image integrity validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Image integrity validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Validate image pull capability
   block:
     - name: Test image pull capability (dry run)
-      command: docker pull --dry-run {{ item.name }}
+      ansible.builtin.command: docker pull --dry-run {{ item.name }}
       loop: "{{ expected_images }}"
       register: image_pull_results
       changed_when: false
@@ -166,7 +166,7 @@
         - item.pull_policy | default('missing') in ['always', 'missing']
 
     - name: Validate images can be pulled
-      assert:
+      ansible.builtin.assert:
         that:
           - item.rc == 0
         fail_msg: "Cannot pull image {{ item.item.name }}: {{ item.stderr | default('Unknown error') }}"
@@ -192,20 +192,20 @@
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug image pull validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Image pull validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Check for unused images
   block:
     - name: Get all Docker images
-      command: docker images --format "{{ '{{' }}.Repository}}:{{ '{{' }}.Tag}}"
+      ansible.builtin.command: docker images --format "{{ '{{' }}.Repository}}:{{ '{{' }}.Tag}}"
       register: all_images_result
       changed_when: false
       when: cleanup_validation.validate_image_cleanup | default(true)
 
     - name: Get images in use by containers
-      command: docker ps -a --format "{{ '{{' }}.Image}}"
+      ansible.builtin.command: docker ps -a --format "{{ '{{' }}.Image}}"
       register: used_images_result
       changed_when: false
       when: cleanup_validation.validate_image_cleanup | default(true)
@@ -216,7 +216,7 @@
       when: cleanup_validation.validate_image_cleanup | default(true)
 
     - name: Validate unused image count within limits
-      assert:
+      ansible.builtin.assert:
         that:
           - unused_images | length <= cleanup_validation.max_unused_images
         fail_msg: "Too many unused images: {{ unused_images | length }} (maximum: {{ cleanup_validation.max_unused_images }})"
@@ -241,12 +241,12 @@
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug image cleanup validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Image cleanup validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Display image validation summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Image Validation Results:"
       - "  Image Availability: {{ docker_validation_results.image_validation.status | default('SKIP') }}"

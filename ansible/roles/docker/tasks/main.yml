@@ -15,19 +15,19 @@
       skip: true
 
 - name: Display Docker installation mode
-  debug:
+  ansible.builtin.debug:
     msg: "Docker installation mode: {{ docker_installation_mode }}"
   when: docker_debug_mode | bool
 
 # Check if Docker is already installed
 - name: Check if Docker is installed
-  command: which docker
+  ansible.builtin.command: which docker
   register: docker_check
   changed_when: false
   failed_when: false
 
 - name: Set Docker installation status
-  set_fact:
+  ansible.builtin.set_fact:
     docker_is_installed: "{{ docker_check.rc == 0 }}"
 
 # Installation tasks (only if mode is 'install' and Docker not already installed)

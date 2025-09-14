@@ -2,7 +2,7 @@
 # Summary and reporting tasks
 
 - name: Gather firewall statistics
-  shell: |
+  ansible.builtin.shell: |
     echo "=== Firewall Configuration Summary ==="
     echo "Date: $(date)"
     echo ""
@@ -62,5 +62,5 @@
     mode: '0644'
 
 - name: Display summary location
-  debug:
+  ansible.builtin.debug:
     msg: "Firewall summary saved to: {{ firewall_summary_path | default('/tmp/firewall-summary.txt') }}"

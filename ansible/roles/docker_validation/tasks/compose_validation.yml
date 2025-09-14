@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Docker Compose stack validation tasks
 
 - name: Validate Docker Compose stacks
@@ -12,7 +12,7 @@
       when: docker_compose_stacks | length > 0
 
     - name: Validate compose files are readable
-      assert:
+      ansible.builtin.assert:
         that:
           - item.stat.exists
           - item.stat.readable
@@ -24,7 +24,7 @@
         - compose_file_stats is defined
 
     - name: Get Docker Compose stack status
-      command: docker compose -f {{ item.path }} ps --format json
+      ansible.builtin.command: docker compose -f {{ item.path }} ps --format json
       loop: "{{ docker_compose_stacks }}"
       register: compose_ps_results
       changed_when: false
@@ -32,7 +32,7 @@
       when: docker_compose_stacks | length > 0
 
     - name: Parse Docker Compose service status
-      set_fact:
+      ansible.builtin.set_fact:
         compose_services: "{{ compose_services | default({}) | combine({item.item.path: (item.stdout | from_json if item.stdout else [])}) }}"
       loop: "{{ compose_ps_results.results }}"
       when:
@@ -41,7 +41,7 @@
         - item.rc == 0
 
     - name: Validate expected services are running
-      assert:
+      ansible.builtin.assert:
         that:
           - service_name in (compose_services[item.path] | map(attribute='Service') | list)
         fail_msg: "Expected service '{{ service_name }}' not found in compose stack {{ item.path }}"
@@ -57,7 +57,7 @@
         - compose_services is defined
 
     - name: Validate service states in compose stacks
-      assert:
+      ansible.builtin.assert:
         that:
           - service_info.State in ['running', 'Up']
         fail_msg: "Service {{ service_info.Service }} in stack {{ item.path }} is {{ service_info.State }}, expected running"
@@ -75,37 +75,37 @@
       with_items: "{{ compose_services[stack_item.path] | default([]) }}"
 
     - name: Record compose stack validation results
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'compose_validation': {'status': 'PASS', 'stacks_validated': docker_compose_stacks | length, 'stacks': docker_compose_stacks | map(attribute='path') | list}}) }}"
         docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
       when: docker_compose_stacks | length > 0
 
     - name: Skip compose validation if no stacks configured
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'compose_validation': {'status': 'SKIP', 'reason': 'No Docker Compose stacks configured for validation'}}) }}"
       when: docker_compose_stacks | length == 0
 
   rescue:
     - name: Record compose validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'compose_validation': {'status': 'FAIL', 'stacks': docker_compose_stacks, 'error': ansible_failed_result.msg}}) }}"
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug compose validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Compose validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Validate Docker Compose networks
   block:
     - name: Get Docker networks
-      command: docker network ls --format "{{ '{{' }}.Name}}"
+      ansible.builtin.command: docker network ls --format "{{ '{{' }}.Name}}"
       register: docker_networks_result
       changed_when: false
       when: network_validation.expected_networks | length > 0
 
     - name: Validate expected networks exist
-      assert:
+      ansible.builtin.assert:
         that:
           - item in docker_networks_result.stdout_lines
         fail_msg: "Expected Docker network '{{ item }}' not found"
@@ -116,14 +116,14 @@
         - docker_networks_result is defined
 
     - name: Get detailed network information
-      command: docker network inspect {{ item }}
+      ansible.builtin.command: docker network inspect {{ item }}
       loop: "{{ network_validation.expected_networks }}"
       register: network_inspect_results
       changed_when: false
       when: network_validation.expected_networks | length > 0
 
     - name: Validate network driver configuration
-      assert:
+      ansible.builtin.assert:
         that:
           - (item.stdout | from_json)[0].Driver in ['bridge', 'overlay', 'host', 'none']
         fail_msg: "Network {{ item.item }} has unsupported driver: {{ (item.stdout | from_json)[0].Driver }}"
@@ -135,37 +135,37 @@
         - network_validation.validate_bridge_config | default(true)
 
     - name: Record network validation results
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'network_validation': {'status': 'PASS', 'networks_validated': network_validation.expected_networks | length, 'networks': network_validation.expected_networks}}) }}"
         docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
       when: network_validation.expected_networks | length > 0
 
     - name: Skip network validation if no networks configured
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'network_validation': {'status': 'SKIP', 'reason': 'No networks configured for validation'}}) }}"
       when: network_validation.expected_networks | length == 0
 
   rescue:
     - name: Record network validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'network_validation': {'status': 'FAIL', 'networks': network_validation.expected_networks, 'error': ansible_failed_result.msg}}) }}"
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug network validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Network validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Validate Docker volumes
   block:
     - name: Get Docker volumes
-      command: docker volume ls --format "{{ '{{' }}.Name}}"
+      ansible.builtin.command: docker volume ls --format "{{ '{{' }}.Name}}"
       register: docker_volumes_result
       changed_when: false
       when: storage_validation.expected_volumes | length > 0
 
     - name: Validate expected volumes exist
-      assert:
+      ansible.builtin.assert:
         that:
           - item in docker_volumes_result.stdout_lines
         fail_msg: "Expected Docker volume '{{ item }}' not found"
@@ -176,7 +176,7 @@
         - docker_volumes_result is defined
 
     - name: Get detailed volume information
-      command: docker volume inspect {{ item }}
+      ansible.builtin.command: docker volume inspect {{ item }}
       loop: "{{ storage_validation.expected_volumes }}"
       register: volume_inspect_results
       changed_when: false
@@ -193,7 +193,7 @@
         - storage_validation.check_volume_permissions | default(true)
 
     - name: Validate volume mount points exist and are accessible
-      assert:
+      ansible.builtin.assert:
         that:
           - item.stat.exists
           - item.stat.readable
@@ -206,31 +206,31 @@
         - storage_validation.check_volume_permissions | default(true)
 
     - name: Record volume validation results
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'volume_validation': {'status': 'PASS', 'volumes_validated': storage_validation.expected_volumes | length, 'volumes': storage_validation.expected_volumes}}) }}"
         docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
       when: storage_validation.expected_volumes | length > 0
 
     - name: Skip volume validation if no volumes configured
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'volume_validation': {'status': 'SKIP', 'reason': 'No volumes configured for validation'}}) }}"
       when: storage_validation.expected_volumes | length == 0
 
   rescue:
     - name: Record volume validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'volume_validation': {'status': 'FAIL', 'volumes': storage_validation.expected_volumes, 'error': ansible_failed_result.msg}}) }}"
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug volume validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Volume validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Validate service health checks
   block:
     - name: Check service health status in compose stacks
-      command: docker compose -f {{ item.path }} ps --format json
+      ansible.builtin.command: docker compose -f {{ item.path }} ps --format json
       loop: "{{ docker_compose_stacks }}"
       register: compose_health_results
       changed_when: false
@@ -239,7 +239,7 @@
         - item.validate_health_checks | default(false)
 
     - name: Parse service health status
-      set_fact:
+      ansible.builtin.set_fact:
         service_health_status: "{{ service_health_status | default({}) | combine({item.item.path: (item.stdout | from_json if item.stdout else [])}) }}"
       loop: "{{ compose_health_results.results }}"
       when:
@@ -248,7 +248,7 @@
         - item.rc == 0
 
     - name: Validate services have healthy status
-      assert:
+      ansible.builtin.assert:
         that:
           - service.Health is not defined or service.Health in ['healthy', 'none', '']
         fail_msg: "Service {{ service.Service }} in stack {{ stack_path }} is unhealthy: {{ service.Health | default('unknown') }}"
@@ -267,7 +267,7 @@
       with_items: "{{ service_health_status[stack_item.path] | default([]) }}"
 
     - name: Record health check validation results
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'health_checks': {'status': 'PASS', 'stacks_with_health_checks': health_check_stacks | length}}) }}"
         docker_validation_passed_count: "{{ docker_validation_passed_count + 1 }}"
       vars:
@@ -276,17 +276,17 @@
 
   rescue:
     - name: Record health check validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         docker_validation_results: "{{ docker_validation_results | combine({'health_checks': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
         docker_validation_failed_count: "{{ docker_validation_failed_count + 1 }}"
 
     - name: Debug health check validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Health check validation failed: {{ ansible_failed_result.msg }}"
       when: validation_config.collect_debug_info | default(true)
 
 - name: Display compose validation summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Docker Compose Validation Results:"
       - "  Stack Validation: {{ docker_validation_results.compose_validation.status | default('SKIP') }}"

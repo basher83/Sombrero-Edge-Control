@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # VM Diagnostics Role - Main Tasks
 
 - name: Initialize diagnostic session

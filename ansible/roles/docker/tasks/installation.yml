@@ -18,7 +18,7 @@
   become: true
 
 - name: Create Docker directory for GPG key
-  file:
+  ansible.builtin.file:
     path: /usr/share/keyrings
     state: directory
     mode: '0755'
@@ -28,11 +28,11 @@
 # dependency defined in meta/main.yml
 
 - name: Verify Docker installation
-  command: docker --version
+  ansible.builtin.command: docker --version
   register: docker_version_output
   changed_when: false
 
 - name: Display Docker version
-  debug:
+  ansible.builtin.debug:
     msg: "Docker installed: {{ docker_version_output.stdout }}"
   when: docker_debug_mode | bool

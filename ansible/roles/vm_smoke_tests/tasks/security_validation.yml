@@ -1,5 +1,5 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Security validation tasks
 
 - name: SSH configuration validation
@@ -10,11 +10,11 @@
       register: sshd_config_content
 
     - name: Parse SSH configuration
-      set_fact:
+      ansible.builtin.set_fact:
         sshd_config_lines: "{{ (sshd_config_content.content | b64decode).splitlines() }}"
 
     - name: Validate SSH key-only authentication
-      assert:
+      ansible.builtin.assert:
         that:
           - sshd_config_lines | select('match', '^PasswordAuthentication\\s+no') | list | length > 0
           - sshd_config_lines | select('match', '^PubkeyAuthentication\\s+yes') | list | length > 0
@@ -24,24 +24,24 @@
       register: ssh_config_check
 
     - name: Record SSH configuration validation results
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'ssh_security': {'status': 'PASS', 'key_only_auth': security_checks.ssh_key_only}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
       when: security_checks.ssh_key_only | default(true)
 
     - name: Skip SSH configuration check if disabled
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'ssh_security': {'status': 'SKIP', 'reason': 'SSH security check disabled'}}) }}"
       when: not (security_checks.ssh_key_only | default(true))
 
   rescue:
     - name: Record SSH configuration validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'ssh_security': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug SSH configuration failure
-      debug:
+      ansible.builtin.debug:
         msg: "SSH configuration validation failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
@@ -53,18 +53,18 @@
       register: system_users
 
     - name: Validate sudo user configuration
-      command: getent group sudo
+      ansible.builtin.command: getent group sudo
       register: sudo_group_info
       changed_when: false
       when: security_checks.check_sudo_users | default(true)
 
     - name: Check for unnecessary user accounts
-      set_fact:
+      ansible.builtin.set_fact:
         active_users: "{{ system_users.ansible_facts.getent_passwd.keys() | list }}"
         sudo_users: "{{ (sudo_group_info.stdout.split(':')[3] if sudo_group_info is defined and sudo_group_info.stdout else '').split(',') | select('ne', '') | list }}"
 
     - name: Validate expected user accounts exist
-      assert:
+      ansible.builtin.assert:
         that:
           - item in active_users
         fail_msg: "Expected user account '{{ item }}' not found"
@@ -73,37 +73,37 @@
       when: expected_user_accounts | default([]) | length > 0
 
     - name: Record user account validation results
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'user_accounts': {'status': 'PASS', 'total_users': active_users | length, 'sudo_users': sudo_users | length}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
 
   rescue:
     - name: Record user account validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'user_accounts': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug user account validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "User account validation failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
 - name: Firewall status validation
   block:
     - name: Check UFW status
-      command: ufw status
+      ansible.builtin.command: ufw status
       register: ufw_status
       changed_when: false
       failed_when: false
 
     - name: Check iptables rules
-      command: iptables -L -n
+      ansible.builtin.command: iptables -L -n
       register: iptables_rules
       changed_when: false
       failed_when: false
 
     - name: Validate firewall is active
-      assert:
+      ansible.builtin.assert:
         that:
           - ufw_status.rc == 0 and 'Status: active' in ufw_status.stdout
         fail_msg: "UFW firewall is not active"
@@ -114,24 +114,24 @@
       register: firewall_check
 
     - name: Record firewall validation results
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'firewall_security': {'status': 'PASS', 'ufw_active': 'Status: active' in ufw_status.stdout}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
       when: security_checks.verify_firewall | default(true)
 
     - name: Skip firewall check if disabled
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'firewall_security': {'status': 'SKIP', 'reason': 'Firewall check disabled'}}) }}"
       when: not (security_checks.verify_firewall | default(true))
 
   rescue:
     - name: Record firewall validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'firewall_security': {'status': 'FAIL', 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug firewall validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "Firewall validation failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
@@ -145,7 +145,7 @@
       when: critical_files | default([]) | length > 0
 
     - name: Validate file permissions are secure
-      assert:
+      ansible.builtin.assert:
         that:
           - item.stat.mode == item.item.expected_mode
         fail_msg: "File {{ item.item.path }} has incorrect permissions: {{ item.stat.mode }} (expected: {{ item.item.expected_mode }})"
@@ -156,29 +156,29 @@
         - file_permissions_check is defined
 
     - name: Record file permission validation results
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'file_permissions': {'status': 'PASS', 'files_checked': critical_files | length}}) }}"
         smoke_test_passed_count: "{{ smoke_test_passed_count + 1 }}"
       when: critical_files | default([]) | length > 0
 
     - name: Skip file permission check if no files defined
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'file_permissions': {'status': 'SKIP', 'reason': 'No critical files defined'}}) }}"
       when: critical_files | default([]) | length == 0
 
   rescue:
     - name: Record file permission validation failure
-      set_fact:
+      ansible.builtin.set_fact:
         smoke_test_results: "{{ smoke_test_results | combine({'file_permissions': {'status': 'FAIL', 'files': critical_files | default([]), 'error': ansible_failed_result.msg}}) }}"
         smoke_test_failed_count: "{{ smoke_test_failed_count + 1 }}"
 
     - name: Debug file permission validation failure
-      debug:
+      ansible.builtin.debug:
         msg: "File permission validation failed: {{ ansible_failed_result.msg }}"
       when: test_config.collect_debug_info | default(true)
 
 - name: Display security validation summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Security Validation Results:"
       - "  SSH Security: {{ smoke_test_results.ssh_security.status | default('SKIP') }}"

@@ -14,7 +14,7 @@
   when: api_connectivity_passed | default(false)
 
 - name: Calculate available resources
-  set_fact:
+  ansible.builtin.set_fact:
     available_memory_mb: "{{ ((node_status.proxmox_node_info.memory.free | default(0)) / 1024 / 1024) | int }}"
     available_cpu_cores: "{{ node_status.proxmox_node_info.cpuinfo.cpus | default(0) }}"
     cpu_usage_percent: "{{ (node_status.proxmox_node_info.cpu | default(0) * 100) | round(2) }}"
@@ -35,7 +35,7 @@
   when: api_connectivity_passed | default(false)
 
 - name: Calculate available storage
-  set_fact:
+  ansible.builtin.set_fact:
     available_storage_gb: "{{ ((storage_info.proxmox_storage_info | selectattr('storage', 'equalto', 'local-lvm') | first).avail | default(0) / 1024 / 1024 / 1024) | int }}"
   when:
     - api_connectivity_passed | default(false)
@@ -43,7 +43,7 @@
     - storage_info.proxmox_storage_info is defined
 
 - name: Check resource adequacy
-  set_fact:
+  ansible.builtin.set_fact:
     node_resources_adequate: true
   when:
     - available_memory_mb | default(0) | int >= minimum_memory_mb
@@ -52,7 +52,7 @@
     - cpu_usage_percent | default(100) | float < 90
 
 - name: Display resource status
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Node Resource Status:"
       - "  Available Memory: {{ available_memory_mb | default('Unknown') }} MB (Required: {{ minimum_memory_mb }} MB)"

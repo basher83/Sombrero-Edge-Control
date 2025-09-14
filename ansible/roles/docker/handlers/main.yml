@@ -23,7 +23,7 @@
   listen: "reload docker"
 
 - name: update grub
-  command: update-grub
+  ansible.builtin.command: update-grub
   become: true
   listen: "update grub"
 
@@ -41,6 +41,6 @@
   listen: "reload firewalld"
 
 - name: prune docker system
-  command: docker system prune -af --volumes
+  ansible.builtin.command: docker system prune -af --volumes
   become: true
   listen: "prune docker system"

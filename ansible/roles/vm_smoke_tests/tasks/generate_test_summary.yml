@@ -1,14 +1,14 @@
 ---
-#SPDX-License-Identifier: MIT-0
+#SPDX-License-Identifier: MIT
 # Generate comprehensive test summary and reporting
 
 - name: Calculate test execution time
-  set_fact:
+  ansible.builtin.set_fact:
     smoke_test_end_time: "{{ ansible_date_time.epoch }}"
     smoke_test_duration: "{{ (ansible_date_time.epoch | int) - (smoke_test_start_time | int) }}"
 
 - name: Generate detailed test summary
-  set_fact:
+  ansible.builtin.set_fact:
     smoke_test_summary:
       metadata:
         target_host: "{{ inventory_hostname }}"
@@ -34,7 +34,7 @@
   when: reporting.generate_json_report | default(true)
 
 - name: Generate human-readable test report
-  set_fact:
+  ansible.builtin.set_fact:
     human_readable_report: |
       ========================================
       VM Smoke Test Report
@@ -62,7 +62,7 @@
       ========================================
 
 - name: Generate detailed results section separately
-  set_fact:
+  ansible.builtin.set_fact:
     detailed_results: |
       DETAILED RESULTS
       ----------------
@@ -80,7 +80,7 @@
     mode: '0644'
 
 - name: Generate category breakdown message
-  set_fact:
+  ansible.builtin.set_fact:
     category_breakdown_msg: |
       Test Results by Category:
       {% for category, result in smoke_test_results.items() %}
@@ -88,12 +88,12 @@
       {% endfor %}
 
 - name: Display test category breakdown
-  debug:
+  ansible.builtin.debug:
     msg: "{{ category_breakdown_msg.split('\n') }}"
   when: reporting.log_level in ['debug', 'info']
 
 - name: Generate failed test details message
-  set_fact:
+  ansible.builtin.set_fact:
     failed_test_msg: |
       Failed Test Details:
       {% for category, result in smoke_test_results.items() %}
@@ -104,7 +104,7 @@
   when: smoke_test_failed_count > 0
 
 - name: Display failed test details
-  debug:
+  ansible.builtin.debug:
     msg: "{{ failed_test_msg.split('\n') }}"
   when:
     - smoke_test_failed_count > 0
@@ -112,7 +112,7 @@
     - failed_test_msg is defined
 
 - name: Display performance metrics summary
-  debug:
+  ansible.builtin.debug:
     msg:
       - "Performance Metrics:"
       - "  CPU Usage: {{ smoke_test_results.cpu_performance.usage_percent | default('N/A') }}%"
@@ -125,7 +125,7 @@
     - reporting.log_level in ['debug', 'info']
 
 - name: Create test result artifact for CI/CD integration
-  set_fact:
+  ansible.builtin.set_fact:
     ci_test_result:
       test_suite: "vm_smoke_tests"
       target: "{{ inventory_hostname }}"
@@ -144,7 +144,7 @@
     mode: '0644'
 
 - name: Set test completion fact for external monitoring
-  set_fact:
+  ansible.builtin.set_fact:
     smoke_tests_completed: true
     smoke_tests_status: "{{ 'PASS' if smoke_test_failed_count == 0 else 'FAIL' }}"
     smoke_tests_summary: "{{ smoke_test_summary }}"
