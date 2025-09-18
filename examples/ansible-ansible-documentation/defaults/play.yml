@@ -88,7 +88,7 @@
   # Required: no
   # Description: Just a description to document the play
 
-  gather_facts: yes
+  gather_facts: true
   ###########
   # Play keyword:  gather_facts
   # Default: None

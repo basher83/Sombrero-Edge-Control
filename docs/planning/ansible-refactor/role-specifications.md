@@ -21,12 +21,14 @@ Before implementing any role, use the **ansible-research subagent** to discover 
    ```
 
 2. **Quality Assessment**: Evaluate found collections for:
+
    - Repository health (activity, releases, contributors)
    - Code quality (testing, CI/CD, documentation)
    - Module implementation patterns
    - Community engagement
 
 3. **Integration Analysis**: Determine if we should:
+
    - Use existing collection as dependency
    - Fork and customize collection
    - Use as reference for our implementation
@@ -36,6 +38,7 @@ Before implementing any role, use the **ansible-research subagent** to discover 
 
    ```markdown
    ## Research Findings
+
    - Collections evaluated: [list]
    - Selected approach: [use/fork/reference/custom]
    - Rationale: [why this decision]
@@ -347,7 +350,7 @@ compress_output: true
   file:
     path: "{{ diagnostic_output_dir }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Collect system information
   shell: |
@@ -397,7 +400,7 @@ Use ansible-research subagent to:
 
 ```yaml
 # defaults/main.yml
-lifecycle_operation: "rollback"  # rollback, cleanup, reset
+lifecycle_operation: "rollback" # rollback, cleanup, reset
 confirm_destructive_operations: true
 preserve_data: false
 cleanup_artifacts:
@@ -582,7 +585,7 @@ All roles implement:
 
 ## Performance Considerations
 
-1. **Fact Gathering**: Minimize with `gather_facts: no` where possible
+1. **Fact Gathering**: Minimize with `gather_facts: false` where possible
 2. **Parallel Execution**: Use `strategy: free` for independent tasks
 3. **Caching**: Implement fact caching for repeated runs
 4. **Conditional Execution**: Skip unnecessary tasks with `when` clauses

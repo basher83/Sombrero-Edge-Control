@@ -53,7 +53,7 @@ for more details.
 ## Release notes
 
 See the
-[changelog](https://github.com/ansible-collections/basher83.automation_server/tree/main/CHANGELOG.rst).
+[changelog](https://github.com/basher83/Sombrero-Edge-Control/tree/main/ansible_collections/basher83/automation_server/CHANGELOG.rst).
 
 ## Roadmap
 
