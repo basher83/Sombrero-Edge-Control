@@ -3,7 +3,7 @@
 
 - name: Test VM Diagnostics Role
   hosts: localhost
-  gather_facts: yes
+  gather_facts: true
 
   vars:
     # Basic test configuration with minimal requirements

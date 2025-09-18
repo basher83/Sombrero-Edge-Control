@@ -3,7 +3,7 @@
 
 - name: Test Docker Validation Role
   hosts: localhost
-  gather_facts: yes
+  gather_facts: true
 
   vars:
     # Test configuration - minimal setup for macOS testing
