@@ -57,7 +57,7 @@ source "proxmox-clone" "ubuntu-server-numbat" {
   insecure_skip_tls_verify = true
 
   # VM General Settings
-  node                 = "${var.proxmox_node_name}"
+  node = "${var.proxmox_node_name}"
   # vm_id is not specified - Proxmox will assign next available ID dynamically
   vm_name              = "ubuntu-server-numbat-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
   template_description = "Golden Image: Ubuntu 24.04 LTS with Docker, nvm, mise, uv. Built ${formatdate("YYYY_MM_DD hh:mm", timestamp())}"
@@ -66,7 +66,7 @@ source "proxmox-clone" "ubuntu-server-numbat" {
   # tags = "packer_built,ubuntu_24_04,golden_image,docker,development_tools"
 
   # Clone from existing template - use template name
-  clone_vm = "ubuntu24"  # Your existing cloud-init template name
+  clone_vm   = "ubuntu24" # Your existing cloud-init template name
   full_clone = true
 
   # VM System Settings
@@ -138,10 +138,10 @@ build {
   provisioner "ansible" {
     # Core configuration
     playbook_file = "../ansible/playbooks/packer-provision.yml"
-    user         = "${var.instance_username}"
+    user          = "${var.instance_username}"
 
     # Performance and reliability settings
-    use_proxy                = false  # Recommended for Ansible 2.8+
+    use_proxy = false # Recommended for Ansible 2.8+
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=False",
       "ANSIBLE_FORCE_COLOR=1",
@@ -153,7 +153,7 @@ build {
       "--extra-vars", "packer_build=true",
       "--extra-vars", "golden_image_build=true",
       "--extra-vars", "build_timestamp=${timestamp()}",
-      "-v"  # Verbose output for debugging
+      "-v" # Verbose output for debugging
     ]
 
     # Inventory configuration (automatically handled by Packer)

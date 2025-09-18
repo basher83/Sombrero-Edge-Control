@@ -59,35 +59,35 @@ act = "0.2.81"
 
 [tasks.packer-init]
 description = "Initialize Packer plugins"
-run = "cd packer && packer init ."
+dir = "packer"
+run = "packer init ."
 
 [tasks.packer-validate]
 description = "Validate Packer template"
-run = "cd packer && packer validate ubuntu-server-numbat-docker.pkr.hcl"
+dir = "packer"
+run = "packer validate ubuntu-server-numbat-docker.pkr.hcl"
 
 [tasks.packer-fmt]
 description = "Format Packer template files"
-run = "cd packer && packer fmt -recursive ."
+dir = "packer"
+run = "packer fmt -recursive ."
 
 [tasks.packer-fmt-check]
 description = "Check Packer template formatting"
-run = "cd packer && packer fmt -check -recursive ."
+dir = "packer"
+run = "packer fmt -check -recursive ."
 
 [tasks.packer-build]
 description = "Build VM template with Packer"
-run = """
-cd packer && \
-packer build ubuntu-server-numbat-docker.pkr.hcl
-"""
+dir = "packer"
+run = "packer build ubuntu-server-numbat-docker.pkr.hcl"
+
 
 [tasks.packer-build-debug]
 description = "Build VM template with Packer in debug mode"
-run = """
-cd packer && \
-PACKER_LOG=1 packer build \
-  -debug \
-  ubuntu-server-numbat-docker.pkr.hcl
-"""
+dir = "packer"
+run = "PACKER_LOG=1 packer build -debug ubuntu-server-numbat-docker.pkr.hcl"
+
 
 # ============================================================================
 # SETUP & INITIALIZATION TASKS
@@ -298,6 +298,7 @@ run = "act push --dryrun"
 # Format Terraform files recursively
 [tasks.fmt]
 description = "Format all Terraform files recursively"
+dir = "infrastructure"
 run = "terraform fmt -recursive"
 
 # Format YAML files
@@ -308,6 +309,7 @@ run = "yamlfmt -conf .yamlfmt ."
 # Check Terraform formatting without making changes (CI-friendly)
 [tasks.fmt-check]
 description = "Check Terraform formatting (non-mutating, shows diff)"
+dir = "infrastructure"
 run = "terraform fmt -recursive -check -diff"
 
 # Format all supported file types

@@ -9,7 +9,7 @@
   "timezone": "UTC",
   "prConcurrentLimit": 3,
   "prCreation": "not-pending",
-  
+
   "packageRules": [
     {
       "description": "Auto-merge Terraform provider patches",
@@ -62,7 +62,7 @@
       "dependencyDashboardApproval": true
     }
   ],
-  
+
   "regexManagers": [
     {
       "description": "Update mise tool versions",
@@ -84,7 +84,7 @@
       "datasourceTemplate": "github-releases"
     }
   ],
-  
+
   "customManagers": [
     {
       "customType": "regex",
@@ -97,14 +97,14 @@
       "versioningTemplate": "semver"
     }
   ],
-  
+
   "commitMessagePrefix": "chore(deps):",
   "commitMessageAction": "update",
   "commitMessageTopic": "{{depName}}",
   "commitMessageExtra": "to {{newVersion}}",
-  
+
   "labels": ["dependencies", "renovate"],
-  
+
   "vulnerabilityAlerts": {
     "enabled": true,
     "labels": ["security"]
