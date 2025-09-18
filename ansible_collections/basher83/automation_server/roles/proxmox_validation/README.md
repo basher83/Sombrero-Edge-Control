@@ -1,5 +1,4 @@
-Proxmox Validation
-==================
+# Proxmox Validation
 
 This role validates Proxmox infrastructure readiness before deployment operations.
 
@@ -28,8 +27,7 @@ Using community.proxmox collection as dependency - Production-ready with compreh
 - Resource availability thresholds specific to our requirements
 - Network configuration verification for our environment
 
-Requirements
-------------
+## Requirements
 
 ### Collections
 
@@ -46,8 +44,7 @@ proxmoxer>=1.3.1
 requests
 ```
 
-Role Variables
---------------
+## Role Variables
 
 ```yaml
 # defaults/main.yml
@@ -63,17 +60,15 @@ minimum_memory_mb: 4096
 minimum_cpu_cores: 2
 ```
 
-Dependencies
-------------
+## Dependencies
 
 None directly, but requires community.proxmox collection to be installed.
 
-Example Playbook
-----------------
+## Example Playbook
 
 ```yaml
 - hosts: localhost
-  gather_facts: no
+  gather_facts: false
   roles:
     - role: proxmox_validation
       vars:
@@ -81,12 +76,10 @@ Example Playbook
         required_template_id: 1001
 ```
 
-License
--------
+## License
 
 MIT
 
-Author Information
-------------------
+## Author Information
 
 Created as part of the Ansible-first infrastructure refactor for Sombrero Edge Control project.

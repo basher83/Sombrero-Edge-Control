@@ -3,7 +3,7 @@
 
 - name: Test Proxmox Validation Role
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
 
   roles:
     - role: proxmox_validation
