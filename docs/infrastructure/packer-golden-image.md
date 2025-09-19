@@ -8,9 +8,9 @@ This document defines the minimal golden image approach for the Sombrero Edge Co
 
 ### 1. Minimal is Optimal
 
-- **Include**: Operating system, cloud-init capability, qemu-guest-agent
+- **Include**: Operating system, cloud-init capability, qemu-guest-agent, machine-id reset (e.g., truncate /etc/machine-id), cloud-init cleanup (remove /var/lib/cloud/* and cloud-init instance data)
 - **Exclude**: Application software, configuration, environment-specific settings
-- **Rationale**: Faster builds, universal images, clear separation of concerns
+- **Rationale**: Faster builds, universal images, clear separation of concerns, prevent cloned VMs from sharing host-specific identities and ensure clean first-boot configuration
 
 ### 2. Immutable Foundation
 
@@ -197,14 +197,12 @@ terraform apply -var="template_id=8024"
 1. New Packer configuration with minimal packages
 2. Build and tag template
 3. Validate boot and basic functionality
-4. Pre-conversion hygiene: `sudo truncate -s 0 /etc/machine-id && sudo cloud-init clean --logs`
-5. Convert VM to template in Proxmox (`qm template <vmid>`)
 
 ### Phase 3: Update Pipeline
 
 1. Update Terraform to use new template
 2. Update Ansible to handle all configuration
-3. Validate end-to-end deployment (mise: `deploy-full`)
+3. Validate end-to-end deployment
 
 ## Best Practices
 

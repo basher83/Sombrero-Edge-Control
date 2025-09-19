@@ -208,7 +208,7 @@ reviews:
 
     - path: "ansible_collections/basher83/automation_server/playbooks/**/*"
       instructions: |
-        - Standards Reference: [Ansible Standards](../../docs/standards/ansible-standards.md)
+        - Standards Reference: [Ansible Standards](docs/standards/ansible-standards.md)
         - Focus on Ansible playbook structure and operational safety.
         - Ensure playbooks are idempotent and can be run multiple times safely.
         - Verify proper use of tags for selective execution.
