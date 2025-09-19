@@ -87,8 +87,7 @@ reviews:
     # GitHub integration
     github-checks:
       enabled: true
-      timeout_ms: 180000
-
+      timeout_ms: 600000
     # Secret detection already covered by multiple tools; disable redundant ones
     gitleaks:
       enabled: false
