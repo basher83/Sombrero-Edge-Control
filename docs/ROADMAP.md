@@ -222,7 +222,9 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 ### Key Performance Indicators
 
 #### Tool Independence
+
 #### Tool Independence
+
 - [ ] Packer builds without Terraform/Ansible dependencies
   - DoD: packer build succeeds using only packer/; no external scripts
   - Artifact: template ID published to deployments/outputs/template.json
@@ -235,6 +237,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
   - Idempotency: <= 0 changed tasks on second run
 - [ ] Each tool has independent test suite
   - DoD: packer tests (smoke), Terraform (terratest), Ansible (molecule)
+
 #### Performance Metrics
 
 - [ ] Packer build time: < 7 minutes

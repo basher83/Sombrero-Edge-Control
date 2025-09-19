@@ -205,6 +205,7 @@ terraform apply -var="template_id=8024"
 1. Update Terraform to use new template
 2. Update Ansible to handle all configuration
 3. Validate end-to-end deployment (mise: `deploy-full`)
+
 ## Best Practices
 
 ### DO ✅
