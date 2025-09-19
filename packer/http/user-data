@@ -1,33 +1,30 @@
 #cloud-config
 autoinstall:
   version: 1
-  locale: en_US.UTF8
+  locale: en_US.UTF-8
   keyboard:
     layout: us
+  network:
+    network:
+      version: 2
+      ethernets:
+        ens18:
+          dhcp4: true
   ssh:
     install-server: true
     allow-pw: true
-    disable_root: true
-    ssh_quiet_keygen: true
-    allow_public_ssh_keys: true
-  packages:
-    - qemu-guest-agent
-    - sudo
   storage:
     layout:
       name: direct
-    swap:
-      size: 2G
+  # Minimal user setup for initial access
   user-data:
-    package_upgrade: true
-    timezone: US/Eastern
     users:
       - name: ansible
-        groups: [adm, sudo]
+        groups: [sudo]
         lock-passwd: false
         sudo: ALL=(ALL) NOPASSWD:ALL
         shell: /bin/bash
-        # passwd: passw@rd
-        # - or -
-        ssh_authorized_keys:
-          # - ssh-ed25519 asdqufdhwifjjsdjqfjwi stuff@some-shit-man.stuff.net
+  # No additional packages - Ubuntu 24.04 Server includes what we need
+  packages: []
+  # No post-install commands - keep it minimal
+  late-commands: []
