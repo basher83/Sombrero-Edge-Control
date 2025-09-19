@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 
-# CodeRabbit configuration for andromeda-orchestration infrastructure automation repository
+# CodeRabbit configuration for Sombrero-Edge-Control infrastructure automation repository
 # This configuration is tailored for Ansible, Terraform, Nomad, and infrastructure-as-code workflows
 
 language: en-US
