@@ -65,7 +65,36 @@ collections:
     version: ">=3.0.0"  # If using NetBox
 ```
 
-## Integration with Current Project
+### Version Pinning Strategy
+
+For production stability, pin exact collection versions in `requirements.yml`:
+
+```yaml
+# Production requirements.yml (exact versions)
+collections:
+  - name: community.docker
+    version: "3.10.4"  # Latest tested version
+  - name: community.proxmox
+    version: "1.4.0"   # Latest tested version
+  - name: community.general
+    version: "8.6.1"   # Latest tested version
+
+# Development requirements.yml (flexible for testing)
+collections:
+  - name: community.docker
+    version: ">=3.10.0,<4.0.0"  # Allow patch updates
+  - name: community.proxmox
+    version: ">=1.4.0,<2.0.0"   # Allow minor updates
+```
+
+**Update Cadence:**
+
+- **Monthly**: Review for security updates and critical bug fixes
+- **Quarterly**: Update to latest minor versions during maintenance windows
+- **Annually**: Major version updates with full testing cycles
+- **Emergency**: Immediate updates for critical security vulnerabilities
+
+Use tools like `ansible-galaxy collection list --outdated` to check for updates.
 
 ### Docker Management
 
@@ -106,17 +135,18 @@ collections:
 ## Key Benefits for Sombrero Edge Control
 
 1. **Unified Automation**: Single toolchain for Proxmox, Docker, and secrets
-2. **Official Support**: Most recommendations are official Ansible collections
-3. **Active Maintenance**: All Tier 1-2 collections show recent commits
-4. **Production Ready**: Collections have proven track records
-5. **Good Documentation**: All recommended collections well-documented
+1. **Official Support**: Most recommendations are official Ansible collections
+1. **Active Maintenance**: All Tier 1-2 collections show recent commits
+1. **Production Ready**: Collections have proven track records
+1. **Good Documentation**: All recommended collections well-documented
 
 ## Migration Considerations
 
 - **From community.general**: Proxmox modules migrating to community.proxmox
-- **Version Pinning**: Lock collection versions for stability
+- **Version Pinning**: Use exact versions in production (e.g., "3.10.4") vs. ranges in development (e.g., ">=3.10.0,<4.0.0")
 - **Testing Required**: Validate in dev environment before production
 - **Python Dependencies**: Ensure required Python libraries installed
+- **Update Cadence**: Schedule regular collection updates (monthly security reviews, quarterly minor updates)
 
 ## Risk Assessment
 
@@ -138,9 +168,9 @@ collections:
 ## Next Steps
 
 1. **Immediate**: Install community.docker and community.proxmox
-2. **Test**: Validate basic workflows in development
-3. **Document**: Create usage standards and patterns
-4. **Monitor**: Track collection updates and security advisories
+1. **Test**: Validate basic workflows in development
+1. **Document**: Create usage standards and patterns
+1. **Monitor**: Track collection updates and security advisories
 
 ## Research Methodology
 
