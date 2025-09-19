@@ -7,10 +7,17 @@ All notable changes to the Jump Host Infrastructure project will be documented i
 _This changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
-## [Unreleased]
+## [Unreleased] - 2025-09-18
 
 ### Added
 
+- **Pipeline Separation Architecture**: Complete separation of Packer, Terraform, and Ansible into independent stages with clean handoffs (ADR-20250918)
+- **Ansible Collection Research**: Comprehensive research on community collections for Proxmox, Docker, NetBox, HashiCorp stack, and DNS/IPAM systems
+- **Pipeline Documentation**:
+  - Packer golden image strategy guide (`docs/infrastructure/packer-golden-image.md`)
+  - Ansible configuration management guide (`docs/deployment/ansible-configuration-guide.md`)
+  - Pipeline separation refactoring plan (`docs/planning/pipeline-separation-refactor.md`)
+- **Architectural Decision**: ADR-20250918 documenting complete pipeline separation decision
 - **Ansible Collection Migration**: Comprehensive migration strategy and documentation for transitioning to Ansible collections structure
 - **Ansible Development Tools**: Added ansible-dev-tools, uv, python 3.12, and antsibull-changelog
   to mise.toml for enhanced Ansible development workflow
@@ -30,6 +37,17 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Changed
 
+- **Project Architecture**: Refactored to three-stage pipeline with complete tool separation (Packer → Terraform → Ansible)
+- **Documentation Updates**:
+  - Updated Project PRP to reflect pipeline separation architecture
+  - Revised deployment checklist for three-stage process
+  - Updated Terraform-Ansible integration guide to discourage provisioners
+  - Changed Ansible collection structure from "migration" to "primary" status
+- **ROADMAP Restructure**: Reorganized phases to align with pipeline separation strategy:
+  - Added Pipeline Separation Architecture phase (65% complete)
+  - Added Minimal Golden Images phase (40% complete)
+  - Added Pure Infrastructure phase (60% complete)
+  - Revised all timelines and success metrics for tool independence
 - **Docker Role Structure**: Applied FQCN (fully qualified collection name) throughout all tasks
 - **Variable Management**: Moved all Docker role variables from vars/ to defaults/ for proper precedence
 - **Error Handling**: Added comprehensive block/rescue/always patterns with backup and rollback mechanisms
@@ -40,6 +58,9 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Fixed
 
+- **Documentation Alignment**: All documentation now correctly reflects pipeline separation architecture
+- **Date Corrections**: Fixed incorrect dates in ROADMAP (was showing January 2025, corrected to September 2025)
+- **ADR References**: Updated ADR references to use correct date (20250918)
 - **Docker Role Variables**: Added all missing variable definitions preventing role execution
 - **Docker Socket Permissions**: Fixed validation logic with proper stat check and octal format comparison
 - **User Namespace Remapping**: Implemented dockremap user creation and verification
@@ -52,10 +73,15 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Documentation
 
+- **Pipeline Separation Strategy**: Complete refactoring plan for three-stage architecture
+- **Golden Image Documentation**: Minimal Packer image strategy and implementation guide
+- **Ansible Configuration Guide**: Comprehensive playbook structure and role specifications
+- **Updated Deployment Documentation**: Three-stage checklist and procedures
+- **Ansible Collection Research**: Analysis of community collections with scoring and recommendations
 - **Ansible Collection Migration Guide**: Comprehensive guide for transitioning to collection-based architecture
 - **Namespace Decision Documentation**: Added namespace-decision.md documenting the basher83.automation_server
   namespace choice and rationale
-- **ADRs**: Multiple architectural decision records for Ansible collections, Renovate, and MegaLinter
+- **ADRs**: Multiple architectural decision records for Ansible collections, Renovate, MegaLinter, and pipeline separation
 - **Thoughts System**: Knowledge management documentation and adaptation strategy
 - **MegaLinter Fixes**: Quick reference guide for resolving MegaLinter issues
 

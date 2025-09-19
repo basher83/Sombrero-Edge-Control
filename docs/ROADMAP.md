@@ -1,12 +1,12 @@
 # Project Roadmap
 
 *Sombrero-Edge-Control Infrastructure Pipeline*
-*Last Updated: September 11, 2025*
-*Overall Completion: 82%*
+*Last Updated: September 18, 2025*
+*Overall Completion: 75%*
 
 ## Project Vision
 
-Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden image pipeline technology, achieving sub-minute deployments with comprehensive automation and configuration management.
+Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a three-stage pipeline with complete tool separation, achieving sub-minute deployments through minimal golden images, pure infrastructure provisioning, and comprehensive configuration management.
 
 ---
 
@@ -31,169 +31,154 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 
 ---
 
-## Phase 2: Golden Image Pipeline (✅ 90% Complete)
+## Phase 2: Pipeline Separation Architecture (🆕 65% Complete)
 
-*Timeline: September 2025 - October 2025*
+*Timeline: January 2025 - February 2025*
 
 ### ✅ Completed Tasks
 
-- [x] **Packer Configuration** - Ubuntu 24.04 template builder
-- [x] **Docker Pre-installation** - Docker CE and Compose in golden images
-- [x] **Development Tools** - nvm, Node.js, uv, Python tools integration
-- [x] **Dynamic Template Selection** - Automatic latest image detection
-- [x] **Packer Ansible Provisioning** - Build-time configuration playbook
+- [x] **Architecture Decision** - ADR-20250118 pipeline separation documented
+- [x] **Packer Strategy** - Minimal golden image approach defined
+- [x] **Documentation Updates** - All docs aligned with new architecture
+- [x] **Ansible Configuration Guide** - Comprehensive playbook structure
+- [x] **Deployment Checklist** - Three-stage deployment process
+
+### ⏳ Pending Tasks
+
+- [ ] **Minimal Packer Template** 🔴 - Remove Docker and tools from image
+- [ ] **Simplify Cloud-init** 🔴 - Reduce to SSH-only configuration
+- [ ] **Ansible Collection Cleanup** - Remove duplicate ansible/ directory
+- [ ] **Pipeline Integration** - Clean handoffs between stages
+- [ ] **Performance Validation** - Measure separated pipeline speed
+
+---
+
+## Phase 3: Minimal Golden Images (⏳ 40% Complete)
+
+*Timeline: January 2025 - February 2025*
+
+### ✅ Completed Tasks
+
+- [x] **Packer Configuration** - Ubuntu 24.04 template builder exists
 - [x] **Template Tagging** - Metadata and version tracking system
-- [x] **Mise Task Integration** - deploy-packer automated task
+- [x] **Documentation** - Minimal image strategy documented
 
 ### ⏳ Pending Tasks
 
-- [ ] **Cloud-init Files** 🔴 - Create missing configuration files
-- [ ] **Performance Validation** 🔴 - Prove 90% speed improvement claim
-- [ ] **Template Versioning** - Implement semantic versioning for images
+- [ ] **Remove Application Software** 🔴 - Strip Docker, dev tools from Packer
+- [ ] **Minimize Package List** - Only OS, cloud-init, qemu-guest-agent
+- [ ] **Image Size Optimization** - Target < 2GB image size
+- [ ] **Build Time Optimization** - Target < 7 minute builds
+- [ ] **Template Versioning** - Semantic versioning implementation
 
 ---
 
-## Phase 3: Ansible Configuration Management (✅ 75% Complete)
+## Phase 4: Pure Infrastructure with Terraform (⏳ 60% Complete)
 
-*Timeline: September 2025 - November 2025*
+*Timeline: January 2025 - February 2025*
 
 ### ✅ Completed Tasks
 
-- [x] **Post-deployment Playbook** - Comprehensive configuration automation
-- [x] **Role Architecture** - 10+ specialized Ansible roles created
-- [x] **Docker Role** - Complete Docker installation and configuration
-- [x] **Security Roles** - Firewall, SSH hardening, security baseline
-- [x] **Validation Roles** - vm_smoke_tests, docker_validation, diagnostics
-- [x] **Terraform Integration** - Automatic inventory generation
-- [x] **Mise Task Integration** - deploy-ansible automated task
+- [x] **VM Module** - Reusable, parameterized module
+- [x] **Static Networking** - Fixed IP configuration
+- [x] **Backend Override** - Local state for development
+- [x] **Terraform Outputs** - Ansible inventory generation
 
 ### ⏳ Pending Tasks
 
-- [ ] **Smoke Test Playbook Integration** 🟠 - Replace shell script with Ansible
-- [ ] **VM Lifecycle Management** - Restart and maintenance playbooks
-- [ ] **Role Documentation** - Add README to all roles
-- [ ] **Molecule Testing** - Unit tests for Ansible roles
-- [ ] **Idempotency Validation** - Ensure all roles are idempotent
+- [ ] **Minimal Cloud-init** 🔴 - Reduce to SSH-only configuration
+- [ ] **Remove Script References** - No docker-install.sh, firewall-setup.sh
+- [ ] **Clean Handoff** - Template ID input, inventory JSON output
+- [ ] **Provider Optimization** - Parallel resource creation
+- [ ] **State Management** - Remote backend for production
 
 ---
 
-## Phase 4: Ansible Collections Migration (⏳ 30% Complete)
+## Phase 5: Ansible as Single Source of Truth (⏳ 85% Complete)
 
-*Timeline: September 2025 - December 2025*
+*Timeline: January 2025 - February 2025*
 
 ### ✅ Completed Tasks
 
-- [x] **Migration Strategy** - Comprehensive 4-phase migration plan
-- [x] **ADR Documentation** - Architectural decisions documented
-- [x] **Requirements Analysis** - Collection structure requirements defined
-- [x] **Scoring System** - Collection quality evaluation framework
-- [x] **Research Strategy** - Investigation approach documented
+- [x] **Collection Structure** - basher83.automation_server created
+- [x] **Role Architecture** - 10+ specialized roles implemented
+- [x] **Docker Role** - Complete container runtime configuration
+- [x] **Security Roles** - Firewall, SSH hardening, fail2ban
+- [x] **Validation Roles** - vm_smoke_tests, docker_validation
+- [x] **Development Tools Role** - mise, uv, nodejs configuration
+- [x] **Playbook Hierarchy** - Master playbook with phases
 
 ### ⏳ Pending Tasks
 
-- [ ] **Collection Structure Creation** 🟠 - ansible_collections/sombrero/edge_control/
-- [ ] **Galaxy.yml Generation** - Collection metadata file
-- [ ] **Role Migration** - Convert roles to collection format
-- [ ] **FQCN Implementation** - Update all playbooks to use FQCNs
-- [ ] **Ansible-lint Compliance** - Full collection validation
-- [ ] **Distribution Setup** - Ansible Galaxy publishing configuration
+- [ ] **Remove Duplicate Directory** 🔴 - Delete old ansible/ structure
+- [ ] **Dynamic Inventory** - Terraform provider integration
+- [ ] **Molecule Testing** - Role-level unit tests
+- [ ] **Idempotency Validation** - All roles fully idempotent
+- [ ] **Collection Publishing** - Galaxy distribution setup
 
 ---
 
-## Phase 5: Testing & Quality Assurance (✅ 70% Complete)
+## Phase 6: Three-Stage Pipeline Integration (⏳ 30% Complete)
 
-*Timeline: September 2025 - November 2025*
+*Timeline: February 2025*
 
 ### ✅ Completed Tasks
 
-- [x] **Smoke Test Suite** - 20+ comprehensive validation tests
-- [x] **Shell-based Testing** - scripts/smoke-test.sh implementation
-- [x] **CI Workflow** - GitHub Actions for Terraform validation
-- [x] **MegaLinter Integration** - Code quality enforcement
-- [x] **Pre-commit Hooks** - Local validation framework
-- [x] **ACT Configuration** - Local CI testing capability
-- [x] **Security Scanning** - KICS and Infisical integration
+- [x] **Mise Task Structure** - Tasks for each stage defined
+- [x] **Documentation** - Three-stage deployment checklist
 
 ### ⏳ Pending Tasks
 
-- [ ] **Terraform Unit Tests** - Terratest implementation
-- [ ] **Integration Tests** - Component interaction validation
-- [ ] **Contract Tests** - Terraform/Ansible interface validation
-- [ ] **Performance Tests** - Load and stress testing
-- [ ] **Compliance Tests** - CIS benchmark validation
-- [ ] **Test Coverage Metrics** - 80% coverage target
+- [ ] **Packer Output Handling** 🔴 - Template ID to Terraform variable
+- [ ] **Terraform to Ansible** 🔴 - Inventory JSON generation
+- [ ] **End-to-End Task** - mise run deploy-full implementation
+- [ ] **Independent Validation** - Each stage testable alone
+- [ ] **Performance Metrics** - Timing for each stage
+- [ ] **Rollback Procedures** - Stage-specific recovery
 
 ---
 
-## Phase 6: CI/CD Automation (✅ 65% Complete)
-
-*Timeline: October 2025 - December 2025*
-
-### ✅ Completed Tasks
-
-- [x] **GitHub Actions Workflows** - CI, MegaLinter, Documentation
-- [x] **Terraform Validation** - Format, validate, lint checks
-- [x] **Documentation Generation** - Automated terraform-docs
-- [x] **Secret Scanning** - Infisical integration
-- [x] **SARIF Reporting** - Security findings in GitHub
-- [x] **Mise Pipeline Tasks** - 100+ automation tasks
-
-### ⏳ Pending Tasks
-
-- [ ] **Automated Deployment** - Push-button deployment pipeline
-- [ ] **Environment Promotion** - Dev → Staging → Production flow
-- [ ] **Deployment Approvals** - Manual gates for production
-- [ ] **Automated Rollback** - Failure recovery mechanism
-- [ ] **Deployment Metrics** - Timing and success rate tracking
-- [ ] **Canary Deployments** - Progressive rollout capability
-
----
-
-## Phase 7: Documentation & Standards (✅ 85% Complete)
+## Phase 7: Documentation & Standards (✅ 90% Complete)
 
 *Timeline: Ongoing*
 
 ### ✅ Completed Tasks
 
 - [x] **Documentation Structure** - Logical directory organization
-- [x] **16 ADRs** - Architectural decisions documented
-- [x] **Standards Documents** - 7 comprehensive standards guides
-- [x] **Development Guides** - Setup and workflow documentation
-- [x] **Deployment Documentation** - Process and checklist guides
-- [x] **Troubleshooting Guides** - Known issues and resolutions
-- [x] **Planning Documents** - Migration and refactor strategies
+- [x] **17 ADRs** - Including pipeline separation decision
+- [x] **Pipeline Separation Docs** - Complete refactoring strategy
+- [x] **Packer Documentation** - Minimal golden image guide
+- [x] **Ansible Configuration Guide** - Comprehensive playbook docs
+- [x] **Updated Deployment Checklist** - Three-stage process
+- [x] **Updated PRP** - Reflects new architecture
 
 ### ⏳ Pending Tasks
 
-- [ ] **Production README Fix** 🔴 - Remove Vault references
 - [ ] **Component Documentation** - README for each role/module
 - [ ] **API Documentation** - Module interfaces and contracts
 - [ ] **Operational Runbooks** - Day-2 operations guides
-- [ ] **Video Tutorials** - Setup and deployment walkthroughs
 
 ---
 
-## Phase 8: Production Readiness (⏳ 60% Complete)
+## Phase 8: Testing & Validation (⏳ 45% Complete)
 
-*Timeline: November 2025 - December 2025*
+*Timeline: February 2025 - March 2025*
 
 ### ✅ Completed Tasks
 
-- [x] **Architecture Design** - Three-tier pipeline architecture
-- [x] **Security Baseline** - SSH, firewall, basic hardening
-- [x] **Deployment Pipeline** - mise run deploy-full capability
-- [x] **Rollback Planning** - Emergency recovery procedures
-- [x] **Change Management** - Git-based version control
+- [x] **Smoke Test Suite** - vm_smoke_tests Ansible role
+- [x] **CI Workflow** - GitHub Actions validation
+- [x] **MegaLinter Integration** - Code quality enforcement
+- [x] **Pre-commit Hooks** - Local validation
 
 ### ⏳ Pending Tasks
 
-- [ ] **Production Deployment** - Actual live deployment validation
-- [ ] **Performance Validation** 🔴 - Empirical speed measurements
-- [ ] **Security Compliance** - Full CIS benchmark compliance
-- [ ] **Monitoring Setup** - Metrics and alerting configuration
-- [ ] **Backup Strategy** - VM and configuration backups
-- [ ] **Disaster Recovery** - DR testing and validation
-- [ ] **Load Testing** - Capacity and performance limits
+- [ ] **Packer Testing** 🔴 - Validate minimal images
+- [ ] **Terraform Testing** - Terratest implementation
+- [ ] **Ansible Testing** - Molecule for each role
+- [ ] **Integration Testing** - Stage handoff validation
+- [ ] **Performance Testing** - < 60 second deployment
+- [ ] **Independence Testing** - Each tool standalone
 
 ---
 
@@ -201,21 +186,21 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 
 ### Immediate Blockers (Must Fix Now)
 
-1. **Missing Cloud-init Files** - Deployment will fail without these
-2. **Production Documentation Error** - Completely misleading about purpose
-3. **Performance Claims Unvalidated** - Core value proposition unproven
+1. **Packer Image Refactoring** 🔴 - Remove Docker/tools for minimal image
+2. **Cloud-init Simplification** 🔴 - Reduce to SSH-only configuration
+3. **Ansible Directory Cleanup** 🔴 - Remove duplicate ansible/ folder
 
-### High Priority (Next 2 Weeks)
+### High Priority (Week 1)
 
-1. **Ansible Smoke Test Integration** - Complete but unused capability
-2. **Collection Structure Creation** - Start migration execution
-3. **Performance Benchmarking** - Validate 90% improvement claim
+1. **Pipeline Handoffs** - Template ID and inventory JSON mechanisms
+2. **Mise Task Updates** - Three-stage deployment tasks
+3. **Performance Validation** - Measure separated pipeline speed
 
-### Medium Priority (Next Month)
+### Medium Priority (Week 2-3)
 
-1. **Testing Infrastructure** - Unit and integration tests
-2. **CI/CD Automation** - Deployment pipeline completion
-3. **Security Validation** - Compliance testing
+1. **Testing Each Stage** - Independent validation procedures
+2. **Molecule Implementation** - Ansible role testing
+3. **Terratest Setup** - Terraform module testing
 
 ---
 
@@ -225,22 +210,34 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 
 | Phase | Current | Target | Due Date |
 |-------|---------|--------|----------|
-| Foundation | 95% | 100% | Oct 2025 |
-| Golden Image | 90% | 100% | Oct 2025 |
-| Ansible Config | 75% | 100% | Nov 2025 |
-| Collections | 30% | 80% | Dec 2025 |
-| Testing | 70% | 90% | Nov 2025 |
-| CI/CD | 65% | 85% | Dec 2025 |
-| Documentation | 85% | 95% | Ongoing |
-| Production | 60% | 100% | Dec 2025 |
+| Foundation | 95% | 100% | Feb 2025 |
+| Pipeline Separation | 65% | 100% | Feb 2025 |
+| Minimal Images | 40% | 100% | Feb 2025 |
+| Pure Infrastructure | 60% | 100% | Feb 2025 |
+| Ansible Configuration | 85% | 100% | Feb 2025 |
+| Pipeline Integration | 30% | 100% | Mar 2025 |
+| Documentation | 90% | 95% | Ongoing |
+| Testing | 45% | 90% | Mar 2025 |
 
 ### Key Performance Indicators
 
-- [ ] Deployment Time: < 60 seconds (currently unvalidated)
-- [ ] Test Coverage: > 80% (currently ~40%)
-- [ ] Ansible Collection Migration: > 80% (currently 0%)
-- [ ] Documentation Coverage: > 95% (currently 85%)
-- [ ] Security Compliance: 100% CIS (currently ~70%)
+#### Tool Independence
+- [ ] Packer builds without Terraform/Ansible dependencies
+- [ ] Terraform deploys with only template ID input
+- [ ] Ansible configures with only inventory JSON input
+- [ ] Each tool has independent test suite
+
+#### Performance Metrics
+- [ ] Packer build time: < 7 minutes
+- [ ] Terraform deployment: < 2 minutes
+- [ ] Ansible configuration: < 5 minutes
+- [ ] End-to-end deployment: < 60 seconds total
+
+#### Quality Metrics
+- [ ] Image size: < 2GB (currently ~4GB with Docker)
+- [ ] Test coverage: > 80% per tool
+- [ ] Zero coupling violations between tools
+- [ ] Documentation: 100% of components documented
 
 ---
 
@@ -282,25 +279,25 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 
 ---
 
-## Next Quarterly Objectives (Q4 2025)
+## Next Sprint Objectives (Q4 2025)
 
-### October 2025
+### Sprint 1 (Sep Week 3-4)
 
-- Complete performance validation
-- Fix all critical blockers
-- Begin Ansible collection migration
+- Refactor Packer for minimal images
+- Simplify cloud-init to SSH-only
+- Clean up Ansible structure
 
-### November 2025
+### Sprint 2 (Oct Week 1-2)
 
-- Complete testing infrastructure
-- Achieve 80% test coverage
-- Deploy to production
+- Implement pipeline handoffs
+- Create three-stage mise tasks
+- Validate tool independence
 
-### December 2025
+### Sprint 3 (Oct Week 3-4)
 
-- Complete CI/CD automation
-- Finish Ansible collections
-- Achieve full production readiness
+- Performance testing and validation
+- Molecule and Terratest setup
+- Production deployment trial
 
 ---
 
@@ -326,8 +323,30 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using golden
 
 ---
 
-*This roadmap is a living document and will be updated monthly based on progress and priority changes.*
+## Three-Stage Pipeline Architecture
 
-**Last Major Update**: September 11, 2025
+```mermaid
+graph LR
+    subgraph "Stage 1: Packer"
+        A[Ubuntu ISO] --> B[Minimal Image<br/>< 2GB]
+    end
+
+    subgraph "Stage 2: Terraform"
+        B -->|Template ID| C[VM Infrastructure<br/>SSH Access]
+    end
+
+    subgraph "Stage 3: Ansible"
+        C -->|Inventory JSON| D[Full Configuration<br/>Production Ready]
+    end
+
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#9ff,stroke:#333,stroke-width:2px
+    style D fill:#9f9,stroke:#333,stroke-width:2px
+```
+
+*This roadmap is a living document and will be updated bi-weekly based on progress and priority changes.*
+
+**Last Major Update**: September 18, 2025
 **Next Review Date**: October 1, 2025
 **Document Owner**: Infrastructure Team
+**Architecture**: Pipeline Separation (ADR-20250918)
