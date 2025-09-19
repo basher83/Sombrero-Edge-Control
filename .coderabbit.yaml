@@ -247,11 +247,10 @@ reviews:
     - path: "**/.env*"
       instructions: |
         - Review environment files for security and best practices.
-        - Ensure no sensitive values are hardcoded in committed .env files.
+        - Prohibit committing non-example .env files; use Infisical/Ansible Vault for all real secrets.
         - Verify that .env files contain only example or template values.
         - Check that production secrets use proper secret management (Infisical integration, Ansible Vault).
         - Validate that .env files follow standard KEY=value format with proper escaping.
-
   # Automatic labeling instructions for PRs
   labeling_instructions:
     # Infrastructure and DevOps
