@@ -247,10 +247,11 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 #### Quality Metrics
 
-- [ ] Image size: < 2GB (currently ~4GB with Docker)
-- [ ] Test coverage: > 80% per tool
-- [ ] Zero coupling violations between tools
+- [ ] Image size: < 2GB (checked via qemu-img du in CI; fail if > 2.0GB)
+- [ ] Test coverage: > 80% per tool (molecule/terratest reports uploaded; CI fails if <80%)
+- [ ] Zero coupling violations between tools (no TF provisioners; no Ansible in Packer; CI checks paths)
 - [ ] Documentation: 100% of components documented
+  - DoD: README per role/module; markdownlint passes; broken-link check = 0
 
 ---
 
@@ -266,9 +267,9 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 ### Recommended Priorities
 
 1. **Week 1**: Fix blockers, validate performance
-2. **Week 2-3**: Ansible migration execution
-3. **Week 4-6**: Testing and CI/CD completion
-4. **Week 7-8**: Production validation and deployment
+1. **Week 2-3**: Ansible migration execution
+1. **Week 4-6**: Testing and CI/CD completion
+1. **Week 7-8**: Production validation and deployment
 
 ---
 
