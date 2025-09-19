@@ -201,6 +201,7 @@ ansible-playbook -i ansible_inventory.json --syntax-check playbooks/site.yml
 ```
 
 Expected output:
+
 - Valid JSON with all required fields
 - Ansible successfully parses inventory
 - Ping module returns SUCCESS

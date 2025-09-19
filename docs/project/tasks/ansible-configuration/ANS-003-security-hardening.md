@@ -397,6 +397,7 @@ ansible -i inventory/ansible_inventory.json jump_hosts -m ping
 ```
 
 Expected output:
+
 - SSH configuration shows secure settings
 - Firewall rules are active
 - fail2ban is running with SSH jail

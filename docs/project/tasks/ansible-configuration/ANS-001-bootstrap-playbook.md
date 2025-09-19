@@ -20,133 +20,134 @@ Create a bootstrap playbook that establishes initial connectivity and prepares t
 
 ## Implementation Steps
 
-### 1. **Create Bootstrap Playbook**
+### 1. **Create Bootstrap Role**
 
-Create `ansible_collections/basher83/automation_server/playbooks/bootstrap.yml`:
+Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/main.yml`:
 
 ```yaml
 ---
-- name: Bootstrap Jump Host for Configuration
-  hosts: jump_hosts
-  gather_facts: no  # Can't gather facts without Python
-  become: yes
+- name: Wait for system to become reachable
+  wait_for_connection:
+    delay: 10
+    timeout: 300
 
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
+- name: Install Python for Ansible
+  raw: |
+    if ! command -v python3 &> /dev/null; then
+      apt-get update
+      apt-get install -y python3 python3-apt
+    fi
+  changed_when: false
 
-  tasks:
-    - name: Wait for system to become reachable
-      wait_for_connection:
-        delay: 10
-        timeout: 300
+- name: Gather facts after Python installation
+  setup:
 
-    - name: Install Python for Ansible
-      raw: |
-        if ! command -v python3 &> /dev/null; then
-          apt-get update
-          apt-get install -y python3 python3-apt
-        fi
-      changed_when: false
+- name: Ensure ansible user exists
+  user:
+    name: ansible
+    groups: sudo
+    shell: /bin/bash
+    create_home: yes
+    state: present
 
-    - name: Gather facts after Python installation
-      setup:
+- name: Configure sudo for ansible user
+  lineinfile:
+    path: /etc/sudoers.d/ansible
+    line: 'ansible ALL=(ALL) NOPASSWD:ALL'
+    create: yes
+    validate: 'visudo -cf %s'
 
-    - name: Ensure ansible user exists
-      user:
-        name: ansible
-        groups: sudo
-        shell: /bin/bash
-        create_home: yes
-        state: present
+- name: Set hostname
+  hostname:
+    name: jump-man
 
-    - name: Configure sudo for ansible user
-      lineinfile:
-        path: /etc/sudoers.d/ansible
-        line: 'ansible ALL=(ALL) NOPASSWD:ALL'
-        create: yes
-        validate: 'visudo -cf %s'
+- name: Update /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "127.0.1.1 jump-man"
+    state: present
 
-    - name: Set hostname
-      hostname:
-        name: jump-man
+- name: Verify network connectivity
+  uri:
+    url: https://api.github.com
+    method: GET
+    status_code: 200
+    timeout: 10
+  register: github_check
+  failed_when: false
 
-    - name: Update /etc/hosts
-      lineinfile:
-        path: /etc/hosts
-        line: "127.0.1.1 jump-man"
-        state: present
+- name: Report connectivity status
+  debug:
+    msg: "External connectivity: {{ 'OK' if github_check.status == 200 else 'FAILED' }}"
 
-    - name: Verify network connectivity
-      uri:
-        url: https://api.github.com
-        method: GET
-        status_code: 200
-        timeout: 10
-      register: github_check
-      failed_when: false
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
 
-    - name: Report connectivity status
-      debug:
-        msg: "External connectivity: {{ 'OK' if github_check.status == 200 else 'FAILED' }}"
+- name: Install essential packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - software-properties-common
+    state: present
 
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
+- name: Set timezone
+  timezone:
+    name: UTC
 
-    - name: Install essential packages
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - gnupg
-          - lsb-release
-          - software-properties-common
-        state: present
+- name: Enable systemd-resolved
+  systemd:
+    name: systemd-resolved
+    enabled: yes
+    state: started
 
-    - name: Set timezone
-      timezone:
-        name: UTC
+- name: Configure DNS
+  copy:
+    content: |
+      [Resolve]
+      DNS=1.1.1.1 1.0.0.1
+      FallbackDNS=8.8.8.8 8.8.4.4
+      DNSStubListener=no
+    dest: /etc/systemd/resolved.conf
+  notify: restart systemd-resolved
 
-    - name: Enable systemd-resolved
-      systemd:
-        name: systemd-resolved
-        enabled: yes
-        state: started
+- name: Ensure resolv.conf points to systemd-resolved
+  file:
+    src: /run/systemd/resolve/resolv.conf
+    dest: /etc/resolv.conf
+    state: link
 
-    - name: Configure DNS
-      copy:
-        content: |
-          [Resolve]
-          DNS=1.1.1.1 1.0.0.1
-          FallbackDNS=8.8.8.8 8.8.4.4
-          DNSStubListener=no
-        dest: /etc/systemd/resolved.conf
-      notify: restart systemd-resolved
+- name: Create directory structure
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/scripts
+    - /opt/configs
+    - /var/log/ansible
 
-    - name: Create directory structure
-      file:
-        path: "{{ item }}"
-        state: directory
-        mode: '0755'
-      loop:
-        - /opt/scripts
-        - /opt/configs
-        - /var/log/ansible
+- name: Save bootstrap completion marker
+  file:
+    path: /var/lib/ansible_bootstrap_complete
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+```
 
-    - name: Save bootstrap completion marker
-      file:
-        path: /var/lib/ansible_bootstrap_complete
-        state: touch
-        modification_time: preserve
-        access_time: preserve
+Create `ansible_collections/basher83/automation_server/roles/bootstrap/handlers/main.yml`:
 
-  handlers:
-    - name: restart systemd-resolved
-      systemd:
-        name: systemd-resolved
-        state: restarted
+```yaml
+---
+- name: restart systemd-resolved
+  systemd:
+    name: systemd-resolved
+    state: restarted
 ```
 
 ### 2. **Create Bootstrap Check Role**
@@ -161,7 +162,8 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap_check/tas
   register: bootstrap_marker
 
 - name: Run bootstrap if needed
-  include_tasks: ../../playbooks/bootstrap.yml
+  include_role:
+    name: bootstrap
   when: not bootstrap_marker.stat.exists
 ```
 
@@ -175,8 +177,9 @@ Update `ansible_collections/basher83/automation_server/playbooks/site.yml`:
   hosts: jump_hosts
 
   pre_tasks:
-    - name: Run bootstrap if needed
-      import_playbook: bootstrap.yml
+    - name: Bootstrap if needed
+      include_role:
+        name: bootstrap_check
 
   tasks:
     - name: Apply baseline configuration
@@ -207,6 +210,10 @@ ansible_python_interpreter: /usr/bin/python3
 # Connection settings
 ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 ansible_ssh_pipelining: yes
+
+# NOTE: Host key checking is disabled for initial bootstrap convenience.
+# TODO: Re-enable strict host key checking for production use by removing the above line
+# and ensuring known_hosts is properly populated.
 
 # Performance tuning
 ansible_facts_parallel: yes
@@ -241,7 +248,7 @@ Create `ansible_collections/basher83/automation_server/playbooks/test-bootstrap.
       register: hostname_check
 
     - name: Check DNS resolution
-      command: nslookup github.com
+      command: getent hosts github.com
       register: dns_check
 
     - name: Display test results
@@ -267,14 +274,15 @@ Create `ansible_collections/basher83/automation_server/playbooks/test-bootstrap.
 
 ## Success Criteria
 
-- [ ] Bootstrap playbook runs without errors
+- [ ] Bootstrap role runs without errors
+- [ ] Bootstrap check role conditionally includes bootstrap when needed
 - [ ] Python3 installed and functional
 - [ ] Ansible user configured with sudo access
 - [ ] Network connectivity verified
 - [ ] DNS resolution working
 - [ ] Essential packages installed
 - [ ] Bootstrap marker file created
-- [ ] Idempotent - can run multiple times
+- [ ] Idempotent - can run multiple times safely
 
 ## Validation
 
@@ -284,24 +292,25 @@ Create `ansible_collections/basher83/automation_server/playbooks/test-bootstrap.
 cd ansible_collections/basher83/automation_server
 
 # MANDATORY: Run ansible-lint first
-ansible-lint playbooks/bootstrap.yml
+ansible-lint roles/bootstrap/ roles/bootstrap_check/
 # Must pass production linting rules
 
 # Check syntax
-ansible-playbook -i inventory/ansible_inventory.json playbooks/bootstrap.yml --syntax-check
+ansible-playbook -i inventory/ansible_inventory.json playbooks/site.yml --syntax-check
 
-# Run bootstrap
-ansible-playbook -i inventory/ansible_inventory.json playbooks/bootstrap.yml
+# Run bootstrap via site.yml (will include bootstrap_check role)
+ansible-playbook -i inventory/ansible_inventory.json playbooks/site.yml --tags bootstrap_check
 
 # Verify bootstrap
 ansible-playbook -i inventory/ansible_inventory.json playbooks/test-bootstrap.yml
 
-# Check idempotency
-ansible-playbook -i inventory/ansible_inventory.json playbooks/bootstrap.yml
-# Should show no changes
+# Check idempotency (run again, should skip bootstrap)
+ansible-playbook -i inventory/ansible_inventory.json playbooks/site.yml --tags bootstrap_check
+# Should show no changes for bootstrap tasks
 ```
 
 Expected output:
+
 - First run: Multiple changes
 - Second run: No changes (idempotent)
 - All test checks pass

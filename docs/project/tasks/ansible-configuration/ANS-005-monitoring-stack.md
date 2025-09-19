@@ -486,6 +486,7 @@ curl http://192.168.10.250:9090/api/v1/targets
 ```
 
 Expected output:
+
 - All containers running
 - Health checks return OK
 - Targets showing as UP in Prometheus

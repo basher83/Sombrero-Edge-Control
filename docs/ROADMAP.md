@@ -222,22 +222,36 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 ### Key Performance Indicators
 
 #### Tool Independence
+
+#### Tool Independence
+
 - [ ] Packer builds without Terraform/Ansible dependencies
+  - DoD: packer build succeeds using only packer/; no external scripts
+  - Artifact: template ID published to deployments/outputs/template.json
+  - Tests: packer-validate and post‑build smoke in mise task `packer-validate`
 - [ ] Terraform deploys with only template ID input
+  - DoD: tf apply with -var template_id=<ID> only; no provisioners
+  - Output: inventory.json emitted to deployments/outputs/
 - [ ] Ansible configures with only inventory JSON input
+  - DoD: ansible-playbook -i inventory.json site.yml completes idempotently
+  - Idempotency: <= 0 changed tasks on second run
 - [ ] Each tool has independent test suite
+  - DoD: packer tests (smoke), Terraform (terratest), Ansible (molecule)
 
 #### Performance Metrics
+
 - [ ] Packer build time: < 7 minutes
 - [ ] Terraform deployment: < 2 minutes
 - [ ] Ansible configuration: < 5 minutes
 - [ ] End-to-end deployment: < 60 seconds total
 
 #### Quality Metrics
-- [ ] Image size: < 2GB (currently ~4GB with Docker)
-- [ ] Test coverage: > 80% per tool
-- [ ] Zero coupling violations between tools
+
+- [ ] Image size: < 2GB (checked via qemu-img du in CI; fail if > 2.0GB)
+- [ ] Test coverage: > 80% per tool (molecule/terratest reports uploaded; CI fails if <80%)
+- [ ] Zero coupling violations between tools (no TF provisioners; no Ansible in Packer; CI checks paths)
 - [ ] Documentation: 100% of components documented
+  - DoD: README per role/module; markdownlint passes; broken-link check = 0
 
 ---
 
@@ -253,9 +267,9 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 ### Recommended Priorities
 
 1. **Week 1**: Fix blockers, validate performance
-2. **Week 2-3**: Ansible migration execution
-3. **Week 4-6**: Testing and CI/CD completion
-4. **Week 7-8**: Production validation and deployment
+1. **Week 2-3**: Ansible migration execution
+1. **Week 4-6**: Testing and CI/CD completion
+1. **Week 7-8**: Production validation and deployment
 
 ---
 

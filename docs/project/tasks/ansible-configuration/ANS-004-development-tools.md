@@ -33,7 +33,10 @@ Create `roles/development_tools/defaults/main.yml`:
 ```yaml
 ---
 # Python configuration
-python_version: "3.11"
+python_version: "3"  # Use python3 (Ubuntu 24.04 default is 3.12)
+# Note: For Python 3.11 specifically, add deadsnakes PPA:
+# sudo add-apt-repository ppa:deadsnakes/ppa
+# Then set python_version: "3.11" and use python3.11 package
 python_packages:
   - python3-pip
   - python3-venv
@@ -41,7 +44,7 @@ python_packages:
   - build-essential
 
 # UV (Python package manager)
-uv_version: "latest"
+uv_version: "0.4.20"  # Pin to specific version for security and reproducibility
 uv_install_path: /usr/local/bin
 
 # Node.js configuration
@@ -120,27 +123,83 @@ Create `roles/development_tools/tasks/python.yml`:
 
 ```yaml
 ---
-- name: Ensure Python {{ python_version }} is installed
+- name: Ensure Python 3 is installed
   apt:
-    name: "python{{ python_version }}"
+    name: python3
+    state: present
+
+- name: Ensure Python venv and pip are available
+  apt:
+    name: "{{ python_packages }}"
     state: present
 
 - name: Install UV (Python package manager)
-  shell: |
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-  args:
-    creates: "{{ uv_install_path }}/uv"
-  environment:
-    CARGO_HOME: /usr/local/cargo
-    RUSTUP_HOME: /usr/local/rustup
+  block:
+    - name: Get system architecture
+      command: dpkg --print-architecture
+      register: system_arch
+      changed_when: false
 
-- name: Create UV symlink
-  file:
-    src: /root/.cargo/bin/uv
-    dest: "{{ uv_install_path }}/uv"
-    state: link
-    force: yes
-  ignore_errors: yes
+    - name: Set UV download variables
+      set_fact:
+        uv_binary: "uv-x86_64-unknown-linux-gnu.tar.gz"
+        uv_checksum_file: "uv-x86_64-unknown-linux-gnu.tar.gz.sha256"
+      when: system_arch.stdout == "amd64"
+
+    - name: Set UV download variables for ARM64
+      set_fact:
+        uv_binary: "uv-aarch64-unknown-linux-gnu.tar.gz"
+        uv_checksum_file: "uv-aarch64-unknown-linux-gnu.tar.gz.sha256"
+      when: system_arch.stdout == "arm64"
+
+    - name: Fail on unsupported architecture
+      fail:
+        msg: "Unsupported architecture: {{ system_arch.stdout }}"
+      when: uv_binary is not defined
+
+    - name: Download UV binary
+      get_url:
+        url: "https://github.com/astral-sh/uv/releases/download/{{ uv_version }}/{{ uv_binary }}"
+        dest: "/tmp/{{ uv_binary }}"
+        mode: '0644'
+
+    - name: Download UV checksum
+      get_url:
+        url: "https://github.com/astral-sh/uv/releases/download/{{ uv_version }}/{{ uv_checksum_file }}"
+        dest: "/tmp/{{ uv_checksum_file }}"
+        mode: '0644'
+
+    - name: Verify UV checksum
+      command: "cd /tmp && sha256sum -c {{ uv_checksum_file }}"
+      args:
+        chdir: /tmp
+
+    - name: Extract UV binary
+      unarchive:
+        src: "/tmp/{{ uv_binary }}"
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Install UV binary
+      copy:
+        src: "/tmp/uv"
+        dest: "{{ uv_install_path }}/uv"
+        mode: '0755'
+        remote_src: yes
+      become: yes
+
+    - name: Clean up temporary files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/tmp/{{ uv_binary }}"
+        - "/tmp/{{ uv_checksum_file }}"
+        - "/tmp/uv"
+  rescue:
+    - name: Fail on UV installation error
+      fail:
+        msg: "UV installation failed - checksum verification or download error"
 
 - name: Verify UV installation
   command: uv --version
@@ -173,14 +232,21 @@ Create `roles/development_tools/tasks/nodejs.yml`:
 
 ```yaml
 ---
-- name: Add NodeSource GPG key
-  apt_key:
+- name: Ensure apt keyring dir exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Install NodeSource GPG key
+  get_url:
     url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
-    state: present
+    dest: /etc/apt/keyrings/nodesource.gpg
+    mode: '0644'
 
 - name: Add NodeSource repository
   apt_repository:
-    repo: "deb https://deb.nodesource.com/node_{{ nodejs_version }}.x {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_{{ nodejs_version }}.x {{ ansible_distribution_release }} main"
     state: present
     update_cache: yes
 
@@ -190,6 +256,7 @@ Create `roles/development_tools/tasks/nodejs.yml`:
     state: present
 
 - name: Install global npm packages
+  become: yes
   npm:
     name: "{{ item }}"
     global: yes
@@ -197,6 +264,7 @@ Create `roles/development_tools/tasks/nodejs.yml`:
   loop: "{{ npm_global_packages }}"
 
 - name: Configure npm
+  become: yes
   shell: |
     npm config set prefix /usr/local
     npm config set fund false
@@ -393,7 +461,7 @@ Create `roles/development_tools/tasks/validate.yml`:
 
 - [ ] Ansible-lint passes with no errors
 - [ ] All development packages installed
-- [ ] Python 3.11+ with UV available
+- [ ] Python 3+ with UV available (Ubuntu 24.04 default: 3.12)
 - [ ] Node.js 20 LTS installed with npm
 - [ ] Git configured with aliases
 - [ ] tmux configured with custom settings
@@ -432,6 +500,7 @@ ssh ansible@192.168.10.250 "tmux new-session -d && tmux list-sessions"
 ```
 
 Expected output:
+
 - All tools found in PATH
 - Version numbers displayed
 - tmux session created successfully
@@ -439,7 +508,9 @@ Expected output:
 ## Notes
 
 - UV is the modern Python package manager (faster than pip)
+- UV installed securely via direct binary download with checksum verification
 - Node.js LTS version for stability
+- Python 3 uses Ubuntu 24.04 default (3.12); for Python 3.11 specifically, add deadsnakes PPA
 - tmux configuration enhances productivity
 - Consider adding user-specific dotfiles
 - Tools can be customized per environment

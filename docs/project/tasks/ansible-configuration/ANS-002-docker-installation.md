@@ -335,6 +335,7 @@ molecule test
 ```
 
 Expected output:
+
 - Docker and Compose versions displayed
 - Hello-world container runs successfully
 - All validation checks pass

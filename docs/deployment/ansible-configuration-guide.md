@@ -7,11 +7,13 @@ This guide documents how Ansible serves as the single source of truth for ALL co
 ## Architecture Principles
 
 ### Single Source of Truth
+
 - **Ansible owns**: All packages, services, configuration files, security policies
 - **Terraform provides**: VM with SSH access only
 - **Packer provides**: Minimal OS image
 
 ### Idempotent Operations
+
 - All playbooks and roles must be safely re-runnable
 - Use Ansible modules over shell commands
 - Check for existing state before making changes
@@ -371,6 +373,7 @@ depends = ["deploy-terraform"]
 ## Best Practices
 
 ### DO ✅
+
 - Use Ansible modules over shell/command
 - Make all operations idempotent
 - Tag tasks for selective execution
@@ -379,6 +382,7 @@ depends = ["deploy-terraform"]
 - Document role dependencies
 
 ### DON'T ❌
+
 - Hardcode environment-specific values
 - Use raw/shell unless absolutely necessary
 - Skip validation steps

@@ -3,6 +3,7 @@
 ## ⚠️ Important Architecture Update
 
 **As of 2025-01-18**, this project follows a **Complete Pipeline Separation** architecture where:
+
 - **Packer**: Creates minimal golden images (OS only)
 - **Terraform**: Provisions infrastructure with minimal cloud-init (SSH only)
 - **Ansible**: Handles ALL configuration as the single source of truth

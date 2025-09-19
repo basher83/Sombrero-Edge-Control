@@ -32,11 +32,13 @@ graph LR
 **Principle**: Packer creates universal, minimal base images with only OS and cloud-init capability
 
 **Current State**:
+
 - Installs Docker and development tools
 - Runs ansible provisioner with complex configuration
 - Creates environment-specific images
 
 **Target State**:
+
 ```hcl
 # packer/ubuntu-server-minimal.pkr.hcl
 provisioner "shell" {
@@ -50,6 +52,7 @@ provisioner "shell" {
 ```
 
 **Benefits**:
+
 - Faster builds (30% reduction)
 - Universal templates
 - No environment-specific configuration
@@ -59,11 +62,13 @@ provisioner "shell" {
 **Principle**: Terraform provisions infrastructure with minimal cloud-init for SSH access only
 
 **Current State**:
+
 - Complex cloud-init with package installation
 - References external script files
 - Performs configuration management
 
 **Target State**:
+
 ```yaml
 # infrastructure/environments/production/cloud-init-minimal.yaml
 #cloud-config
@@ -79,6 +84,7 @@ users:
 ```
 
 **Terraform Outputs for Ansible**:
+
 ```hcl
 output "ansible_inventory" {
   value = {
@@ -107,6 +113,7 @@ output "ansible_inventory" {
 **Principle**: Ansible handles ALL configuration, making it the single source of truth
 
 **Target Collection Structure**:
+
 ```
 ansible_collections/basher83/automation_server/
 ├── galaxy.yml
@@ -133,28 +140,15 @@ ansible_collections/basher83/automation_server/
 ```
 
 **Master Playbook**:
+
 ```yaml
 # playbooks/site.yml
 ---
-- name: Complete Jump Host Configuration
-  hosts: jump_hosts
-  become: true
-
-  tasks:
-    - name: Run bootstrap playbook
-      import_playbook: bootstrap.yml
-
-    - name: Apply baseline configuration
-      import_playbook: baseline.yml
-
-    - name: Install Docker
-      import_playbook: docker.yml
-
-    - name: Apply security hardening
-      import_playbook: security.yml
-
-    - name: Install development tools
-      import_playbook: development.yml
+- import_playbook: bootstrap.yml
+- import_playbook: baseline.yml
+- import_playbook: docker.yml
+- import_playbook: security.yml
+- import_playbook: development.yml
 ```
 
 ## Pipeline Handoff Points
@@ -162,6 +156,7 @@ ansible_collections/basher83/automation_server/
 ### 1. Packer → Terraform
 
 **Handoff**: Template ID
+
 ```bash
 # Output from Packer
 template_id=8024
@@ -173,6 +168,7 @@ terraform apply -var="template_id=8024"
 ### 2. Terraform → Ansible
 
 **Handoff**: Dynamic Inventory
+
 ```bash
 # Output from Terraform
 terraform output -json ansible_inventory > inventory.json
@@ -239,7 +235,7 @@ outputs = ["ansible_inventory.json"]
 description = "Configure VM with Ansible"
 run = """
 cd ansible_collections/basher83/automation_server
-ansible-playbook -i ../../ansible_inventory.json playbooks/site.yml
+ansible-playbook -i ../../../ansible_inventory.json playbooks/site.yml
 """
 depends = ["deploy-infrastructure"]
 
@@ -253,6 +249,7 @@ depends = ["deploy-golden-image", "deploy-infrastructure", "deploy-configuration
 Each tool can now be tested independently:
 
 ### Packer Testing
+
 ```bash
 # Validate template
 packer validate ubuntu-minimal.pkr.hcl
@@ -262,6 +259,7 @@ packer build -var="vm_name=test" ubuntu-minimal.pkr.hcl
 ```
 
 ### Terraform Testing
+
 ```bash
 # Use existing template
 terraform plan -var="template_id=8024"
@@ -271,6 +269,7 @@ terraform apply -target=output.ansible_inventory
 ```
 
 ### Ansible Testing
+
 ```bash
 # Use static inventory
 ansible-playbook -i inventory/static.yml playbooks/site.yml --check
@@ -282,26 +281,31 @@ ansible-playbook -i inventory/static.yml playbooks/docker.yml --tags docker
 ## Benefits
 
 ### 1. Tool Independence
+
 - Each tool can be developed and tested separately
 - Failures are isolated to specific stages
 - Teams can work on different components simultaneously
 
 ### 2. Clear Responsibilities
+
 - **Packer**: OS installation and base image
 - **Terraform**: Infrastructure provisioning
 - **Ansible**: All configuration management
 
 ### 3. Simplified Maintenance
+
 - Single source of truth for configuration (Ansible)
 - No duplicate code between tools
 - Clear upgrade path for each component
 
 ### 4. Enhanced Testing
+
 - Unit tests for each tool
 - Integration tests at handoff points
 - End-to-end validation of complete pipeline
 
 ### 5. Faster Development
+
 - Parallel development possible
 - Quick iteration on specific components
 - Reduced build times for Packer images
@@ -309,21 +313,25 @@ ansible-playbook -i inventory/static.yml playbooks/docker.yml --tags docker
 ## Migration Timeline
 
 ### Week 1
+
 - [ ] Create minimal Packer template
 - [ ] Test golden image creation
 - [ ] Document template versioning
 
 ### Week 2
+
 - [ ] Simplify cloud-init configuration
 - [ ] Update Terraform modules
 - [ ] Test infrastructure provisioning
 
 ### Week 3-4
+
 - [ ] Complete Ansible collection migration
 - [ ] Create comprehensive playbooks
 - [ ] Test configuration management
 
 ### Week 5
+
 - [ ] Integration testing
 - [ ] Performance validation
 - [ ] Documentation updates
@@ -331,7 +339,7 @@ ansible-playbook -i inventory/static.yml playbooks/docker.yml --tags docker
 ## Success Criteria
 
 1. **Independence**: Each tool can run without the others
-2. **Speed**: Deployment time < 60 seconds
+2. **Speed**: Terraform + Ansible deployment time < 60 seconds (excluding Packer build)
 3. **Reliability**: Zero-downtime deployments
 4. **Maintainability**: Clear separation of concerns
 5. **Testability**: >80% test coverage for each component
@@ -339,12 +347,15 @@ ansible-playbook -i inventory/static.yml playbooks/docker.yml --tags docker
 ## Risk Mitigation
 
 ### Risk: Breaking existing deployments
+
 **Mitigation**: Create parallel pipeline, test thoroughly, gradual cutover
 
 ### Risk: Increased complexity
+
 **Mitigation**: Clear documentation, training, mise task automation
 
 ### Risk: Performance degradation
+
 **Mitigation**: Benchmark each stage, optimize critical paths
 
 ## Conclusion
