@@ -197,13 +197,14 @@ terraform apply -var="template_id=8024"
 1. New Packer configuration with minimal packages
 2. Build and tag template
 3. Validate boot and basic functionality
+4. Pre-conversion hygiene: `sudo truncate -s 0 /etc/machine-id && sudo cloud-init clean --logs`
+5. Convert VM to template in Proxmox (`qm template <vmid>`)
 
 ### Phase 3: Update Pipeline
 
 1. Update Terraform to use new template
 2. Update Ansible to handle all configuration
-3. Validate end-to-end deployment
-
+3. Validate end-to-end deployment (mise: `deploy-full`)
 ## Best Practices
 
 ### DO ✅
