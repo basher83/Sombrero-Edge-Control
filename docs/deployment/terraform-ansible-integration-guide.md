@@ -1,55 +1,55 @@
 # Terraform + Ansible Integration Best Practices Guide
 
+## ⚠️ Important Architecture Update
+
+**As of 2025-01-18**, this project follows a **Complete Pipeline Separation** architecture where:
+- **Packer**: Creates minimal golden images (OS only)
+- **Terraform**: Provisions infrastructure with minimal cloud-init (SSH only)
+- **Ansible**: Handles ALL configuration as the single source of truth
+
+See [ADR-20250118](../decisions/20250118-pipeline-separation.md) for the architectural decision.
+
 ## Overview
 
-This document provides advanced integration patterns and best practices for the Terraform + Ansible pipeline, building on the existing [Pipeline Enhancements Summary](pipeline-enhancements-summary.md) and incorporating industry standards from the [Scalr Ultimate Guide to Terraform + Ansible](https://scalr.com/learning-center/ultimate-guide-to-using-terraform-with-ansible/).
+This document provides best practices for maintaining clean separation between Terraform and Ansible in our three-stage pipeline, ensuring tool independence while maintaining efficient data handoffs.
 
 ## 🎯 Integration Patterns Comparison
 
-### Current Implementation Analysis
+### Recommended Implementation: Complete Separation
 
-The current pipeline uses a **Decoupled Dynamic Inventory Pattern** with these strengths:
+The pipeline enforces **Complete Tool Independence** with these principles:
 
-- ✅ Clear separation of concerns (Packer → Terraform → Ansible)
-- ✅ Dynamic inventory generation from Terraform outputs
-- ✅ Immutable golden images with Packer + Ansible
-- ✅ Comprehensive mise task automation
+- ✅ Packer: Minimal golden images (OS + cloud-init only)
+- ✅ Terraform: Pure infrastructure with minimal cloud-init (SSH access)
+- ✅ Ansible: ALL configuration management (single source of truth)
+- ✅ Clean handoffs via data (Template ID → Inventory JSON)
+- ✅ No direct tool dependencies or coupling
 
-### Alternative Integration Patterns
+### Anti-Pattern Warning
 
-#### 1. Terraform Provisioners (Local-exec)
+#### ❌ AVOID: Terraform Provisioners (Local-exec)
 
-**When to Consider:**
+**DO NOT USE THIS PATTERN:**
 
 ```hcl
+# ANTI-PATTERN - Do not implement
 resource "null_resource" "ansible_provision" {
-  depends_on = [module.jump_man]
-
+  # This tightly couples Terraform and Ansible
   provisioner "local-exec" {
-    command = <<EOT
-      ansible-playbook \
-        -i "${module.jump_man.primary_ip}," \
-        --private-key ~/.ssh/ansible-key \
-        -u ansible \
-        ansible/playbooks/post-deploy.yml
-    EOT
-    working_dir = path.module
+    command = "ansible-playbook ..."
   }
 }
 ```
 
-**Pros:**
+**Why this is problematic:**
 
-- Simple implementation for basic scenarios
-- Immediate configuration after resource creation
-- Single execution context
+- ❌ Tightly couples tools (violates separation principle)
+- ❌ Ansible failures cause Terraform failures
+- ❌ Cannot test tools independently
+- ❌ Difficult to debug across tool boundaries
+- ❌ HashiCorp explicitly discourages provisioner use
 
-**Cons:**
-
-- Tightly couples tools (Ansible failures affect Terraform)
-- Increases Terraform apply duration
-- Complex SSH key management
-- Harder debugging across tool boundaries
+**Use Instead**: Clean handoff via inventory JSON after Terraform completes
 
 #### 2. Red Hat Ansible Certified Collection
 
@@ -95,24 +95,29 @@ groups:
 **✅ Better Approach:**
 Keep Terraform code declarative and version-controlled directly.
 
-### 2. Overusing Terraform Provisioners
+### 2. ANY Terraform Provisioners for Configuration
 
 **❌ Anti-Pattern:**
 
 ```hcl
-# DON'T DO THIS - Complex config in provisioners
+# DON'T DO THIS - ANY configuration in Terraform
 provisioner "remote-exec" {
   inline = [
-    "apt update",
-    "apt install -y nginx mysql-server",
-    "systemctl enable nginx mysql",
-    # ... 50 more lines
+    "apt update",          # This belongs in Ansible
+    "apt install -y nginx", # This belongs in Ansible
   ]
 }
+
+# Also DON'T DO THIS - Complex cloud-init
+user_data = <<-EOF
+  packages:
+    - docker-ce      # This belongs in Ansible
+    - nodejs         # This belongs in Ansible
+EOF
 ```
 
-**✅ Better Approach:**
-Use provisioners only for bootstrap, delegate complex configuration to Ansible.
+**✅ Correct Approach:**
+Terraform provides ONLY minimal cloud-init for SSH access. ALL configuration happens in Ansible.
 
 ### 3. Ignoring Idempotency
 
@@ -177,9 +182,9 @@ locals {
 }
 ```
 
-### Enhanced Ansible Inventory with Metadata
+### Clean Handoff: Terraform to Ansible
 
-**Advanced Inventory Generation:**
+**Inventory Generation as Data Exchange:**
 
 ```hcl
 # infrastructure/environments/production/outputs.tf

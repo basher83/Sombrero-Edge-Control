@@ -1,19 +1,20 @@
-# Ansible Collection Structure Migration Plan
+# Ansible Collection Structure - Primary Configuration
 
-**Status**: 🔵 Proposed
-**Date**: 2025-09-10
-**Author**: Development Team
-**Impact**: High - Restructures entire Ansible codebase
+**Status**: 🟢 Accepted (via Pipeline Separation Decision)
+**Date**: 2025-01-18 (Updated from 2025-09-10)
+**Author**: Infrastructure Team
+**Impact**: This is now the PRIMARY and ONLY Ansible structure
 
 ## Executive Summary
 
-Migrate the current Ansible directory structure to a proper Ansible Collection format to enforce better compliance with
-ansible-lint, improve code organization, and align with Ansible best practices.
+As part of the [Complete Pipeline Separation](../../decisions/20250118-pipeline-separation.md), the Ansible collection
+structure is now the single source of truth for ALL configuration management. This document defines the structure
+and organization of the `basher83.automation_server` collection.
 
-## Current State
+## Deprecated Structure (To Be Removed)
 
 ```text
-ansible/
+ansible/                          # OLD - Being removed
 ├── playbooks/
 ├── roles/
 ├── inventory/
@@ -22,7 +23,7 @@ ansible/
 └── requirements.yml
 ```
 
-## Proposed Collection Structure
+## Primary Collection Structure (Active)
 
 ```text
 ansible_collections/
@@ -85,19 +86,18 @@ ansible_collections/
 - Better documentation structure
 - Plugin development support
 
-## Migration Strategy
+## Implementation Status
 
-### Phase 1: Preparation (Week 1)
+### ✅ Completed
+1. Collection structure created at `ansible_collections/basher83/automation_server/`
+2. galaxy.yml configured with metadata
+3. All roles available in collection format
+4. Playbooks use FQCN (Fully Qualified Collection Names)
 
-1. Create collection structure alongside existing
-2. Set up galaxy.yml with metadata
-3. Configure runtime.yml for Python/Ansible requirements
-4. Update .ansible-lint configuration
-
-### Phase 2: Migration (Week 2)
-
-1. Move roles to collection structure
-2. Update playbook imports to use FQCN (Fully Qualified Collection Names)
+### 🚧 In Progress
+1. Removing duplicate `ansible/` directory
+2. Updating all mise tasks to use collection
+3. Finalizing dynamic inventory from Terraform
 3. Migrate inventory structure
 4. Update variable references
 

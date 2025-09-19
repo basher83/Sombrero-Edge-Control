@@ -22,25 +22,20 @@ host VM used for DevOps tasks, decoupled from developer laptops.
 
 ## Goal
 
-Deploy an Ubuntu 24.04 VM to Proxmox (node: lloyd) named "jump-man" using the
-existing Terraform module, with a static IP and essential tooling installed via
-cloud-init.
+Deploy an Ubuntu 24.04 VM to Proxmox (node: lloyd) named "jump-man" using a
+three-stage pipeline with clear separation of concerns:
+1. **Packer**: Build minimal golden image with OS and cloud-init capability
+2. **Terraform**: Provision infrastructure with minimal cloud-init (SSH access only)
+3. **Ansible**: Complete configuration management and package installation
 
-Requested packages (cloud-init):
+Required packages (installed by Ansible, NOT cloud-init):
 
-- qemu-guest-agent
-- wget
-- gpg
-- curl
-- unzip
-- jq
-- net-tools
-- ca-certificates
-- gnupg
-- lsb-release
-- software-properties-common
-- git
-- tmux
+- Docker CE and Docker Compose
+- Development tools (git, tmux, wget, gpg, curl, unzip, jq, net-tools)
+- Security tools (fail2ban, nftables)
+- Python tools (python3, pip, uv)
+- Node.js and npm (via mise)
+- Monitoring (qemu-guest-agent)
 
 ## Why
 
@@ -51,14 +46,25 @@ Requested packages (cloud-init):
 
 ### Success Criteria
 
-- Terraform plan and apply succeed in `infrastructure/environments/production`
-- VM "jump-man" is created on node `lloyd` with the expected configuration
-- Static IP 192.168.10.250/24 and gateway 192.168.10.1 configured and reachable
-- DNS resolvers 8.8.8.8 and 8.8.4.4 configured
+**Stage 1 - Packer:**
+- Golden image template created with minimal Ubuntu 24.04 base
+- Template contains only OS, cloud-init, and qemu-guest-agent
+- Template ID available for Terraform consumption
+
+**Stage 2 - Terraform:**
+- Plan and apply succeed in `infrastructure/environments/production`
+- VM "jump-man" created on node `lloyd` from golden image
+- Static IP 192.168.10.250/24 configured via minimal cloud-init
 - SSH access works as `ansible` user with provided public key
-- qemu-guest-agent is running and Terraform outputs show the VM IP(s)
-- All requested packages are installed and usable
-- Tags applied equal ["terraform","jump","production"]
+- Terraform outputs generate Ansible inventory JSON
+
+**Stage 3 - Ansible:**
+- Playbook execution completes successfully
+- All packages installed and services running (Docker, fail2ban, etc.)
+- Security hardening applied (SSH, firewall rules)
+- Development tools configured (mise, uv, nodejs)
+- Smoke tests pass for all components
+- Total deployment time < 60 seconds
 
 ## All Needed Context
 
@@ -105,19 +111,24 @@ infrastructure/
 
 ### Known Gotchas & Library Quirks
 
-- Template baseline: this repo contains Terraform from a previous deployment; treat it as a template.
-  Prefer modifying module parameters/implementation over ad-hoc overrides, since this will be a standalone repo for jump-man.
-- Vendor data snippet: the VM module currently embeds a Vault-specific cloud-init vendor_data in `modules/vm/main.tf`.
-  Rework to injected snippet (not embedded) to keep it DRY and role-agnostic. The jump-man cloud-init should be
-  provided via module input and uploaded as a Proxmox snippet.
-- Proxmox IP reporting depends on qemu-guest-agent; ensure it starts early in cloud-init.
-- Template VM ID and template source node must match actual Proxmox inventory.
-- VM IDs must be unique per environment to avoid collisions with existing VMs.
-- Docker install uses a third-party repo; ensure resilient key/repo setup and
-  run `apt-get update` before installs. Avoid long runcmd chains.
-- Scalr is normally used for state/vars but we are using backend_override.tf for local backend during development.
-- Terraform var env mapping: Terraform reads `TF_VAR_pve_api_token` for the `pve_api_token` variable; using
-  `PROXMOX_API_TOKEN` as the underlying secret is fine but must be exported/mapped to `TF_VAR_pve_api_token`.
+**Pipeline Separation Architecture:**
+- Each tool must remain independent - no tight coupling between stages
+- Packer creates MINIMAL images - resist adding configuration here
+- Terraform uses MINIMAL cloud-init - only SSH access, no package installation
+- Ansible handles ALL configuration - this is the single source of truth
+
+**Technical Considerations:**
+- Template VM ID must match Packer output and Terraform input
+- VM IDs must be unique per environment to avoid collisions
+- Proxmox IP reporting requires qemu-guest-agent (installed in Packer image)
+- Docker installation moved to Ansible - no longer in cloud-init
+- Use backend_override.tf for local backend during development
+- Terraform var env mapping: `TF_VAR_pve_api_token` maps to `pve_api_token` variable
+
+**Data Flow:**
+- Packer → Terraform: Template ID (e.g., 8024)
+- Terraform → Ansible: Inventory JSON with VM details
+- No direct dependencies between tools - each can run independently
 
 ### CRITICAL CONTEXT FOR AI ASSISTANTS
 
