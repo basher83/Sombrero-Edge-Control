@@ -18,7 +18,9 @@ The Packer template creates an Ubuntu 24.04 LTS (Numbat) VM template with compre
 
 ```text
 packer/
-├── ubuntu-server-numbat-docker.pkr.hcl  # Main Packer template
+├── ubuntu-server-numbat-docker.pkr.hcl  # Full-featured template (with Docker, tools)
+├── ubuntu-server-minimal.pkr.hcl        # Minimal template (OS only, no provisioning)
+├── variables.pkrvars.hcl                # Variables configuration
 ├── variables.pkrvars.hcl.example        # Example variables file
 ├── files/
 │   └── 99-pve.cfg                      # Cloud-init datasource configuration
@@ -29,7 +31,9 @@ packer/
 ## Prerequisites
 
 1. **Proxmox API Access**: Valid API token with VM creation permissions
-2. **Ubuntu ISO**: Upload Ubuntu 24.04 Server ISO to Proxmox storage
+2. **Ubuntu Cloud Image Template**: Must exist on Proxmox (named "ubuntu24" or configure in variables)
+   - This is a cloud-init enabled template created from Ubuntu cloud image
+   - Much smaller and faster than installing from ISO
 3. **Network Access**: Packer needs access to Proxmox API and VM network
 4. **SSH Key**: For passwordless authentication to the created template
 
