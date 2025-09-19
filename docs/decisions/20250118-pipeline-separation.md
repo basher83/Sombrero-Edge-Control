@@ -119,7 +119,7 @@ Move all configuration into Packer, creating role-specific images.
 
 ### Packer Success
 
-- Template builds in < 7 minutes
+- Template builds in < 7 minutes (includes package index updates and minimal OS installation)
 - Image size < 2GB
 - Only contains OS, cloud-init, qemu-guest-agent
 
@@ -137,7 +137,10 @@ Move all configuration into Packer, creating role-specific images.
 
 ### Pipeline Success
 
-- End-to-end deployment < 60 seconds
+- **Stage 1 (Packer)**: Golden image build < 7 minutes (with package updates)
+- **Stage 2 (Terraform)**: Infrastructure provisioning < 30 seconds
+- **Stage 3 (Ansible)**: Configuration management < 5 minutes (includes package downloads)
+- **End-to-end (Terraform + Ansible)**: < 6 minutes when package caches are warm
 - Each stage independently testable
 - Clean handoffs between stages
 
@@ -182,4 +185,5 @@ graph TB
 
 ---
 
-*This decision establishes the architectural foundation for a maintainable, scalable infrastructure pipeline with clear separation of concerns and tool independence.*
+*This decision establishes the architectural foundation for a maintainable, scalable
+infrastructure pipeline with clear separation of concerns and tool independence.*
