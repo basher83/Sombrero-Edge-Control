@@ -164,6 +164,7 @@ ansible -i inventory.json jump_hosts -m ping
 ```
 
 Expected output:
+
 - SSH connection succeeds
 - No Docker or other tools installed
 - Ansible can connect and run commands

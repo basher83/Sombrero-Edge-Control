@@ -42,6 +42,7 @@ Research completed on 2025-09-18 evaluating Ansible collections for infrastructu
 ## Implementation Strategy
 
 ### Phase 1: Core Collections
+
 ```yaml
 # requirements.yml
 collections:
@@ -54,6 +55,7 @@ collections:
 ```
 
 ### Phase 2: Optional Extensions
+
 ```yaml
 # Add based on infrastructure needs
 collections:
@@ -66,6 +68,7 @@ collections:
 ## Integration with Current Project
 
 ### Docker Management
+
 ```yaml
 - name: Deploy application container
   community.docker.docker_container:
@@ -76,6 +79,7 @@ collections:
 ```
 
 ### Proxmox VM Operations
+
 ```yaml
 - name: Clone VM from template
   community.proxmox.proxmox_kvm:
@@ -89,6 +93,7 @@ collections:
 ```
 
 ### Secrets Management
+
 ```yaml
 - name: Retrieve database credentials
   community.hashi_vault.vault_read:
@@ -116,14 +121,17 @@ collections:
 ## Risk Assessment
 
 ### Low Risk
+
 - community.docker: Mature, official, widely used
 - community.general: Stable fallback for utilities
 
 ### Medium Risk
+
 - community.proxmox: Newer but official, monitor for issues
 - community.hashi_vault: Stable but requires Vault infrastructure
 
 ### Higher Risk
+
 - wescale.hashistack: Third-party, evaluate thoroughly
 - Personal collections: Avoid for production use
 

@@ -7,11 +7,13 @@ This document defines the minimal golden image approach for the Sombrero Edge Co
 ## Design Principles
 
 ### 1. Minimal is Optimal
+
 - **Include**: Operating system, cloud-init capability, qemu-guest-agent
 - **Exclude**: Application software, configuration, environment-specific settings
 - **Rationale**: Faster builds, universal images, clear separation of concerns
 
 ### 2. Immutable Foundation
+
 - Golden images are versioned and immutable
 - Configuration happens post-deployment via Ansible
 - No environment-specific data in images
@@ -68,6 +70,7 @@ Example: `ubuntu-24.04-minimal-20250118-001`
 ### Metadata Tags
 
 Each template should be tagged in Proxmox with:
+
 ```json
 {
   "os": "ubuntu-24.04",
@@ -82,6 +85,7 @@ Each template should be tagged in Proxmox with:
 ### Version Selection
 
 Terraform selects templates using:
+
 1. **Explicit**: Specific template ID via variable
 2. **Latest**: Query Proxmox for newest template with matching tags
 3. **Validated**: Only use templates that pass smoke tests
@@ -114,6 +118,7 @@ graph LR
 ### 3. Validation Tests
 
 Post-build validation ensures:
+
 - Template boots successfully
 - cloud-init responds
 - qemu-guest-agent communicates
@@ -182,16 +187,19 @@ terraform apply -var="template_id=8024"
 ## Migration from Current State
 
 ### Phase 1: Remove Complexity
+
 1. Remove Docker installation from Packer
 2. Remove development tools installation
 3. Remove Ansible provisioner
 
 ### Phase 2: Create Minimal Template
+
 1. New Packer configuration with minimal packages
 2. Build and tag template
 3. Validate boot and basic functionality
 
 ### Phase 3: Update Pipeline
+
 1. Update Terraform to use new template
 2. Update Ansible to handle all configuration
 3. Validate end-to-end deployment
@@ -199,6 +207,7 @@ terraform apply -var="template_id=8024"
 ## Best Practices
 
 ### DO ✅
+
 - Keep images minimal and universal
 - Version templates with clear naming
 - Tag templates with metadata
@@ -206,6 +215,7 @@ terraform apply -var="template_id=8024"
 - Document what's included and why
 
 ### DON'T ❌
+
 - Install application software in Packer
 - Include environment-specific configuration
 - Use Packer provisioners for complex setup
@@ -215,11 +225,13 @@ terraform apply -var="template_id=8024"
 ## Maintenance
 
 ### Regular Updates
+
 - Rebuild golden images monthly for security patches
 - Track Ubuntu base image updates
 - Monitor Packer version compatibility
 
 ### Deprecation Policy
+
 - Keep last 3 template versions
 - Archive templates older than 90 days
 - Document breaking changes in CHANGELOG

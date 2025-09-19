@@ -41,6 +41,7 @@
 ### Rollback Procedures
 
 **Stage-specific rollback:**
+
 ```bash
 # Rollback Ansible changes only
 ansible-playbook playbooks/rollback.yml -i inventory.json

@@ -302,6 +302,7 @@ ansible-playbook -i inventory/ansible_inventory.json playbooks/bootstrap.yml
 ```
 
 Expected output:
+
 - First run: Multiple changes
 - Second run: No changes (idempotent)
 - All test checks pass

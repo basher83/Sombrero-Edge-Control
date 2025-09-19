@@ -432,6 +432,7 @@ ssh ansible@192.168.10.250 "tmux new-session -d && tmux list-sessions"
 ```
 
 Expected output:
+
 - All tools found in PATH
 - Version numbers displayed
 - tmux session created successfully

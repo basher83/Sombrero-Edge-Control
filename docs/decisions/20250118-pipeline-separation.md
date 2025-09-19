@@ -27,11 +27,13 @@ We need a clear architectural separation where each tool focuses on its core str
 ## Decision Outcome
 
 Chosen option: "Complete Pipeline Separation" - enforce strict boundaries where:
+
 1. **Packer** creates minimal golden images (OS + cloud-init + agent only)
 2. **Terraform** provisions pure infrastructure with minimal cloud-init (SSH only)
 3. **Ansible** handles ALL configuration management as single source of truth
 
 This supersedes previous decisions:
+
 - ADR-20240830 (separate files for terraform injection) - No longer using cloud-init for configuration
 - ADR-20250902 (ansible post-deployment) - Extends this to complete configuration ownership
 
@@ -88,22 +90,26 @@ Move all configuration into Packer, creating role-specific images.
 ## Implementation Plan
 
 ### Phase 1: Packer Minimization (Week 1)
+
 1. Remove Docker and development tools from Packer
 2. Create new minimal template with only OS + cloud-init + qemu-guest-agent
 3. Document what belongs in golden image vs configuration
 
 ### Phase 2: Terraform Simplification (Week 2)
+
 1. Replace complex cloud-init with minimal SSH-only configuration
 2. Remove script file references (docker-install.sh, firewall-setup.sh)
 3. Enhance Terraform outputs for Ansible inventory generation
 
 ### Phase 3: Ansible Consolidation (Weeks 3-4)
+
 1. Migrate to single collection structure (basher83.automation_server)
 2. Create comprehensive playbooks for all configuration
 3. Implement roles for Docker, security, development tools
 4. Remove duplicate ansible/ directory
 
 ### Phase 4: Pipeline Integration (Week 5)
+
 1. Create mise tasks for three-stage deployment
 2. Implement handoff mechanisms (template ID, inventory JSON)
 3. Add independent validation for each stage
@@ -112,21 +118,25 @@ Move all configuration into Packer, creating role-specific images.
 ## Validation Criteria
 
 ### Packer Success
+
 - Template builds in < 7 minutes
 - Image size < 2GB
 - Only contains OS, cloud-init, qemu-guest-agent
 
 ### Terraform Success
+
 - VM provisioned with static IP
 - SSH access available with key
 - Outputs valid Ansible inventory
 
 ### Ansible Success
+
 - All services installed and running
 - Configuration idempotent (can run multiple times)
 - Smoke tests pass
 
 ### Pipeline Success
+
 - End-to-end deployment < 60 seconds
 - Each stage independently testable
 - Clean handoffs between stages

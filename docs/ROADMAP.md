@@ -222,18 +222,21 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 ### Key Performance Indicators
 
 #### Tool Independence
+
 - [ ] Packer builds without Terraform/Ansible dependencies
 - [ ] Terraform deploys with only template ID input
 - [ ] Ansible configures with only inventory JSON input
 - [ ] Each tool has independent test suite
 
 #### Performance Metrics
+
 - [ ] Packer build time: < 7 minutes
 - [ ] Terraform deployment: < 2 minutes
 - [ ] Ansible configuration: < 5 minutes
 - [ ] End-to-end deployment: < 60 seconds total
 
 #### Quality Metrics
+
 - [ ] Image size: < 2GB (currently ~4GB with Docker)
 - [ ] Test coverage: > 80% per tool
 - [ ] Zero coupling violations between tools

@@ -89,12 +89,14 @@ ansible_collections/
 ## Implementation Status
 
 ### ✅ Completed
+
 1. Collection structure created at `ansible_collections/basher83/automation_server/`
 2. galaxy.yml configured with metadata
 3. All roles available in collection format
 4. Playbooks use FQCN (Fully Qualified Collection Names)
 
 ### 🚧 In Progress
+
 1. Removing duplicate `ansible/` directory
 2. Updating all mise tasks to use collection
 3. Finalizing dynamic inventory from Terraform
