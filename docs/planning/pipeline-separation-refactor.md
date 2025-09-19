@@ -144,25 +144,11 @@ ansible_collections/basher83/automation_server/
 ```yaml
 # playbooks/site.yml
 ---
-- name: Complete Jump Host Configuration
-  hosts: jump_hosts
-  become: true
-
-  tasks:
-    - name: Run bootstrap playbook
-      import_playbook: bootstrap.yml
-
-    - name: Apply baseline configuration
-      import_playbook: baseline.yml
-
-    - name: Install Docker
-      import_playbook: docker.yml
-
-    - name: Apply security hardening
-      import_playbook: security.yml
-
-    - name: Install development tools
-      import_playbook: development.yml
+- import_playbook: bootstrap.yml
+- import_playbook: baseline.yml
+- import_playbook: docker.yml
+- import_playbook: security.yml
+- import_playbook: development.yml
 ```
 
 ## Pipeline Handoff Points
@@ -249,7 +235,7 @@ outputs = ["ansible_inventory.json"]
 description = "Configure VM with Ansible"
 run = """
 cd ansible_collections/basher83/automation_server
-ansible-playbook -i ../../ansible_inventory.json playbooks/site.yml
+ansible-playbook -i ../../../ansible_inventory.json playbooks/site.yml
 """
 depends = ["deploy-infrastructure"]
 
@@ -353,7 +339,7 @@ ansible-playbook -i inventory/static.yml playbooks/docker.yml --tags docker
 ## Success Criteria
 
 1. **Independence**: Each tool can run without the others
-2. **Speed**: Deployment time < 60 seconds
+2. **Speed**: Terraform + Ansible deployment time < 60 seconds (excluding Packer build)
 3. **Reliability**: Zero-downtime deployments
 4. **Maintainability**: Clear separation of concerns
 5. **Testability**: >80% test coverage for each component

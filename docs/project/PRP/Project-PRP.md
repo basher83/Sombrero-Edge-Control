@@ -279,9 +279,8 @@ Task 1c: Env mapping for Terraform var
 
 Task 2: Create cloud-init file for jump-man
   ADD infrastructure/environments/production/cloud-init.jump-man.yaml:
-    - Include package list from Goal
-    - Ensure qemu-guest-agent is enabled/started
-    - Keep Docker in cloud-init: add official Docker APT repo then install
+    - Minimal SSH-only config and qemu-guest-agent enable/start
+    - NO package installs (Docker and all tooling handled by Ansible)
     - Do NOT install Node.js/npm/uv/mise in cloud-init; defer to Ansible
     - Keep rules permissive (nftables baseline), hardening deferred to Ansible
 
@@ -314,9 +313,8 @@ Task 6: Runtime validation
 ### Cloud-init Notes (jump-man)
 
 - Start qemu-guest-agent early (ensure Proxmox IP reporting for outputs)
-- Always `apt-get update` prior to package installs after adding repos
-- Docker: use official Docker APT repo (keyring signed-by). Install docker and compose plugin.
-- Node.js/npm/mise/uv: defer to Ansible (not installed via cloud-init)
+- Minimal configuration: SSH access only, no package installations
+- Docker, Node.js/npm/mise/uv: defer ALL tooling to Ansible (not installed via cloud-init)
 - Keep nftables permissive; Ansible will apply hardening later
 
 ## Integration Points
