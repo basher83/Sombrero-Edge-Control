@@ -252,7 +252,6 @@ reviews:
         - Verify that .env files contain only example or template values.
         - Check that production secrets use proper secret management (Infisical integration, Ansible Vault).
         - Validate that .env files follow standard KEY=value format with proper escaping.
-        - Reference: [Secrets Management Standards](docs/standards/secrets-management.md) for Infisical integration guidelines.
 
   # Automatic labeling instructions for PRs
   labeling_instructions:
