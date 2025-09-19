@@ -1,277 +1,197 @@
 ---
-description: Execute the task for a given feature
-argument-hint: [Task file]
+description: Execute a task from the task management system
+argument-hint: [Task file path]
 ---
 
 # Execute Task
 
-Implement a feature using the task file.
+Implement a task from the task management system using the appropriate tools (Packer, Terraform, or Ansible).
 
 ## Task File
 
-Task file path will be provided as argument, e.g., docs/project-management/tasks/<task-id>.md
+Task file path will be provided as argument, e.g., `docs/project/tasks/pipeline-separation/SEP-001-*.md`
 
 - @$ARGUMENTS
 
+## Task Types
+
+The repository uses a structured task management system with two categories:
+
+### SEP Tasks (Pipeline Separation)
+- **Location**: `docs/project/tasks/pipeline-separation/SEP-*.md`
+- **Purpose**: Refactor infrastructure pipeline for tool independence
+- **Tools**: Packer, Terraform
+- **Examples**: SEP-001 (minimal Packer), SEP-002 (simplify cloud-init)
+
+### ANS Tasks (Ansible Configuration)
+- **Location**: `docs/project/tasks/ansible-configuration/ANS-*.md`
+- **Purpose**: Configuration management for the jump host
+- **Tool**: Ansible
+- **Examples**: ANS-001 (bootstrap), ANS-002 (Docker installation)
+
 ## Project Context
 
-You are working in an Ansible project with the following structure:
+This is an Infrastructure-as-Code pipeline repository for deploying a jump host VM on Proxmox:
 
-- Playbooks: playbooks/infrastructure/<service>/
-- Inventory: inventory/environments/<cluster>/
-- Target clusters: vault-cluster (production), doggos-homelab (nomad-consul cluster)
-- Execution pattern: Always use `uv run ansible-playbook`
-- Naming: Use kebab-case for files, follow existing patterns in the directory
+- **Target VM**: "jump-man" at 192.168.10.250
+- **Node**: lloyd (Proxmox host)
+- **Pipeline**: Packer → Terraform → Ansible (three-stage deployment)
+- **Current Status**: Pipeline separation refactor in progress
+- **Task Tracker**: See `docs/project/tasks/INDEX.md` for overall progress
 
-## Current Infrastructure State
+## Tool-Specific Patterns
 
-- Vault is deployed with PKI enabled at pki-int/
-- Nomad/Consul cluster has TLS enabled
-- Consul provides service discovery at \*.service.consul
-
-## Quick Start Pattern
-
-1. **Install all dependencies first**: `uv sync` (installs everything from pyproject.toml)
-2. Copy structure from reference implementation in the task's Reference Implementations section
-3. Use static-test.yml for syntax checks, target cluster inventory for execution
-4. Variables are in inventory/environments/<cluster>/group_vars/all/
-5. Secrets are managed via Infisical (see Secrets Management section below)
-
-## Secrets Management
-
-### Before Starting: Verify Infisical Integration
-
-**IMPORTANT**: Before implementing any task, verify Infisical is working:
-
-1. **Test the integration**: Run `uv run ansible-playbook playbooks/examples/infisical-test.yml`
-2. **Verify success**: You should see "INFISICAL_SECRET_RETRIEVAL_WORKS!!"
-
-If the test fails, see troubleshooting below.
-
-### Infisical Integration Patterns
-
-Three patterns are demonstrated in `playbooks/examples/infisical-test.yml`:
-
-1. **Single Secret Retrieval**: Use `.value` accessor for individual secrets
-2. **Multiple Secrets as Dict**: Use `as_dict=True` for all secrets from a path
-3. **Complete Workflow**: Retrieve → Use → Cleanup pattern
-
-For comprehensive documentation and patterns, see:
-
-- `docs/implementation/infisical/infisical-complete-guide.md` - Complete setup and usage guide
-- `docs/implementation/infisical/infisical-patterns.md` - Real-world implementation patterns
-- `docs/implementation/infisical/infisical-official.md` - Official documentation reference
-
-### Required Setup
-
-- Python dependencies installed: `uv sync` (includes infisicalsdk)
-- macOS users: Special configuration required (documented in infisical-complete-guide.md)
-
-### Common Secret Paths and Names
-
-- Consul: `/apollo-13/consul` → `CONSUL_MASTER_TOKEN`
-- Vault: `/apollo-13/vault` → `VAULT_PROD_ROOT_TOKEN`
-- Service credentials: `/apollo-13/services/<service-name>` → (varies by service)
-
-### Troubleshooting
-
-If `playbooks/examples/infisical-test.yml` fails:
-
-1. **Check dependencies**: Run `uv pip list | grep infisical`
-2. **Verify collection**: Run `ansible-galaxy collection list | grep infisical`
-3. **Check env vars**: Run `mise env | grep INFISICAL`
-4. **macOS users**: Ensure `OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES"` is set in the environment
-
-### Fallback Pattern (Last Resort)
-
-If SDK integration continues to fail, use the Infisical CLI wrapper:
-
+### Packer (SEP-001, etc.)
 ```bash
-infisical run --env=prod --path="/apollo-13/vault" -- \
-  uv run ansible-playbook playbooks/infrastructure/vault/<task-name>.yml \
-  -i inventory/environments/vault-cluster/production.yaml
+cd packer
+
+# Validation
+packer validate -var-file=variables.pkrvars.hcl ubuntu-server-minimal.pkr.hcl
+
+# Execution
+packer build -var-file=variables.pkrvars.hcl ubuntu-server-minimal.pkr.hcl
 ```
 
-Then modify your playbook to use environment lookups:
+### Terraform (SEP-002, SEP-004, etc.)
+```bash
+cd infrastructure/environments/production
 
-```yaml
-vars:
-  vault_token: "{{ lookup('env', 'VAULT_PROD_ROOT_TOKEN') }}"
+# MANDATORY: Always run tflint first
+tflint --init
+tflint
+
+# Planning and execution
+terraform plan
+terraform apply
 ```
 
-## Specialized Sub-agents
+### Ansible (ANS-001 to ANS-005)
+```bash
+cd ansible_collections/basher83/automation_server
 
-`.claude/agents/ansible-research.md`
+# MANDATORY: Always run ansible-lint first
+ansible-lint playbooks/<playbook>.yml
+ansible-lint roles/<role>/
 
-- Specialist for discovering official and community Ansible collections, assessing quality metrics, analyzing repository health, and providing integration recommendations for technologies like NetBox, Proxmox, Nomad, Consul, Vault, and DNS/IPAM systems.
+# Syntax check
+ansible-playbook -i inventory/ansible_inventory.json playbooks/<playbook>.yml --syntax-check
 
-`.claude/agents/github-implementation-research.md`
-
-- Specialist designed to find high-quality code examples, patterns, and implementation strategies from GitHub repositories.
+# Execution
+ansible-playbook -i inventory/ansible_inventory.json playbooks/<playbook>.yml
+```
 
 ## Execution Process
 
-1. **Pre-flight Check**
+### 1. Load Task
+- Read the task file from @$ARGUMENTS
+- Identify task type from ID (SEP = pipeline, ANS = Ansible)
+- Review prerequisites and dependencies
+- Check task status in `docs/project/tasks/INDEX.md`
 
-   - Run `uv sync` to ensure all dependencies are installed
-   - Verify Infisical integration: `uv run ansible-playbook playbooks/examples/infisical-test.yml`
-   - Confirm you see "INFISICAL_SECRET_RETRIEVAL_WORKS!!"
-   - If it fails, stop and troubleshoot using the Secrets Management section
-   - Check target inventory: `uv run ansible-inventory -i inventory/environments/<target-cluster>/ --list`
-     - This shows available hosts, groups, and variables configured for the environment
-     - Pay attention to vars like `vault_addr`, `consul_http_addr`, etc.
+### 2. Pre-flight Checks
 
-2. **Load Task**
+**For SEP Tasks:**
+- Verify tool availability: `packer version` or `terraform version`
+- Check for required files (templates, variables, etc.)
+- Review related documentation in `docs/planning/` or `docs/decisions/`
 
-   - Read the specified task file @$ARGUMENTS
-   - Understand all context and requirements
-   - Follow all instructions in the task file and extend the research if needed
-   - Ensure you have all needed context to implement the task fully
-   - Review relevant role documentation if task involves those services:
-     - `roles/<service>/README.md`
-   - Do more web searches and codebase exploration as needed
-   - Use ansible-research when task requires a new pattern not found in the codebase
-   - Use github-implementation-research when task requires a integration strategy not found in the codebase
+**For ANS Tasks:**
+- Verify Ansible collection exists: `ls ansible_collections/basher83/automation_server/`
+- Check inventory exists: `test -f ansible_inventory.json`
+- Ensure dependencies from previous ANS tasks are complete
 
-3. **ULTRATHINK**
+**All Tasks:**
+- Use TodoWrite tool to create implementation checklist
+- Break complex tasks into manageable steps
 
-   - Think hard before you execute the plan. Create a comprehensive plan addressing all requirements.
-   - Break down complex tasks into smaller, manageable steps using your todos tools.
-   - Use the TodoWrite tool to create and track your implementation plan.
-   - Identify implementation patterns from existing code to follow.
+### 3. Implementation
 
-4. **Execute the plan**
+**CRITICAL: No Hardcoded Values**
+```yaml
+# ❌ NEVER hardcode IPs or hostnames
+vars:
+  server: "192.168.10.250"  # BAD
 
-   - Update the task status to <In Progress> in `docs/project-management/tasks/README.md`
-   - Update the task status to <In Progress> in `docs/project-management/tasks/<Task ID>.md`
-   - Execute the task @$ARGUMENTS
-   - Implement all the code following these CRITICAL patterns:
+# ✅ ALWAYS use variables or discovery
+vars:
+  server: "{{ vm_ip_address }}"  # GOOD
+```
 
-   ## 🚨 CRITICAL Dynamic Inventory Pattern (MANDATORY)
+**Follow Task Structure:**
+1. Complete all implementation steps in order
+2. Run validation after each major change
+3. Update task status to "🚧 In Progress" in the task file
 
-   ### ❌ NEVER DO THIS (Anti-Pattern)
+### 4. Validation
 
-   ```yaml
-   # WRONG: Hardcoded IPs/addresses in playbooks
-   - name: Configure service
-     hosts: localhost
-     vars:
-       service_endpoints:
-         - address: "192.168.10.30:8200" # BAD: Hardcoded IP
-         - address: "192.168.10.31:8200" # BAD: Hardcoded IP
-       leader: "https://192.168.10.31:8200" # BAD: Hardcoded address
-   ```
+**Tool-Specific Requirements:**
 
-   ### ✅ ALWAYS DO THIS (Correct Pattern)
+| Tool | Mandatory Validation | Command |
+|------|---------------------|---------|
+| Packer | Template validation | `packer validate` |
+| Terraform | Linting | `tflint --init && tflint` |
+| Ansible | Linting + Syntax | `ansible-lint && ansible-playbook --syntax-check` |
 
-   ```yaml
-   # RIGHT: Dynamic discovery from inventory with IPv6 support
-   - name: Configure service
-     hosts: localhost
-     pre_tasks:
-       - name: Discover nodes from inventory
-         ansible.builtin.set_fact:
-           service_endpoints: |-
-             {%- set nodes = [] -%}
-             {%- for host in groups.get('service_group', []) -%}
-               {%- set host_addr = hostvars[host]['ansible_host'] -%}
-               {%- if ':' in host_addr -%}
-                 {%- set host_addr = '[' + host_addr + ']' -%}
-               {%- endif -%}
-               {%- set endpoint = {
-                 'name': host,
-                 'address': host_addr + ':' + hostvars[host].get('service_port', '8200')
-               } -%}
-               {%- set _ = nodes.append(endpoint) -%}
-             {%- endfor -%}
-             {{ nodes }}
-   ```
+**Common Issues:**
+- Terraform: Missing `tflint --init` causes plugin errors
+- Ansible: Missing collection causes module not found
+- All: Hardcoded IPs fail validation
 
-   **Why this matters**
+### 5. Complete Task
 
-   - Inventory is the single source of truth
-   - Playbooks work across all environments (dev/staging/prod)
-   - No maintenance when infrastructure changes
-   - Prevents IP mismatches and errors
+1. Verify all success criteria from task file are met
+2. Run final validation suite
+3. Update task status in:
+   - Task file header (Status: ✅ Complete)
+   - `docs/project/tasks/INDEX.md` (update table and percentage)
+4. Check if any dependent tasks are now unblocked
+5. Report completion with summary of changes
 
-   - For playbooks that use domain variables, include domain assertions:
+## Directory Structure
 
-     ```yaml
-     pre_tasks:
-       - name: Include domain validation
-         ansible.builtin.include_tasks: ../../tasks/domain-assertions.yml
-     ```
+```
+.
+├── packer/                                  # Packer templates (SEP-001)
+│   ├── ubuntu-server-minimal.pkr.hcl
+│   └── variables.pkrvars.hcl
+├── infrastructure/
+│   ├── modules/vm/                         # Reusable Terraform modules
+│   └── environments/production/            # Production config (SEP-002, SEP-004)
+│       ├── main.tf
+│       └── cloud-init.jump-man.yaml
+├── ansible_collections/basher83/
+│   └── automation_server/                  # Ansible collection (ANS tasks)
+│       ├── playbooks/
+│       ├── roles/
+│       └── inventory/
+└── docs/project/tasks/                     # Task management system
+    ├── INDEX.md                            # Task tracker
+    ├── template.md                         # Task template
+    ├── pipeline-separation/                # SEP tasks
+    └── ansible-configuration/              # ANS tasks
+```
 
-     This prevents `.local` domain usage (macOS mDNS conflict)
+## Quick Reference
 
-5. **Validate**
+### Status Indicators
+- 🔄 Ready - Can start immediately
+- ⏸️ Blocked - Waiting on dependencies
+- 🚧 In Progress - Currently active
+- ✅ Complete - Finished and validated
+- ❌ Failed - Encountered issues
 
-   - **MANDATORY: Include IP validation in all playbooks**:
+### Priority Levels
+- P0 - Critical path, blocks other work
+- P1 - Important functionality
+- P2 - Nice to have, optimization
 
-     Every playbook MUST include this validation in pre_tasks:
+### Task ID Format
+- SEP-XXX - Pipeline separation tasks
+- ANS-XXX - Ansible configuration tasks
 
-     ```yaml
-     - name: Your Playbook Name
-       hosts: all
-       any_errors_fatal: true # Critical - stop on validation failure
-       pre_tasks:
-         # This MUST be the first pre_task
-         - name: Validate no hardcoded IPs
-           ansible.builtin.include_tasks: ../../tasks/validate-no-hardcoded-ips.yml
-           vars:
-             validate_hostlike_vars:
-               # List ALL variables that reference hosts/endpoints
-               service_endpoint: "{{ service_endpoint | default('') }}"
-               database_host: "{{ database_host | default('') }}"
-               api_url: "{{ api_url | default('') }}"
-               leader_addr: "{{ leader_addr | default('') }}"
-             validate_allowlist: [] # Only add exceptions if absolutely necessary
+## Notes
 
-         # Then build from inventory...
-         - name: Discover service endpoints from inventory
-           ansible.builtin.set_fact:
-             service_endpoint: "{{ hostvars[groups['services'][0]]['ansible_host'] }}"
-     ```
-
-     This validation will:
-
-     - Use ansible.utils.ipaddr filter to detect IPv4/IPv6 addresses
-     - Fail immediately with clear remediation instructions
-     - Ensure inventory is the single source of truth
-     - Prevent deployment of hardcoded infrastructure
-
-   - Run applicable checks based on files created:
-     - `uv run ansible-playbook --syntax-check -i inventory/environments/doggos-homelab/static-test.yml playbooks/infrastructure/vault/<task-name>.yml` (where <task-name> matches the task ID, e.g., pki-001-create-roles)
-     - `uv run ansible-lint --profile production playbooks/infrastructure/vault/<task-name>.yml` (where <task-name> matches the task ID, e.g., pki-001-create-roles)
-     - `shellcheck scripts/<task-name>.sh` (where <task-name> matches the task ID, e.g., find-todos.sh)
-     - `markdownlint-cli2 <document-name>.md` (where <document-name> matches the document name, e.g., README.md)
-   - Run syntax checks after each major change, full validation after implementation
-   - Common issues:
-     - Module/plugin errors: **ALWAYS run `uv sync` first** to ensure all dependencies are installed:
-       - hvac (for Vault modules)
-       - python-nomad (for Nomad modules)
-       - infisicalsdk (for secrets)
-       - pynetbox (for NetBox integration)
-     - Missing variables: check inventory/environments/<cluster>/group_vars/all/vault.yml
-     - Authentication errors: ensure service addresses (VAULT_ADDR, CONSUL_HTTP_ADDR) are in inventory vars
-     - Secret retrieval errors:
-       - Verify all dependencies installed: `uv sync` then check with `uv pip list`
-       - Ensure Infisical credentials are set via .mise.local.toml
-       - If "worker was found in a dead state": use the Infisical CLI fallback pattern (see Secrets Management section)
-     - Connection errors: verify target hosts are accessible via `uv run ansible -i inventory/environments/<cluster>/proxmox.yml <host> -m ping`
-     - Missing dependencies: verify task prerequisites are completed
-   - Re-run until all pass
-
-6. **Complete**
-
-   - Ensure all checklist items done
-   - Run final validation suite
-   - Report completion status
-   - Read the task again to ensure you have implemented everything
-   - Update the task status to <Blocked/Complete/Failed> in `docs/project-management/tasks/README.md`
-   - Update the task status to <Blocked/Complete/Failed> in `docs/project-management/tasks/<Task ID>.md`
-
-7. **Reference the Task**
-   - You can always reference the task again if needed
-
-Note: If validation fails, use error patterns in task to fix and retry.
+- Always use the TodoWrite tool to track your implementation progress
+- Update task status immediately when starting/completing work
+- If blocked, document the reason in the task file
+- Reference the task file throughout implementation to ensure all requirements are met
