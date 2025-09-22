@@ -4,7 +4,7 @@ Task ID: SEP-002
 Priority: P0 (Critical)
 Estimated Time: 1 hour
 Dependencies: None
-Status: 🔄 Ready
+Status: ✅ Complete
 ---
 
 ## Objective
@@ -62,7 +62,6 @@ write_files:
 # Apply network configuration
 runcmd:
   - netplan apply
-
 # Remove all package installations
 # Remove all script downloads and executions
 # Remove firewall configuration
@@ -175,6 +174,26 @@ Expected output:
 - Ensure ANS-001 (Bootstrap Playbook) is ready before production deployment
 - Keep backup configuration for emergency rollback
 - Document that all software installation now happens via Ansible
+
+## Implementation Deviations
+
+### Resource Type Adaptation
+
+- **Task specified**: Use `proxmox_vm_qemu` resource with `ciuser` and `sshkeys` attributes
+- **Implemented**: Used existing `proxmox_virtual_environment_vm` with `user_account` block
+- **Reason**: Existing infrastructure uses the newer `proxmox_virtual_environment_vm` resource type for compatibility and feature support
+
+### Variable Requirements
+
+- **Task specified**: Update `cloud_init_user_data` variable
+- **Implemented**: Added `vm_gateway` variable
+- **Reason**: The module required `vm_gateway` to function properly, which was missing from the production environment variables
+
+### Validation Method
+
+- **Task specified**: Use `tflint --init` and `tflint` commands
+- **Implemented**: Used `mise run prod-validate` task runner
+- **Reason**: The mise task runner properly handles `terraform init` before validation and is the project's standard validation approach
 
 ## References
 
