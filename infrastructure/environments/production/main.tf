@@ -54,5 +54,6 @@ module "jump_man" {
   vm_tags = ["terraform", "jump", "production"]
 
   # Simplified cloud-init - SSH access only
-  ci_ssh_key = var.ci_ssh_key
+  ci_ssh_key          = var.ci_ssh_key
+  ssh_authorized_keys = var.ssh_authorized_keys
 }

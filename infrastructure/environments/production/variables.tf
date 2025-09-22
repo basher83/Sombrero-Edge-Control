@@ -72,3 +72,9 @@ variable "cloud_init_username" {
   type        = string
   default     = "ansible"
 }
+
+variable "ssh_authorized_keys" {
+  description = "List of SSH authorized keys for the VM"
+  type        = list(string)
+  default     = []
+}

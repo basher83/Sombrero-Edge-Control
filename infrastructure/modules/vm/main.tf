@@ -75,7 +75,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
     # Use user_account for simplified cloud-init
     user_account {
       username = var.cloud_init_username
-      keys     = [var.ci_ssh_key]
+      keys     = length(var.ssh_authorized_keys) > 0 ? var.ssh_authorized_keys : [var.ci_ssh_key]
     }
 
     ip_config {

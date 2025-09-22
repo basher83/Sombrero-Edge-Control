@@ -104,6 +104,12 @@ variable "ci_ssh_key" {
   type        = string
 }
 
+variable "ssh_authorized_keys" {
+  description = "List of SSH authorized keys for cloud-init user"
+  type        = list(string)
+  default     = []
+}
+
 variable "dns_servers" {
   description = "List of DNS servers for the VM"
   type        = list(string)
