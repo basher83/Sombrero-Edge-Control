@@ -7,10 +7,19 @@ All notable changes to the Jump Host Infrastructure project will be documented i
 _This changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
-## [Unreleased] - 2025-09-18
+## [Unreleased] - 2025-09-22
 
 ### Added
 
+- **Pipeline Orchestration Scripts**: Complete three-stage deployment automation (`scripts/deploy-pipeline.sh`, `stage-1-packer.sh`, `stage-2-terraform.sh`, `stage-3-ansible.sh`)
+- **Pipeline Documentation Suite**:
+  - Pipeline operation guide (`docs/deployment/pipeline-operation.md`)
+  - Pipeline handoff specifications (`docs/deployment/pipeline-handoffs.md`)
+  - Pipeline rollback procedures (`docs/deployment/pipeline-rollback.md`)
+- **Terraform Inventory Export**: Automated inventory generation for Ansible from Terraform outputs (`infrastructure/environments/production/export-inventory.sh`)
+- **Cursor IDE Integration**: Complete command structure for task management and git operations (`.cursor/commands/`)
+- **Bootstrap Research**: Comprehensive analysis of Ansible bootstrap patterns from DebOps and community collections
+- **Task Tracking Updates**: ANS-001 Bootstrap Playbook enhanced with production-ready patterns from research
 - **Pipeline Separation Architecture**: Complete separation of Packer, Terraform, and Ansible into independent stages with clean handoffs (ADR-20250918)
 - **Ansible Collection Research**: Comprehensive research on community collections for Proxmox, Docker, NetBox, HashiCorp stack, and DNS/IPAM systems
 - **Pipeline Documentation**:
@@ -37,6 +46,12 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Changed
 
+- **Task Tracker Status**: Updated to 73% complete (8/11 tasks) with discovery that ANS-002, ANS-003, ANS-004 were already implemented
+- **Cloud-Init Simplification**: Removed complex provisioning logic, reduced to SSH-only configuration (SEP-002)
+- **Terraform Module**: Added `ssh_authorized_keys` variable support for flexible key management
+- **Terraform Outputs**: Refactored for cleaner Ansible inventory generation with proper JSON structure
+- **Pre-commit Integration**: Updated hooks to use mise tasks for consistency
+- **ANS-001 Bootstrap Task**: Enhanced with DebOps patterns, dual marker system, and production-ready error handling
 - **Project Architecture**: Refactored to three-stage pipeline with complete tool separation (Packer → Terraform → Ansible)
 - **Documentation Updates**:
   - Updated Project PRP to reflect pipeline separation architecture
@@ -61,6 +76,7 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 - **Documentation Alignment**: All documentation now correctly reflects pipeline separation architecture
 - **Date Corrections**: Fixed incorrect dates in ROADMAP (was showing January 2025, corrected to September 2025)
 - **ADR References**: Updated ADR references to use correct date (20250918)
+- **Task Status Accuracy**: Corrected task tracker to reflect actual implementation status of Ansible roles
 - **Docker Role Variables**: Added all missing variable definitions preventing role execution
 - **Docker Socket Permissions**: Fixed validation logic with proper stat check and octal format comparison
 - **User Namespace Remapping**: Implemented dockremap user creation and verification
@@ -71,8 +87,17 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 - **Terraform Configuration**: Removed duplicate version requirements
 - **DevContainer**: Improved structure and property ordering
 
+### Removed
+
+- **Legacy Ansible Directory**: Archived old ansible/ directory structure (backed up as `ansible-legacy-backup-20250921-235432.tar.gz`)
+- **Unused Documentation**: Removed ACTIONABLE-INSIGHTS.md and outdated references
+- **Complex Cloud-Init Scripts**: Removed docker-install.sh and firewall-setup.sh in favor of Ansible roles
+
 ### Documentation
 
+- **Pipeline Orchestration Guides**: Complete set of operation, handoff, and rollback documentation
+- **Task Completion Updates**: SEP-002, SEP-003, SEP-004, SEP-005 marked as complete with detailed implementation notes
+- **Bootstrap Research Report**: Added comprehensive research findings to `.claude/research-reports/ansible-bootstrap-research-20250922-021729.md`
 - **Pipeline Separation Strategy**: Complete refactoring plan for three-stage architecture
 - **Golden Image Documentation**: Minimal Packer image strategy and implementation guide
 - **Ansible Configuration Guide**: Comprehensive playbook structure and role specifications
