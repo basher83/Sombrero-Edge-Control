@@ -1,0 +1,42 @@
+# Enhanced bootstrap check with Python detection
+- name: Detect Python interpreter
+  ansible.builtin.raw: |
+    for python in python3 python; do
+      command -v $python >/dev/null 2>&1 && { echo $python; exit 0; }
+    done
+    echo "none"
+  register: bootstrap_check_python_check
+  changed_when: false
+  check_mode: false
+
+- name: Check bootstrap marker
+  ansible.builtin.stat:
+    path: /var/lib/ansible_bootstrap_complete
+  register: bootstrap_check_marker
+  when: bootstrap_check_python_check.stdout | trim != "none"
+  ignore_errors: true
+
+- name: Check bootstrap fact
+  ansible.builtin.stat:
+    path: /etc/ansible/facts.d/bootstrap.fact
+  register: bootstrap_check_fact
+  when: bootstrap_check_python_check.stdout | trim != "none"
+  ignore_errors: true
+
+- name: Determine if bootstrap is needed
+  ansible.builtin.set_fact:
+    bootstrap_check_needed: >
+      {{
+        bootstrap_check_python_check.stdout | trim == "none" or
+        (bootstrap_check_marker is defined and not bootstrap_check_marker.stat.exists | default(false)) or
+        (bootstrap_check_fact is defined and not bootstrap_check_fact.stat.exists | default(false))
+      }}
+
+- name: Display bootstrap status
+  ansible.builtin.debug:
+    msg: "Bootstrap needed: {{ bootstrap_check_needed | bool }}"
+
+- name: Run bootstrap if needed
+  ansible.builtin.include_role:
+    name: bootstrap
+  when: bootstrap_check_needed | bool

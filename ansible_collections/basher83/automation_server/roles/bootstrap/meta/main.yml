@@ -1,0 +1,18 @@
+galaxy_info:
+  author: basher83
+  description: Bootstrap role for initial VM configuration
+  company: Sombrero Edge Control
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - jammy
+        - noble
+  galaxy_tags:
+    - bootstrap
+    - system
+    - initialization
+    - python
+
+dependencies: []
