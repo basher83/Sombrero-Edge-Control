@@ -1,20 +1,42 @@
 ---
 - name: Complete Jump Host Configuration
   hosts: jump_hosts
-  become: true
+  gather_facts: false  # Disable initially since Python may not be installed
+
+  pre_tasks:
+    - name: Bootstrap system if needed
+      ansible.builtin.include_role:
+        name: bootstrap_check
+      tags:
+        - bootstrap
+        - always
+
+    - name: Gather facts after bootstrap
+      ansible.builtin.setup:
+      tags:
+        - always
 
   tasks:
-    - name: Run bootstrap configuration
-      import_playbook: post-deploy.yml
+    - name: Import post-deployment configuration
+      ansible.builtin.import_playbook: post-deploy.yml
+      tags:
+        - post-deploy
+        - configuration
 
-    - name: Install and configure Docker
-      import_playbook: test-docker-validation.yml
-      tags: docker
+    - name: Validate Docker installation
+      ansible.builtin.import_playbook: test-docker-validation.yml
+      tags:
+        - docker
+        - validation
 
-    - name: Run diagnostic tests
-      import_playbook: test-vm-diagnostics.yml
-      tags: diagnostics
+    - name: Run system diagnostics
+      ansible.builtin.import_playbook: test-vm-diagnostics.yml
+      tags:
+        - diagnostics
+        - validation
 
-    - name: Run smoke tests
-      import_playbook: test-vm-smoke-tests.yml
-      tags: smoke-tests
+    - name: Execute smoke tests
+      ansible.builtin.import_playbook: test-vm-smoke-tests.yml
+      tags:
+        - smoke-tests
+        - validation
