@@ -1,0 +1,75 @@
+---
+- name: Test Bootstrap Completion
+  hosts: jump_hosts
+  gather_facts: yes
+
+  tasks:
+    - name: Check Python version
+      ansible.builtin.command: python3 --version
+      register: python_version
+      changed_when: false
+
+    - name: Check ansible user
+      ansible.builtin.command: id ansible
+      register: ansible_user
+      changed_when: false
+
+    - name: Check sudo access
+      become: yes
+      ansible.builtin.command: whoami
+      register: sudo_check
+      changed_when: false
+
+    - name: Check hostname
+      ansible.builtin.command: hostname
+      register: hostname_check
+      changed_when: false
+
+    - name: Check DNS resolution
+      ansible.builtin.command: getent hosts github.com
+      register: dns_check
+      changed_when: false
+      failed_when: false
+
+    - name: Display test results
+      ansible.builtin.debug:
+        msg:
+          - "Python: {{ python_version.stdout }}"
+          - "User: {{ ansible_user.stdout }}"
+          - "Sudo: {{ sudo_check.stdout }}"
+          - "Hostname: {{ hostname_check.stdout }}"
+          - "DNS: {{ 'OK' if dns_check.rc == 0 else 'FAILED' }}"
+
+    - name: Check bootstrap marker file
+      ansible.builtin.stat:
+        path: /var/lib/ansible_bootstrap_complete
+      register: marker_file
+
+    - name: Check bootstrap fact file
+      ansible.builtin.stat:
+        path: /etc/ansible/facts.d/bootstrap.fact
+      register: fact_file
+
+    - name: Read bootstrap fact if exists
+      ansible.builtin.slurp:
+        src: /etc/ansible/facts.d/bootstrap.fact
+      register: bootstrap_fact_content
+      when: fact_file.stat.exists
+
+    - name: Display bootstrap fact
+      ansible.builtin.debug:
+        msg: "Bootstrap fact: {{ bootstrap_fact_content.content | b64decode | from_json }}"
+      when: fact_file.stat.exists
+
+    - name: Assert all checks passed
+      ansible.builtin.assert:
+        that:
+          - python_version.rc == 0
+          - ansible_user.rc == 0
+          - sudo_check.stdout == "root"
+          - hostname_check.stdout == "jump-man"
+          - dns_check.rc == 0
+          - marker_file.stat.exists
+          - fact_file.stat.exists
+        fail_msg: "Bootstrap validation failed"
+        success_msg: "All bootstrap checks passed"
