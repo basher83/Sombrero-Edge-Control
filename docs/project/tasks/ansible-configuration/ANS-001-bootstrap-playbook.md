@@ -4,12 +4,15 @@ Task ID: ANS-001
 Priority: P1 (Important)
 Estimated Time: 1 hour
 Dependencies: SEP-003
-Status: ⏸️ Blocked
+Status: ✅ Complete
+Last Updated: 2025-09-22
 ---
 
 ## Objective
 
 Create a bootstrap playbook that establishes initial connectivity and prepares the VM for full configuration. This playbook ensures Python is installed, sets up the ansible user properly, and verifies network connectivity before proceeding with complex configuration tasks.
+
+**Research Update**: Based on comprehensive research of production patterns (DebOps score: 95/100), this implementation incorporates enterprise-grade bootstrap patterns with enhanced idempotency, error handling, and Ubuntu 24.04 optimizations.
 
 ## Prerequisites
 
@@ -31,13 +34,29 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
     delay: 10
     timeout: 300
 
-- name: Install Python for Ansible
+# Enhanced Python installation with DebOps patterns
+- name: Install Python for Ansible (with APT cache management)
   raw: |
-    if ! command -v python3 &> /dev/null; then
-      apt-get update
-      apt-get install -y python3 python3-apt
+    # Check if APT cache is recent (within 60 minutes)
+    if [ ! -f /var/cache/apt/pkgcache.bin ] || [ -z "$(find /var/cache/apt/pkgcache.bin -mmin -60 2>/dev/null)" ]; then
+        echo "Updating APT cache..."
+        apt-get -q update
     fi
-  changed_when: false
+    # Install Python 3 and essential packages if not present
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo "Installing Python 3..."
+        LANG=C apt-get --no-install-recommends -yq install python3 python3-apt python3-setuptools
+    fi
+  register: python_install_result
+  changed_when: "'Installing Python 3' in python_install_result.stdout"
+  retries: 3
+  delay: 10
+  until: python_install_result.rc == 0
+
+# Critical: Reset connection after Python installation
+- name: Reset connection after Python installation
+  meta: reset_connection
+  when: python_install_result.changed
 
 - name: Gather facts after Python installation
   setup:
@@ -106,14 +125,24 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
     enabled: yes
     state: started
 
-- name: Configure DNS
+- name: Create systemd-resolved configuration directory
+  file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Configure DNS (Ubuntu 24.04 pattern)
   copy:
     content: |
+      # Ubuntu 24.04 systemd-resolved configuration
       [Resolve]
-      DNS=1.1.1.1 1.0.0.1
-      FallbackDNS=8.8.8.8 8.8.4.4
-      DNSStubListener=no
-    dest: /etc/systemd/resolved.conf
+      DNS=1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
+      FallbackDNS=8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844
+      DNSSEC=allow-downgrade
+      DNSOverTLS=opportunistic
+      Cache=yes
+      DNSStubListener=yes
+    dest: /etc/systemd/resolved.conf.d/99-bootstrap.conf
   notify: restart systemd-resolved
 
 - name: Ensure resolv.conf points to systemd-resolved
@@ -131,6 +160,23 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
     - /opt/scripts
     - /opt/configs
     - /var/log/ansible
+
+- name: Create ansible facts directory
+  file:
+    path: /etc/ansible/facts.d
+    state: directory
+    mode: '0755'
+
+- name: Save bootstrap completion fact
+  copy:
+    content: |
+      {
+        "bootstrap_completed": true,
+        "bootstrap_date": "{{ ansible_date_time.iso8601 }}",
+        "bootstrap_version": "1.0.0"
+      }
+    dest: /etc/ansible/facts.d/bootstrap.fact
+    mode: '0644'
 
 - name: Save bootstrap completion marker
   file:
@@ -156,15 +202,48 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap_check/tas
 
 ```yaml
 ---
-- name: Check if bootstrap is needed
+# Enhanced bootstrap check with Python detection
+- name: Detect Python interpreter
+  raw: |
+    for python in python3 python; do
+      command -v $python >/dev/null 2>&1 && { echo $python; exit 0; }
+    done
+    echo "none"
+  register: python_check
+  changed_when: false
+  check_mode: false
+
+- name: Check bootstrap marker
   stat:
     path: /var/lib/ansible_bootstrap_complete
   register: bootstrap_marker
+  when: python_check.stdout | trim != "none"
+  ignore_errors: true
+
+- name: Check bootstrap fact
+  stat:
+    path: /etc/ansible/facts.d/bootstrap.fact
+  register: bootstrap_fact
+  when: python_check.stdout | trim != "none"
+  ignore_errors: true
+
+- name: Determine if bootstrap is needed
+  set_fact:
+    bootstrap_needed: >
+      {{
+        python_check.stdout | trim == "none" or
+        (bootstrap_marker is defined and not bootstrap_marker.stat.exists | default(false)) or
+        (bootstrap_fact is defined and not bootstrap_fact.stat.exists | default(false))
+      }}
+
+- name: Display bootstrap status
+  debug:
+    msg: "Bootstrap needed: {{ bootstrap_needed | bool }}"
 
 - name: Run bootstrap if needed
   include_role:
     name: bootstrap
-  when: not bootstrap_marker.stat.exists
+  when: bootstrap_needed | bool
 ```
 
 ### 3. **Integrate with Main Playbook**
@@ -175,27 +254,90 @@ Update `ansible_collections/basher83/automation_server/playbooks/site.yml`:
 ---
 - name: Complete Jump Host Configuration
   hosts: jump_hosts
+  gather_facts: false  # Disable initially since Python may not be installed
 
   pre_tasks:
-    - name: Bootstrap if needed
+    - name: Bootstrap system if needed
       include_role:
         name: bootstrap_check
+      tags:
+        - bootstrap
+        - always
+
+    - name: Gather facts after bootstrap
+      setup:
+      tags:
+        - always
 
   tasks:
-    - name: Apply baseline configuration
-      import_playbook: baseline.yml
+    - name: Import post-deployment configuration
+      import_playbook: post-deploy.yml
+      tags:
+        - post-deploy
+        - configuration
 
-    - name: Install Docker
-      import_playbook: docker.yml
+    - name: Validate Docker installation
+      import_playbook: test-docker-validation.yml
+      tags:
+        - docker
+        - validation
 
-    - name: Apply security hardening
-      import_playbook: security.yml
+    - name: Run system diagnostics
+      import_playbook: test-vm-diagnostics.yml
+      tags:
+        - diagnostics
+        - validation
 
-    - name: Install development tools
-      import_playbook: development.yml
+    - name: Execute smoke tests
+      import_playbook: test-vm-smoke-tests.yml
+      tags:
+        - smoke-tests
+        - validation
 ```
 
-### 4. **Create Inventory Defaults**
+### 4. **Create Bootstrap Role Defaults**
+
+Create `ansible_collections/basher83/automation_server/roles/bootstrap/defaults/main.yml`:
+
+```yaml
+---
+# Bootstrap configuration
+bootstrap_python_packages:
+  - python3
+  - python3-apt
+  - python3-setuptools
+
+bootstrap_essential_packages:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release
+  - software-properties-common
+  - sudo
+
+# APT cache validity in minutes (DebOps pattern)
+bootstrap_apt_cache_valid_time: 60
+
+# Retry configuration
+bootstrap_retries: 3
+bootstrap_retry_delay: 10
+
+# DNS configuration
+bootstrap_dns_servers:
+  - "1.1.1.1"
+  - "1.0.0.1"
+  - "2606:4700:4700::1111"
+  - "2606:4700:4700::1001"
+
+bootstrap_dns_fallback:
+  - "8.8.8.8"
+  - "8.8.4.4"
+  - "2001:4860:4860::8888"
+  - "2001:4860:4860::8844"
+```
+
+### 5. **Create Inventory Group Variables**
 
 Create `ansible_collections/basher83/automation_server/inventory/group_vars/jump_hosts.yml`:
 
@@ -219,7 +361,28 @@ ansible_ssh_pipelining: yes
 ansible_facts_parallel: yes
 ```
 
-### 5. **Create Bootstrap Test Playbook**
+### 6. **Create Bootstrap Handlers**
+
+Create `ansible_collections/basher83/automation_server/roles/bootstrap/handlers/main.yml`:
+
+```yaml
+---
+- name: restart systemd-resolved
+  systemd:
+    name: systemd-resolved
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: restart networking
+  systemd:
+    name: systemd-networkd
+    state: restarted
+  become: true
+  when: ansible_distribution == "Ubuntu"
+```
+
+### 7. **Create Bootstrap Test Playbook**
 
 Create `ansible_collections/basher83/automation_server/playbooks/test-bootstrap.yml`:
 
@@ -276,13 +439,15 @@ Create `ansible_collections/basher83/automation_server/playbooks/test-bootstrap.
 
 - [ ] Bootstrap role runs without errors
 - [ ] Bootstrap check role conditionally includes bootstrap when needed
-- [ ] Python3 installed and functional
+- [ ] Python3 installed and functional with connection reset
 - [ ] Ansible user configured with sudo access
-- [ ] Network connectivity verified
-- [ ] DNS resolution working
-- [ ] Essential packages installed
-- [ ] Bootstrap marker file created
+- [ ] Network connectivity verified with retry logic
+- [ ] DNS resolution working via systemd-resolved
+- [ ] Essential packages installed with APT cache management
+- [ ] Dual markers created (filesystem + ansible fact)
 - [ ] Idempotent - can run multiple times safely
+- [ ] Handles fresh VMs without Python gracefully
+- [ ] Production-ready error handling and retries
 
 ## Validation
 
@@ -318,13 +483,19 @@ Expected output:
 ## Notes
 
 - Bootstrap must be idempotent for reliability
-- Uses `raw` module for initial Python installation
-- Creates marker file to skip on subsequent runs
+- Uses `raw` module with APT cache management (DebOps pattern)
+- Connection reset after Python installation is critical
+- Dual marker system (file + fact) for enhanced reliability
 - Essential for fresh VMs from minimal templates
-- Consider adding retry logic for network operations
+- Implements retry logic for all network operations
+- Ubuntu 24.04 optimized with systemd-resolved configuration
+- Based on production patterns from DebOps (95/100 score)
 
 ## References
 
 - [Ansible Bootstrap Documentation](https://docs.ansible.com/ansible/latest/user_guide/intro_installation.html)
 - [Pipeline Separation ADR](../../../decisions/20250118-pipeline-separation.md)
 - [Ansible Collection Structure](../../../planning/ansible-refactor/collection-structure-migration.md)
+- [Bootstrap Research Report](./.claude/research-reports/ansible-bootstrap-research-20250922-021729.md)
+- [DebOps Bootstrap Patterns](https://github.com/debops/debops/blob/master/ansible/playbooks/bootstrap.yml)
+- [Ubuntu 24.04 systemd-resolved](https://ubuntu.com/blog/systemd-resolved-introduction)
