@@ -23,9 +23,11 @@ galaxy_info:
     - security
     - networking
 
-dependencies: []
-# Note: This role must be run AFTER the Docker role if Docker is installed
-# Docker creates its own iptables chains that we must not interfere with
+dependencies:
+  # Note: This role must be run AFTER the Docker role if Docker is installed
+  # Docker creates its own iptables chains that we must not interfere with
+  - role: docker
+    when: docker_installation_mode is defined and docker_installation_mode == 'install'
 
 collections:
   - ansible.posix  # For firewalld module if needed

@@ -8,29 +8,18 @@ name: "automation_server"
 version: 1.0.0
 readme: README.md
 authors:
-  - basher83
+  - Infrastructure Team
 
-description: Ansible collection for automation server infrastructure management
+description: Complete configuration management for jump-man server
 license:
   - MIT
 
 tags:
   - infrastructure
-  - configuration
   - automation
-  - docker
-  - terraform
-  - proxmox
-  - vm
-  - devops
-  - linux
+  - jump-host
 
-# TO-DO: maintain this list to reflect the collection's dependencies
-dependencies:
-  "ansible.utils": "*" # note: "*" selects the latest version available
-  "community.docker": "*"
-  "community.general": "*"
-  "ansible.posix": "*"
+dependencies: {}
 
 repository: https://github.com/basher83/Sombrero-Edge-Control
 documentation: https://github.com/basher83/Sombrero-Edge-Control#readme

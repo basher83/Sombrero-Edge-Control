@@ -1,0 +1,20 @@
+---
+- name: Complete Jump Host Configuration
+  hosts: jump_hosts
+  become: true
+
+  tasks:
+    - name: Run bootstrap configuration
+      import_playbook: post-deploy.yml
+
+    - name: Install and configure Docker
+      import_playbook: test-docker-validation.yml
+      tags: docker
+
+    - name: Run diagnostic tests
+      import_playbook: test-vm-diagnostics.yml
+      tags: diagnostics
+
+    - name: Run smoke tests
+      import_playbook: test-vm-smoke-tests.yml
+      tags: smoke-tests
