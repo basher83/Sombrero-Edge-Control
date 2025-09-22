@@ -48,6 +48,10 @@ ansible/ansible.cfg.local
 *.retry
 .vault_pass.txt
 
+# Ansible backup archives
+ansible-legacy-backup-*.tar.gz
+ansible-backup-*.tar.gz
+
 # IDE/editor noise
 .vscode/
 .idea/
