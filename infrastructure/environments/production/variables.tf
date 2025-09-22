@@ -26,6 +26,12 @@ variable "vm_bridge_1" {
   description = "Primary network bridge for VMs"
 }
 
+variable "vm_gateway" {
+  type        = string
+  default     = "192.168.10.1"
+  description = "Default gateway for VMs"
+}
+
 variable "ci_ssh_key" {
   type        = string
   sensitive   = true

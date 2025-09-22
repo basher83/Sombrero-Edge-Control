@@ -1,36 +1,36 @@
 # cloud-config
-# Vendor-data for jump-man VM
-# This handles advanced configuration, scripts, and Docker installation
-# NOTE: Essential packages are handled in user-data for reliability
-# Write configuration files
+hostname: jump-man
+manage_etc_hosts: true
+preserve_hostname: false
+
+# Create ansible user with SSH access only
+users:
+  - name: ansible
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${ssh_authorized_key}
+
+# Minimal network configuration
 write_files:
-  - path: /opt/docker-install.sh
+  - path: /etc/netplan/99-static.yaml
     content: |
-      ${indent(6, docker_install_script)}
-    owner: root:root
-    permissions: '0755'
-  - path: /opt/firewall-setup.sh
-    content: |
-      ${indent(6, firewall_setup_script)}
-    owner: root:root
-    permissions: '0755'
-  - path: /home/ansible/README.md
-    content: |
-      ${indent(6, readme_content)}
-    owner: ansible:ansible
-    permissions: '0644'
-    defer: true
-  - path: /home/ansible/docker-firewall-notes.md
-    content: |
-      ${indent(6, docker_firewall_docs)}
-    owner: ansible:ansible
-    permissions: '0644'
-    defer: true
-# Run commands for advanced setup
+      network:
+        version: 2
+        ethernets:
+          ens18:
+            addresses: [192.168.10.250/24]
+            gateway4: 192.168.10.1
+            nameservers:
+              addresses: [1.1.1.1, 1.0.0.1]
+
+# Apply network configuration
 runcmd:
-  # Wait a bit for user-data to complete package installation
-  - sleep 30
-  # Install Docker using the official method
-  - /opt/docker-install.sh
-  # Setup firewall with Docker compatibility
-  - /opt/firewall-setup.sh
+  - netplan apply
+
+# Remove all package installations
+# Remove all script downloads and executions
+# Remove firewall configuration
+# Remove Docker installation
