@@ -17,11 +17,11 @@ Answer the user's question by analyzing the project structure and documentation.
 
 ## Execute
 
-- `git ls-files` to understand the project structure
+- !`git ls-files` to understand the project structure
 
 ## Tool Integration Strategy
 
-- **Initial Analysis**: Always start with `git ls-files docs/` to establish documentation baseline
+- **Initial Analysis**: Always start with !`git ls-files docs/` to establish documentation baseline
 - **Targeted Reading**: Use question classification to determine which specific docs to read first
 - **Verification**: Cross-reference tool findings against docs/README.md structure before responding
 
@@ -34,47 +34,47 @@ Answer the user's question by analyzing the project structure and documentation.
 
 1. **Documentation Mapping**: Cross-reference question against docs/README.md directory structure
 2. **Context-Aware Reading**: Selectively read relevant documentation based on question type:
-   - Deployment questions → deployment/ directory
-   - Architecture decisions → decisions/ directory
-   - Troubleshooting → troubleshooting/ directory
-   - Development setup → development/ directory
-   - Infrastructure → infrastructure/ directory
-   - Planning/Strategy → planning/ directory
-3. **ADR Integration**: Check decisions/ for relevant architectural decisions
-4. **Troubleshooting Priority**: Reference troubleshooting/ for known issues
+   - Deployment questions → @docs/deployment/ directory
+   - Architecture decisions → @docs/decisions/ directory
+   - Troubleshooting → @docs/troubleshooting/ directory
+   - Development setup → @docs/development/ directory
+   - Infrastructure → @docs/infrastructure/ directory
+   - Planning/Strategy → @docs/planning/ directory
+3. **ADR Integration**: Check @docs/decisions/ for relevant architectural decisions
+4. **Troubleshooting Priority**: Reference @docs/troubleshooting/ for known issues
 5. **Quick Start Guidance**: Use Quick Start section for setup/configuration questions
 
 ## Question Classification & Documentation Routing
 
 **Deployment/Infrastructure Questions:**
 
-- Primary: deployment/, infrastructure/
-- Secondary: decisions/ for architectural context
-- Check: troubleshooting/ for deployment issues
+- Primary: @docs/deployment/, @docs/infrastructure/
+- Secondary: @docs/decisions/ for architectural context
+- Check: @troubleshooting/ for deployment issues
 
 **Development/Setup Questions:**
 
-- Primary: development/, ai_docs/
-- Secondary: planning/ansible-refactor/ for tooling decisions
-- Check: Quick Start section in docs/README.md
+- Primary: @docs/development/, @docs/ai_docs/
+- Secondary: @docs/planning/ansible-refactor/ for tooling decisions
+- Check: Quick Start section in @docs/README.md
 
 **Architecture/Design Questions:**
 
-- Primary: decisions/, planning/architecture-decisions/
-- Secondary: planning/ansible-refactor/role-specifications.md
+- Primary: @docs/decisions/, @docs/planning/architecture-decisions/
+- Secondary: @docs/planning/ansible-refactor/role-specifications.md
 - Reference: Project-PRP.md for requirements context
 
 **Troubleshooting/Debugging:**
 
-- Primary: troubleshooting/
-- Secondary: deployment/smoke-testing-implementation.md
+- Primary: @docs/troubleshooting/
+- Secondary: @docs/deployment/smoke-testing-implementation.md
 - Check: infrastructure/ for environment-specific issues
 
 ## Documentation Quality Assurance
 
 - **Verify Completeness**: Cross-check findings against docs/README.md structure
 - **ADR Validation**: Ensure recommendations align with documented architectural decisions
-- **Process Alignment**: Confirm suggestions match deployment/ and development/ processes
+- **Process Alignment**: Confirm suggestions match @docs/deployment/ and @docs/development/ processes
 - **Troubleshooting Coverage**: Reference known issues from troubleshooting/ directory
 
 ## When Documentation is Incomplete
