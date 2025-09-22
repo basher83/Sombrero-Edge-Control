@@ -1,0 +1,17 @@
+---
+# Bootstrap defaults for jump hosts
+ansible_user: ansible
+ansible_become: yes
+ansible_become_method: sudo
+ansible_python_interpreter: /usr/bin/python3
+
+# Connection settings
+ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ansible_ssh_pipelining: yes
+
+# NOTE: Host key checking is disabled for initial bootstrap convenience.
+# TODO: Re-enable strict host key checking for production use by removing the above line
+# and ensuring known_hosts is properly populated.
+
+# Performance tuning
+ansible_facts_parallel: yes
