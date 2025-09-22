@@ -27,7 +27,7 @@ repos:
 
       - id: terraform-docs-check
         name: Check terraform documentation
-        entry: bash -c 'cd infrastructure && terraform-docs --config .terraform-docs.yml --output-check .'
+        entry: bash -c 'command -v mise >/dev/null 2>&1 && mise run docs-check || (cd infrastructure && terraform-docs --config .terraform-docs.yml --output-check .)'
         language: system
         pass_filenames: false
         files: '(\.tf|\.terraform-docs\.yml)$'
