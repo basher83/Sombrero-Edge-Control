@@ -50,7 +50,6 @@ ansible/ansible.cfg.local
 
 # IDE/editor noise
 .vscode/
-.cursor/
 .idea/
 *.swp
 *.swo
