@@ -29,7 +29,7 @@ terraform = "1.13.2"                # Pin to Terraform >=1.10 for Ephemeral Reso
 ansible-core = "2.19.1"
 "pipx:ansible-dev-tools" = "latest"
 uv = "latest"
-python = "3.12"
+python = "3.13.7"
 
 terraform-docs = "0.20.0" # Documentation generation
 tflint = "0.59.1"         # Terraform linting
