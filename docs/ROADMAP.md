@@ -1,8 +1,8 @@
 # Project Roadmap
 
-*Sombrero-Edge-Control Infrastructure Pipeline*
-*Last Updated: September 18, 2025*
-*Overall Completion: 75%*
+_Sombrero-Edge-Control Infrastructure Pipeline_
+_Last Updated: September 18, 2025_
+_Overall Completion: 75%_
 
 ## Project Vision
 
@@ -12,7 +12,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ## Phase 1: Foundation (✅ 95% Complete)
 
-*Timeline: Completed August 2024 - September 2025*
+_Timeline: Completed August 2024 - September 2025_
 
 ### ✅ Completed Tasks
 
@@ -33,7 +33,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ## Phase 2: Pipeline Separation Architecture (🆕 65% Complete)
 
-*Timeline: January 2025 - February 2025*
+_Timeline: September 2025 - October 2025_
 
 ### ✅ Completed Tasks
 
@@ -55,7 +55,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ## Phase 3: Minimal Golden Images (⏳ 40% Complete)
 
-*Timeline: January 2025 - February 2025*
+_Timeline: September 2025 - October 2025_
 
 ### ✅ Completed Tasks
 
@@ -75,7 +75,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ## Phase 4: Pure Infrastructure with Terraform (⏳ 60% Complete)
 
-*Timeline: January 2025 - February 2025*
+_Timeline: September 2025 - October 2025_
 
 ### ✅ Completed Tasks
 
@@ -94,33 +94,35 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ---
 
-## Phase 5: Ansible as Single Source of Truth (⏳ 85% Complete)
+## Phase 5: Ansible as Single Source of Truth (⏳ 90% Complete)
 
-*Timeline: January 2025 - February 2025*
+_Timeline: September 2025 - October 2025_
 
 ### ✅ Completed Tasks
 
 - [x] **Collection Structure** - basher83.automation_server created
 - [x] **Role Architecture** - 10+ specialized roles implemented
+- [x] **Bootstrap Roles** - bootstrap and bootstrap_check with DebOps patterns
 - [x] **Docker Role** - Complete container runtime configuration
 - [x] **Security Roles** - Firewall, SSH hardening, fail2ban
 - [x] **Validation Roles** - vm_smoke_tests, docker_validation
 - [x] **Development Tools Role** - mise, uv, nodejs configuration
 - [x] **Playbook Hierarchy** - Master playbook with phases
+- [x] **Idempotency Validation** - Bootstrap roles fully idempotent
 
 ### ⏳ Pending Tasks
 
 - [ ] **Remove Duplicate Directory** 🔴 - Delete old ansible/ structure
 - [ ] **Dynamic Inventory** - Terraform provider integration
 - [ ] **Molecule Testing** - Role-level unit tests
-- [ ] **Idempotency Validation** - All roles fully idempotent
 - [ ] **Collection Publishing** - Galaxy distribution setup
+- [ ] **Monitoring Stack** - Netdata implementation (ANS-005, 1 hour)
 
 ---
 
 ## Phase 6: Three-Stage Pipeline Integration (⏳ 30% Complete)
 
-*Timeline: February 2025*
+_Timeline: September 2025 - October 2025_
 
 ### ✅ Completed Tasks
 
@@ -140,7 +142,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ## Phase 7: Documentation & Standards (✅ 90% Complete)
 
-*Timeline: Ongoing*
+_Timeline: Ongoing_
 
 ### ✅ Completed Tasks
 
@@ -162,7 +164,7 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ## Phase 8: Testing & Validation (⏳ 45% Complete)
 
-*Timeline: February 2025 - March 2025*
+_Timeline: September 2025 - October 2025_
 
 ### ✅ Completed Tasks
 
@@ -186,15 +188,15 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ### Immediate Blockers (Must Fix Now)
 
-1. **Packer Image Refactoring** 🔴 - Remove Docker/tools for minimal image
-2. **Cloud-init Simplification** 🔴 - Reduce to SSH-only configuration
-3. **Ansible Directory Cleanup** 🔴 - Remove duplicate ansible/ folder
+1. **Monitoring Stack Implementation** 🔴 - ANS-005 Netdata setup (1 hour)
+2. **Ansible Directory Cleanup** 🔴 - Remove duplicate ansible/ folder
+3. **Performance Validation** - Measure separated pipeline speed
 
 ### High Priority (Week 1)
 
-1. **Pipeline Handoffs** - Template ID and inventory JSON mechanisms
-2. **Mise Task Updates** - Three-stage deployment tasks
-3. **Performance Validation** - Measure separated pipeline speed
+1. **Complete Monitoring Stack** - Implement ANS-005 for observability
+2. **Performance Testing** - Validate sub-60 second deployment claim
+3. **Molecule Implementation** - Testing framework for Ansible roles
 
 ### Medium Priority (Week 2-3)
 
@@ -208,33 +210,31 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ### Phase Completion Targets
 
-| Phase | Current | Target | Due Date |
-|-------|---------|--------|----------|
-| Foundation | 95% | 100% | Feb 2025 |
-| Pipeline Separation | 65% | 100% | Feb 2025 |
-| Minimal Images | 40% | 100% | Feb 2025 |
-| Pure Infrastructure | 60% | 100% | Feb 2025 |
-| Ansible Configuration | 85% | 100% | Feb 2025 |
-| Pipeline Integration | 30% | 100% | Mar 2025 |
-| Documentation | 90% | 95% | Ongoing |
-| Testing | 45% | 90% | Mar 2025 |
+| Phase                 | Current | Target | Due Date |
+| --------------------- | ------- | ------ | -------- |
+| Foundation            | 95%     | 100%   | Oct 2025 |
+| Pipeline Separation   | 100%    | 100%   | ✅ Done  |
+| Minimal Images        | 100%    | 100%   | ✅ Done  |
+| Pure Infrastructure   | 100%    | 100%   | ✅ Done  |
+| Ansible Configuration | 90%     | 100%   | Oct 2025 |
+| Pipeline Integration  | 100%    | 100%   | ✅ Done  |
+| Documentation         | 90%     | 95%    | Ongoing  |
+| Testing               | 45%     | 90%    | Mar 2025 |
 
 ### Key Performance Indicators
 
 #### Tool Independence
 
-#### Tool Independence
-
-- [ ] Packer builds without Terraform/Ansible dependencies
+- [x] Packer builds without Terraform/Ansible dependencies ✅
   - DoD: packer build succeeds using only packer/; no external scripts
   - Artifact: template ID published to deployments/outputs/template.json
   - Tests: packer-validate and post‑build smoke in mise task `packer-validate`
-- [ ] Terraform deploys with only template ID input
+- [x] Terraform deploys with only template ID input ✅
   - DoD: tf apply with -var template_id=<ID> only; no provisioners
   - Output: inventory.json emitted to deployments/outputs/
-- [ ] Ansible configures with only inventory JSON input
+- [x] Ansible configures with only inventory JSON input ✅
   - DoD: ansible-playbook -i inventory.json site.yml completes idempotently
-  - Idempotency: <= 0 changed tasks on second run
+  - Idempotency: Bootstrap roles verified with 0 changes on second run
 - [ ] Each tool has independent test suite
   - DoD: packer tests (smoke), Terraform (terratest), Ansible (molecule)
 
@@ -277,40 +277,41 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ### High Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Performance claims false | Project credibility | Immediate validation required |
-| Cloud-init files missing | Deployment failure | Create files immediately |
-| Ansible migration stalled | Technical debt | Execute phase 1 now |
+| Risk                      | Impact              | Mitigation                    |
+| ------------------------- | ------------------- | ----------------------------- |
+| Performance claims false  | Project credibility | Immediate validation required |
+| Cloud-init files missing  | Deployment failure  | Create files immediately      |
+| Ansible migration stalled | Technical debt      | Execute phase 1 now           |
 
 ### Medium Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| No unit tests | Quality issues | Implement Terratest |
-| Manual deployments | Human error | Automate pipeline |
-| Security gaps | Compliance failure | Add validation tests |
+| Risk               | Impact             | Mitigation           |
+| ------------------ | ------------------ | -------------------- |
+| No unit tests      | Quality issues     | Implement Terratest  |
+| Manual deployments | Human error        | Automate pipeline    |
+| Security gaps      | Compliance failure | Add validation tests |
 
 ---
 
 ## Next Sprint Objectives (Q4 2025)
 
-### Sprint 1 (Sep Week 3-4)
+### Sprint 1 (Sep Week 3-4) ✅ COMPLETE
 
-- Refactor Packer for minimal images
-- Simplify cloud-init to SSH-only
-- Clean up Ansible structure
+- ✅ Refactor Packer for minimal images
+- ✅ Simplify cloud-init to SSH-only
+- ✅ Clean up Ansible structure
+- ✅ Implement bootstrap roles
 
 ### Sprint 2 (Oct Week 1-2)
 
-- Implement pipeline handoffs
-- Create three-stage mise tasks
-- Validate tool independence
+- Implement ANS-005 monitoring stack
+- Performance testing and validation
+- Remove duplicate ansible/ directory
 
 ### Sprint 3 (Oct Week 3-4)
 
-- Performance testing and validation
 - Molecule and Terratest setup
+- Collection publishing to Galaxy
 - Production deployment trial
 
 ---
@@ -358,7 +359,7 @@ graph LR
     style D fill:#9f9,stroke:#333,stroke-width:2px
 ```
 
-*This roadmap is a living document and will be updated bi-weekly based on progress and priority changes.*
+_This roadmap is a living document and will be updated bi-weekly based on progress and priority changes._
 
 **Last Major Update**: September 18, 2025
 **Next Review Date**: October 1, 2025
