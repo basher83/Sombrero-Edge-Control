@@ -98,7 +98,7 @@ proxmox_api_url: "{{ lookup('env', 'TF_VAR_pve_api_url') }}"
 proxmox_api_token: "{{ lookup('env', 'TF_VAR_pve_api_token') }}"
 proxmox_node: "lloyd"
 proxmox_verify_ssl: false
-required_template_id: 1001
+required_template_id: "{{ lookup('env', 'TF_VAR_pve_api_url') }}"
 template_name_pattern: "ubuntu-.*-docker"
 minimum_storage_gb: 50
 minimum_memory_mb: 4096
@@ -125,7 +125,7 @@ proxmox_validation_results:
   api_accessible: true
   node_available: true
   template_exists: true
-  template_id: 1001
+  template_id: "{{ lookup('env', 'TF_VAR_pve_api_url') }}"
   template_metadata:
     name: "ubuntu-server-numbat-docker"
     creation_date: "2025-01-02"

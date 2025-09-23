@@ -371,29 +371,54 @@ depends = ["shellcheck", "yaml-lint", "markdown-lint", "lint-prod"]
 # TERRAFORM VALIDATION & OPERATIONS
 # ============================================================================
 
-# Validate Terraform configuration in production
-[tasks.prod-validate]
-description = "Validate Terraform configuration in production environment"
-dir = "infrastructure/environments/production"
+# Initialize Terraform
+[tasks.terraform-init]
+description = "Initialize Terraform"
+dir = "terraform"
+run = "terraform init"
+
+# Validate Terraform configuration
+[tasks.terraform-validate]
+description = "Validate Terraform configuration"
+dir = "terraform"
 run = "terraform init -backend=false -input=false >/dev/null && terraform validate"
 
-# Plan Terraform changes for production
-[tasks.prod-plan]
-description = "Run terraform plan for production environment"
-dir = "infrastructure/environments/production"
+# Plan Terraform changes
+[tasks.terraform-plan]
+description = "Run terraform plan"
+dir = "terraform"
 run = "terraform init -input=false >/dev/null 2>&1 && terraform plan"
 
-# Apply Terraform changes to production (use with caution)
-[tasks.prod-apply]
-description = "Apply Terraform changes to production environment"
-dir = "infrastructure/environments/production"
+# Apply Terraform changes (use with caution)
+[tasks.terraform-apply]
+description = "Apply Terraform changes"
+dir = "terraform"
 run = "terraform init -input=false >/dev/null 2>&1 && terraform apply"
 
-# Initialize Terraform in production environment
+# Format Terraform files
+[tasks.terraform-fmt]
+description = "Format Terraform files"
+dir = "terraform"
+run = "terraform fmt -recursive"
+
+# Output Ansible inventory
+[tasks.terraform-inventory]
+description = "Output Ansible inventory JSON"
+dir = "terraform"
+run = "terraform output -json ansible_inventory > ../ansible_collections/basher83/automation_server/inventory/inventory.json && echo '✅ Inventory exported to ansible_collections/basher83/automation_server/inventory/inventory.json'"
+
+# Backward compatibility aliases
 [tasks.prod-init]
-description = "Initialize Terraform in production environment"
-dir = "infrastructure/environments/production"
-run = "terraform init"
+alias = "terraform-init"
+
+[tasks.prod-validate]
+alias = "terraform-validate"
+
+[tasks.prod-plan]
+alias = "terraform-plan"
+
+[tasks.prod-apply]
+alias = "terraform-apply"
 
 # ============================================================================
 # COMPOSITE VALIDATION TASKS
@@ -995,20 +1020,20 @@ echo "$(date): deploy-packer completed in ${DURATION}s" >> deployment-metrics.lo
 
 # Stage 2: Terraform Deploy with Output Capture
 [tasks.deploy-terraform]
-description = "Deploy infrastructure with Terraform using Packer outputs"
+description = "Deploy infrastructure with Terraform"
 depends = ["deploy-init"]
-dir = "infrastructure/environments/production"
+dir = "terraform"
 run = """
 START_TIME=$(date +%s)
 echo "🚀 Stage 2: Deploying infrastructure with Terraform..."
 
-# Check for Packer outputs
-if [ -f "../../../deployments/outputs/packer-outputs.json" ]; then
-  TEMPLATE_ID=$(jq -r '.template_id' ../../../deployments/outputs/packer-outputs.json)
-  echo "📋 Using Packer template ID: $TEMPLATE_ID"
+# Check if we have a template override or use default
+if [ -f "../deployments/outputs/template.json" ]; then
+  TEMPLATE_ID=$(jq -r '.template_id' ../deployments/outputs/template.json)
+  echo "📋 Using template ID from file: $TEMPLATE_ID"
 else
-  echo "⚠️  No Packer outputs found, using default template ID: 1001"
-  TEMPLATE_ID="1001"
+  echo "📋 Using default template ID: 8024 (jumpman24)"
+  TEMPLATE_ID="8024"
 fi
 
 # Initialize and apply Terraform
@@ -1017,21 +1042,21 @@ terraform apply -auto-approve
 
 # Capture Terraform outputs for Ansible
 echo "📝 Generating Ansible inventory from Terraform outputs..."
-terraform output -json > ../../../deployments/outputs/terraform-outputs.json
+terraform output -json > ../deployments/outputs/terraform-outputs.json
 
-# Generate Ansible inventory from Terraform outputs (leveraging enhanced output)
-mkdir -p ../../../ansible/inventory
+# Generate Ansible inventory from Terraform outputs
+mkdir -p ../ansible_collections/basher83/automation_server/inventory
 echo "📋 Generating inventory from Terraform outputs..."
-terraform output -raw ansible_inventory > ../../../ansible/inventory/hosts.yml
+terraform output -json ansible_inventory > ../ansible_collections/basher83/automation_server/inventory/inventory.json
 
 echo "✅ Terraform deployment completed and inventory generated"
 echo "📄 Outputs: deployments/outputs/terraform-outputs.json"
-echo "📋 Inventory: ansible/inventory/hosts.yml"
+echo "📋 Inventory: ansible_collections/basher83/automation_server/inventory/inventory.json"
 
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 echo "Task completed in ${DURATION} seconds"
-echo "$(date): deploy-terraform completed in ${DURATION}s" >> ../../../deployment-metrics.log
+echo "$(date): deploy-terraform completed in ${DURATION}s" >> ../deployment-metrics.log
 """
 
 # Stage 3: Ansible Configuration with Output Capture

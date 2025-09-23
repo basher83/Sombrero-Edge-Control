@@ -1,0 +1,33 @@
+# Proxmox API Configuration
+pve_api_url      = "https://proxmox.example.com:8006/api2/json"
+pve_api_token    = "terraform@pam!terraform-token=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+proxmox_insecure = false
+
+# VM Configuration
+vm_name       = "jump-man"
+vm_id         = 7000
+proxmox_node  = "lloyd"
+template_id   = 8024  # jumpman24 template created on Sep 22
+
+# Resource Allocation
+vm_cores            = 2
+vm_cpu_type         = "host"
+vm_memory           = 2048
+vm_memory_floating  = 1024
+vm_disk_size        = 32
+
+# Storage
+vm_datastore = "local-lvm"
+
+# Network Configuration
+vm_bridge     = "vmbr0"
+vm_ip_address = "192.168.10.250/24"
+vm_gateway    = "192.168.10.1"
+# vm_mac_address = ""  # Leave commented for auto-generation
+
+# Cloud-init SSH Access
+ci_username = "ansible"
+ssh_authorized_keys = [
+  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExample... ansible@jump-man",
+  # Add more keys as needed
+]

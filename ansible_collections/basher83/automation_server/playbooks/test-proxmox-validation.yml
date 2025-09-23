@@ -9,7 +9,7 @@
     - role: basher83.automation_server.proxmox_validation
       vars:
         proxmox_node: "lloyd"
-        required_template_id: 1001
+        required_template_id: "{{ lookup('env', 'TF_VAR_pve_api_url') }}"
         # Override if testing against different environment
         # proxmox_api_url: "https://192.168.10.2:8006"
         # proxmox_verify_ssl: false

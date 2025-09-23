@@ -51,6 +51,7 @@ ansible/ansible.cfg.local
 # Ansible backup archives
 ansible-legacy-backup-*.tar.gz
 ansible-backup-*.tar.gz
+terraform-backup-20250922-234812.tar.gz
 
 # IDE/editor noise
 .vscode/

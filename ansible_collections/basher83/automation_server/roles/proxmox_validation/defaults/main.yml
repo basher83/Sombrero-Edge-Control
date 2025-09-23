@@ -12,7 +12,7 @@ proxmox_verify_ssl: false
 proxmox_node: "lloyd"
 
 # Template requirements
-required_template_id: 1001
+required_template_id: "{{ lookup('env', 'TF_VAR_pve_api_url') }}"
 template_name_pattern: "ubuntu-.*-docker"
 
 # Minimum resource requirements
