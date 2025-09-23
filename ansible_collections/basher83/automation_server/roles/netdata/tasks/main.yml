@@ -1,0 +1,95 @@
+---
+- name: Install Netdata repository and agent
+  block:
+    - name: Add Netdata repository
+      ansible.builtin.include_role:
+        name: netdata.ansible.install_netdata_repository
+      tags:
+        - netdata
+        - repository
+
+    - name: Install Netdata agent
+      ansible.builtin.include_role:
+        name: netdata.ansible.install_netdata_agent
+      tags:
+        - netdata
+        - agent
+
+- name: Configure Netdata for Docker monitoring
+  when: netdata_monitor_docker | bool
+  block:
+    - name: Ensure ansible user is in docker group
+      ansible.builtin.user:
+        name: ansible
+        groups: docker
+        append: yes
+      notify: restart netdata
+
+    - name: Configure Docker plugin
+      ansible.builtin.lineinfile:
+        path: /etc/netdata/netdata.conf
+        regexp: '^\[plugin:cgroups\]'
+        line: '[plugin:cgroups]'
+        create: yes
+        mode: '0644'
+      notify: restart netdata
+
+    - name: Enable Docker container names
+      ansible.builtin.lineinfile:
+        path: /etc/netdata/netdata.conf
+        regexp: '^.*use unified cgroups'
+        line: '    use unified cgroups = yes'
+        insertafter: '\[plugin:cgroups\]'
+      notify: restart netdata
+
+- name: Configure Netdata web interface
+  ansible.builtin.blockinfile:
+    path: /etc/netdata/netdata.conf
+    block: |
+      [web]
+          bind to = {{ netdata_bind_to }}:{{ netdata_port }}
+          allow connections from = {{ netdata_allow_connections_from }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - web interface"
+    create: yes
+    mode: '0644'
+  notify: restart netdata
+
+- name: Configure performance settings
+  ansible.builtin.blockinfile:
+    path: /etc/netdata/netdata.conf
+    block: |
+      [global]
+          history = {{ netdata_history }}
+          update every = {{ netdata_update_every }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - performance"
+    create: yes
+    mode: '0644'
+  notify: restart netdata
+
+- name: Configure firewall for Netdata
+  ansible.builtin.include_tasks: firewall.yml
+  when: netdata_firewall_rules is defined
+
+- name: Ensure Netdata is running
+  ansible.builtin.systemd:
+    name: netdata
+    state: started
+    enabled: "{{ netdata_start_on_boot }}"
+    daemon_reload: yes
+
+- name: Wait for Netdata to be ready
+  ansible.builtin.uri:
+    url: "http://localhost:{{ netdata_port }}/api/v1/info"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 30
+  delay: 5
+
+- name: Display access information
+  ansible.builtin.debug:
+    msg:
+      - "Netdata monitoring deployed successfully!"
+      - "Web Dashboard: http://{{ ansible_default_ipv4.address }}:{{ netdata_port }}"
+      - "API Endpoint: http://{{ ansible_default_ipv4.address }}:{{ netdata_port }}/api/v1/info"
+      - "Docker Monitoring: {{ 'Enabled' if netdata_monitor_docker else 'Disabled' }}"

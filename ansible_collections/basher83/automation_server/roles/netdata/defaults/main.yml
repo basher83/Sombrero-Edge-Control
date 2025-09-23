@@ -1,0 +1,48 @@
+---
+# Netdata configuration
+netdata_enabled: true
+netdata_start_on_boot: true
+
+# Web interface configuration
+netdata_bind_to: "0.0.0.0"
+netdata_port: 19999
+netdata_allow_connections_from: "*"
+
+# Performance settings
+netdata_history: 3600  # Seconds of history to keep
+netdata_update_every: 1  # Update interval in seconds
+
+# Docker monitoring
+netdata_monitor_docker: true
+netdata_docker_socket: "/var/run/docker.sock"
+
+# Security settings
+netdata_ssl_enabled: false  # Enable in production with proper certs
+netdata_ssl_port: 19998
+
+# Cloud integration (optional)
+netdata_claim_token: ""  # Set if using Netdata Cloud
+netdata_claim_rooms: ""  # Room ID for Netdata Cloud
+
+# Alert configuration
+netdata_alarm_notify_configs:
+  email:
+    enabled: false
+    to: "admin@example.com"
+  slack:
+    enabled: false
+    webhook_url: ""
+    channel: "#alerts"
+
+# System optimizations for Ubuntu 24.04
+netdata_system_optimizations:
+  - name: "vm.swappiness"
+    value: "10"
+  - name: "kernel.mm.ksm.run"
+    value: "1"
+
+# Firewall rules
+netdata_firewall_rules:
+  - port: 19999
+    protocol: tcp
+    comment: "Netdata web interface"

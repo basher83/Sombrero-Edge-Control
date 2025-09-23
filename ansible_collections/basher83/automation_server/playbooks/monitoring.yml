@@ -1,0 +1,38 @@
+---
+- name: Deploy Netdata Monitoring
+  hosts: jump_hosts
+  become: true
+  gather_facts: yes
+
+  pre_tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == "Debian"
+
+  roles:
+    - role: ../roles/netdata
+      tags:
+        - monitoring
+        - netdata
+
+  post_tasks:
+    - name: Verify Netdata installation
+      ansible.builtin.command: netdata -V
+      register: netdata_version
+      changed_when: false
+      failed_when: false
+
+    - name: Check Netdata plugins
+      ansible.builtin.command: ls /usr/libexec/netdata/plugins.d/
+      register: netdata_plugins
+      changed_when: false
+      failed_when: false
+
+    - name: Display Netdata information
+      ansible.builtin.debug:
+        msg:
+          - "Netdata Version: {{ netdata_version.stdout | default('Not installed yet') }}"
+          - "Available Plugins: {{ netdata_plugins.stdout_lines | default(['Not available']) | join(', ') }}"
+          - "Access Dashboard: http://{{ ansible_default_ipv4.address }}:19999"

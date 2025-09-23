@@ -1,0 +1,50 @@
+---
+- name: Validate Netdata Monitoring
+  hosts: jump_hosts
+  gather_facts: yes
+
+  tasks:
+    - name: Check Netdata service status
+      ansible.builtin.systemd:
+        name: netdata
+      register: netdata_service
+      failed_when: false
+
+    - name: Test Netdata API endpoint
+      ansible.builtin.uri:
+        url: "http://localhost:19999/api/v1/info"
+        status_code: [200, 404]  # 404 if not installed yet
+      register: api_response
+      failed_when: false
+
+    - name: Check Docker metrics collection
+      ansible.builtin.uri:
+        url: "http://localhost:19999/api/v1/data?chart=cgroup_docker"
+        status_code: [200, 404]  # 404 if no containers running or not installed
+      register: docker_metrics
+      failed_when: false
+
+    - name: Verify system metrics
+      ansible.builtin.uri:
+        url: "http://localhost:19999/api/v1/data?chart=system.cpu"
+        status_code: [200, 404]  # 404 if not installed yet
+      register: cpu_metrics
+      failed_when: false
+
+    - name: Display validation results
+      ansible.builtin.debug:
+        msg:
+          - "Netdata Service: {{ netdata_service.status.ActiveState | default('not installed') }}"
+          - "API Status: {{ 'OK' if api_response.status == 200 else 'Not available' }}"
+          - "Docker Monitoring: {{ 'Available' if docker_metrics.status == 200 else 'No containers or not configured' }}"
+          - "System Metrics: {{ 'Collecting' if cpu_metrics.status == 200 else 'Not available' }}"
+
+    - name: Assert all checks passed (when Netdata is installed)
+      ansible.builtin.assert:
+        that:
+          - netdata_service.status.ActiveState == "active"
+          - api_response.status == 200
+          - cpu_metrics.status == 200
+        fail_msg: "Netdata validation failed"
+        success_msg: "All Netdata checks passed"
+      when: netdata_service.status.ActiveState is defined and netdata_service.status.ActiveState == "active"

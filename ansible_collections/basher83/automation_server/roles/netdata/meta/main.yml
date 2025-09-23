@@ -1,0 +1,21 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: basher83
+  description: Netdata monitoring agent deployment and configuration
+  company: Sombrero Edge Control
+  license: MIT
+  min_ansible_version: '2.9'
+  platforms:
+    - name: Ubuntu
+      versions:
+        - focal    # 20.04
+        - jammy    # 22.04
+        - noble    # 24.04
+  galaxy_tags:
+    - monitoring
+    - netdata
+    - observability
+    - docker
+    - metrics

@@ -1,0 +1,22 @@
+---
+- name: Configure firewall for Netdata
+  when: netdata_firewall_rules is defined and netdata_firewall_rules | length > 0
+  block:
+    - name: Allow Netdata web interface through firewall
+      community.general.ufw:
+        rule: allow
+        port: "{{ item.port | string }}"
+        proto: "{{ item.protocol | default('tcp') }}"
+        comment: "{{ item.comment | default('Netdata monitoring') }}"
+      loop: "{{ netdata_firewall_rules }}"
+      when: ansible_os_family == "Debian"
+
+    - name: Configure nftables for Netdata (if nftables is primary)
+      ansible.builtin.lineinfile:
+        path: /etc/nftables.conf
+        regexp: ".*tcp dport {{ item.port }}.*"
+        line: "    tcp dport {{ item.port }} accept comment \"{{ item.comment | default('Netdata monitoring') }}\""
+        insertafter: "chain input {"
+      loop: "{{ netdata_firewall_rules }}"
+      notify: reload nftables
+      when: "'nftables' in ansible_facts.packages"

@@ -23,6 +23,12 @@
         - post-deploy
         - configuration
 
+    - name: Deploy monitoring solution
+      ansible.builtin.import_playbook: monitoring.yml
+      tags:
+        - monitoring
+        - netdata
+
     - name: Validate Docker installation
       ansible.builtin.import_playbook: test-docker-validation.yml
       tags:

@@ -1,0 +1,14 @@
+---
+- name: restart netdata
+  ansible.builtin.systemd:
+    name: netdata
+    state: restarted
+    daemon_reload: yes
+  become: true
+
+- name: reload nftables
+  ansible.builtin.systemd:
+    name: nftables
+    state: reloaded
+  become: true
+  when: "'nftables' in ansible_facts.packages"
