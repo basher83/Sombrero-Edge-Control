@@ -12,7 +12,9 @@ Deploy a secure, high-performance jump host ("jump-man") on Proxmox using a thre
 
 ## Phase 1: Foundation (✅ 95% Complete)
 
-_Timeline: Completed August 2024 - September 2025_
+#### Timeline
+
+Completed August 2024 - September 2025
 
 ### ✅ Completed Tasks
 
@@ -33,7 +35,9 @@ _Timeline: Completed August 2024 - September 2025_
 
 ## Phase 2: Pipeline Separation Architecture (🆕 65% Complete)
 
-_Timeline: September 2025 - October 2025_
+#### Timeline
+
+September 2025 - October 2025
 
 ### ✅ Completed Tasks
 
@@ -55,7 +59,9 @@ _Timeline: September 2025 - October 2025_
 
 ## Phase 3: Minimal Golden Images (⏳ 40% Complete)
 
-_Timeline: September 2025 - October 2025_
+#### Timeline
+
+September 2025 - October 2025
 
 ### ✅ Completed Tasks
 
@@ -75,7 +81,9 @@ _Timeline: September 2025 - October 2025_
 
 ## Phase 4: Pure Infrastructure with Terraform (⏳ 60% Complete)
 
-_Timeline: September 2025 - October 2025_
+#### Timeline
+
+September 2025 - October 2025
 
 ### ✅ Completed Tasks
 
@@ -96,7 +104,9 @@ _Timeline: September 2025 - October 2025_
 
 ## Phase 5: Ansible as Single Source of Truth (⏳ 90% Complete)
 
-_Timeline: September 2025 - October 2025_
+#### Timeline
+
+September 2025 - October 2025
 
 ### ✅ Completed Tasks
 
@@ -142,7 +152,9 @@ _Timeline: September 2025 - October 2025_
 
 ## Phase 7: Documentation & Standards (✅ 90% Complete)
 
-_Timeline: Ongoing_
+#### Timeline
+
+Ongoing
 
 ### ✅ Completed Tasks
 
@@ -164,7 +176,9 @@ _Timeline: Ongoing_
 
 ## Phase 8: Testing & Validation (⏳ 45% Complete)
 
-_Timeline: September 2025 - October 2025_
+#### Timeline
+
+September 2025 - October 2025
 
 ### ✅ Completed Tasks
 

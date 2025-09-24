@@ -2,15 +2,22 @@
 
 ## Overview
 
-This document defines the minimal golden image approach for the Sombrero Edge Control project, ensuring Packer creates universal, lightweight base images that serve as the foundation for our infrastructure pipeline.
+This document defines the minimal golden image approach for the
+Sombrero Edge Control project, ensuring Packer creates universal,
+lightweight base images that serve as the foundation for our
+infrastructure pipeline.
 
 ## Design Principles
 
 ### 1. Minimal is Optimal
 
-- **Include**: Operating system, cloud-init capability, qemu-guest-agent, machine-id reset (e.g., truncate /etc/machine-id), cloud-init cleanup (remove /var/lib/cloud/* and cloud-init instance data)
+- **Include**: Operating system, cloud-init capability, qemu-guest-agent,
+  machine-id reset (e.g., truncate /etc/machine-id), cloud-init cleanup
+  (remove /var/lib/cloud/* and cloud-init instance data)
 - **Exclude**: Application software, configuration, environment-specific settings
-- **Rationale**: Faster builds, universal images, clear separation of concerns, prevent cloned VMs from sharing host-specific identities and ensure clean first-boot configuration
+- **Rationale**: Faster builds, universal images, clear separation of concerns,
+  prevent cloned VMs from sharing host-specific identities and ensure clean
+  first-boot configuration
 
 ### 2. Immutable Foundation
 
@@ -61,7 +68,7 @@ All application-level software and configuration:
 
 ### Naming Convention
 
-```
+```text
 ubuntu-24.04-minimal-{timestamp}-{build_number}
 ```
 
@@ -87,8 +94,8 @@ Each template should be tagged in Proxmox with:
 Terraform selects templates using:
 
 1. **Explicit**: Specific template ID via variable
-2. **Latest**: Query Proxmox for newest template with matching tags
-3. **Validated**: Only use templates that pass smoke tests
+1. **Latest**: Query Proxmox for newest template with matching tags
+1. **Validated**: Only use templates that pass smoke tests
 
 ## Build Process
 
@@ -174,12 +181,12 @@ terraform apply -var="template_id=8024"
    - **Cause**: Too many packages included
    - **Solution**: Move packages to Ansible
 
-2. **cloud-init Not Working**
+1. **cloud-init Not Working**
    - **Symptom**: Terraform can't configure VM
    - **Cause**: cloud-init not properly installed
    - **Solution**: Ensure cloud-init package and service enabled
 
-3. **No IP Reporting**
+1. **No IP Reporting**
    - **Symptom**: Terraform can't get VM IP
    - **Cause**: qemu-guest-agent not running
    - **Solution**: Verify agent installation and enablement
@@ -189,20 +196,20 @@ terraform apply -var="template_id=8024"
 ### Phase 1: Remove Complexity
 
 1. Remove Docker installation from Packer
-2. Remove development tools installation
-3. Remove Ansible provisioner
+1. Remove development tools installation
+1. Remove Ansible provisioner
 
 ### Phase 2: Create Minimal Template
 
 1. New Packer configuration with minimal packages
-2. Build and tag template
-3. Validate boot and basic functionality
+1. Build and tag template
+1. Validate boot and basic functionality
 
 ### Phase 3: Update Pipeline
 
 1. Update Terraform to use new template
-2. Update Ansible to handle all configuration
-3. Validate end-to-end deployment
+1. Update Ansible to handle all configuration
+1. Validate end-to-end deployment
 
 ## Best Practices
 

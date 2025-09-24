@@ -231,7 +231,7 @@ This demonstrates Molecule's native integration with Ansible's inventory system,
 Molecule uses a hierarchical configuration system where scenario-specific `molecule.yml` files override or extend the base `config.yml`:
 
 1. **Base config.yml**: Shared settings for all scenarios
-2. **Scenario molecule.yml**: Scenario-specific overrides and extensions
+1. **Scenario molecule.yml**: Scenario-specific overrides and extensions
 
 ### Default Scenario Configuration
 
@@ -473,10 +473,10 @@ With `shared_state` enabled, the **default scenario becomes the lifecycle manage
 **Execution flow:**
 
 1. **default ➜ create**: Initialize shared infrastructure for ALL scenarios _(runs first)_
-2. **role1 ➜ test sequence**: Component testing using shared infrastructure (no create/destroy)
-3. **role2 ➜ test sequence**: Component testing using shared infrastructure (no create/destroy)
-4. **role3 ➜ test sequence**: Component testing using shared infrastructure (no create/destroy)
-5. **default ➜ destroy**: Clean up shared infrastructure for ALL scenarios _(runs last)_
+1. **role1 ➜ test sequence**: Component testing using shared infrastructure (no create/destroy)
+1. **role2 ➜ test sequence**: Component testing using shared infrastructure (no create/destroy)
+1. **role3 ➜ test sequence**: Component testing using shared infrastructure (no create/destroy)
+1. **default ➜ destroy**: Clean up shared infrastructure for ALL scenarios _(runs last)_
 
 ### Per-Scenario Resources (Without shared_state)
 
@@ -535,15 +535,15 @@ molecule test --all --command-borders --report
 The execution flow with `--all` when shared state is enabled is:
 
 1. **default ➜ create**: Initialize shared infrastructure for ALL scenarios _(runs first)_
-2. **role1 ➜ prepare**: Satisfy role1 prerequisites
-3. **role1 ➜ converge**: Execute role1
-4. **role1 ➜ verify**: Validate role1 behavior
-5. **role1 ➜ idempotence**: Ensure role1 is idempotent
-6. **role1 ➜ verify**: Re-validate after idempotence
-7. **role1 ➜ cleanup**: Clean role1 test artifacts
-8. **role2 ➜ [same sequence]**: Full role2 testing (no create/destroy)
-9. **role3 ➜ [same sequence]**: Full role3 testing (no create/destroy)
-10. **default ➜ destroy**: Clean up shared infrastructure for ALL scenarios _(runs last)_
+1. **role1 ➜ prepare**: Satisfy role1 prerequisites
+1. **role1 ➜ converge**: Execute role1
+1. **role1 ➜ verify**: Validate role1 behavior
+1. **role1 ➜ idempotence**: Ensure role1 is idempotent
+1. **role1 ➜ verify**: Re-validate after idempotence
+1. **role1 ➜ cleanup**: Clean role1 test artifacts
+1. **role2 ➜ [same sequence]**: Full role2 testing (no create/destroy)
+1. **role3 ➜ [same sequence]**: Full role3 testing (no create/destroy)
+1. **default ➜ destroy**: Clean up shared infrastructure for ALL scenarios _(runs last)_
 
 **Important**: Notice that:
 

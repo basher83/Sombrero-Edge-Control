@@ -1,4 +1,5 @@
 # WARP.md
+
 This file provides guidance to WARP (warp.dev) when working with code in this repository.
 
 **Last updated**: 2025-09-05
@@ -95,7 +96,7 @@ mise run deployment-trends          # Analyze deployment patterns
 
 ### Module Structure
 
-```
+```text
 infrastructure/
 ├── modules/vm/              # Reusable Proxmox VM module
 ├── environments/production/ # Production jump host configuration
@@ -104,13 +105,17 @@ infrastructure/
 
 The infrastructure uses a **modular Terraform design**:
 
-- **VM Module** ([`infrastructure/modules/vm/`](infrastructure/modules/vm/)): Reusable Proxmox VM provisioning with cloud-init support, memory ballooning, and dual-network capability
-- **Production Environment** ([`infrastructure/environments/production/`](infrastructure/environments/production/)): Instantiates the VM module for jump-man with Ubuntu 24.04 template
+- **VM Module** ([`infrastructure/modules/vm/`](infrastructure/modules/vm/)):
+  Reusable Proxmox VM provisioning with cloud-init support, memory
+  ballooning, and dual-network capability
+- **Production Environment** ([`infrastructure/environments/production/`](infrastructure/environments/production/)):
+  Instantiates the VM module for jump-man with Ubuntu 24.04 template
 
 ### Key Configuration
 
 - **Target**: Single jump host VM (jump-man) on Proxmox node "lloyd"
-- **Networking**: Static IP 192.168.10.250/24 with gateway 192.168.10.1
+- **Networking**: Static IP 192.168.10.250/24
+  with gateway 192.168.10.1
 - **Resources**: 2 vCPUs, 2GB RAM + 1GB floating, 32GB disk
 - **Provisioning**: Cloud-init with Docker CE, development tools, SSH keys
 - **Template**: Ubuntu 24.04 LTS (Proxmox template ID: 8024)
@@ -183,6 +188,7 @@ terraform apply                    # Apply rollback
 **If you are an AI agent, read [`CLAUDE.md`](CLAUDE.md) first.** This WARP.md summarizes commands and architecture; CLAUDE.md defines interaction rules, task management with Archon MCP, and coding standards.
 
 Key AI agent guidelines:
+
 - Use `read_any_files` instead of terminal commands for file content
 - Use `rg` (ripgrep) and `fd` for search operations
 - Always use `git --no-pager` for git operations
@@ -194,6 +200,7 @@ Key AI agent guidelines:
 ### Tool Requirements
 
 Managed by [mise](https://mise.jdx.dev/) (see [`.mise.toml`](.mise.toml)):
+
 - Terraform 1.13.0 (supports Ephemeral Resources)
 - terraform-docs, tflint, pre-commit
 - rg (ripgrep), fd (find alternative), eza (ls alternative)
@@ -253,6 +260,7 @@ docker container prune -f          # Remove all stopped containers
 ### Useful Scripts
 
 Located in [`scripts/`](scripts/):
+
 - [`smoke-test.sh`](scripts/smoke-test.sh): Comprehensive infrastructure validation
 - [`restart-vm-ssh.sh`](scripts/restart-vm-ssh.sh): Safe VM restart with SSH key handling
 - [`generate-docs.sh`](scripts/generate-docs.sh): Update all Terraform documentation

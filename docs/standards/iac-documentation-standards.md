@@ -77,7 +77,7 @@ Documentation must serve multiple audiences with varying technical expertise:
 
 Every IaC repository must contain these core documentation files:
 
-```
+```text
 .
 ├── README.md                    # Primary entry point
 ├── CHANGELOG.md                 # Version history and changes
@@ -106,7 +106,7 @@ Every IaC repository must contain these core documentation files:
 
 #### Documentation Website Structure
 
-```
+```text
 docs/
 ├── _config.yml                  # Jekyll configuration
 ├── index.md                     # Documentation homepage
@@ -174,7 +174,7 @@ module "example" {
 ```
 ````
 
-## Requirements
+## Terraform Requirements
 
 | Name      | Version  |
 | --------- | -------- |
@@ -201,19 +201,30 @@ module "example" {
 
 [Output values table]
 
-## Examples
+## Terraform Examples
 
 Link to examples directory with working configurations.
 
-````
+```hcl
+# Example Terraform configuration
+module "example" {
+  source = "./modules/example"
+
+  # Add required variables
+  example_variable = "value"
+}
+```
 
 **Automated Documentation**:
+
 - Use `terraform-docs` to generate provider, input, and output tables
 - Integrate terraform-docs into CI/CD pipeline for automatic updates
 - Version documentation alongside module versioning
 
 #### Root Module Documentation
+
 Root modules (environments) require:
+
 - **Architecture diagrams** showing resource relationships
 - **Environment-specific variables** and their purposes
 - **Deployment procedures** including prerequisites
@@ -222,9 +233,11 @@ Root modules (environments) require:
 ### Packer Documentation Standards
 
 #### Template Documentation
+
 Every Packer template requires:
 
 **README.md Structure**:
+
 ```markdown
 # Template Name
 
@@ -255,7 +268,7 @@ packer build -var-file="variables.pkrvars.hcl" template.pkr.hcl
 - Custom scripts and their functions
 - Post-processors and artifact handling
 
-## Testing
+## Packer Testing
 
 - How to validate the built image
 - Integration test procedures
@@ -280,7 +293,7 @@ Every playbook must include:
 
 Purpose and scope of the playbook.
 
-## Requirements
+## Ansible Requirements
 
 - Ansible version compatibility
 - Required collections and roles
@@ -317,13 +330,13 @@ List of dependent roles and their sources.
 
 Available tags for selective execution.
 
-## Testing
+## Ansible Role Testing
 
 - How to test in isolated environments
 - Validation procedures
 - Idempotency verification
 
-#### Role Documentation
+### Role Documentation
 
 Ansible roles require comprehensive documentation:
 
@@ -426,7 +439,7 @@ module "vpc" {
 
 ### Documentation Hierarchy
 
-```
+```text
 docs/
 ├── index.md                     # Documentation homepage
 ├── getting-started/             # New user orientation
@@ -520,9 +533,8 @@ docs/
 ```
 ````
 
-````
-
 **Tables**:
+
 ```markdown
 | Header 1 | Header 2 | Header 3 |
 |----------|----------|----------|
@@ -761,13 +773,13 @@ module "example" {
 ```
 ````
 
-## Examples
+## Packer Examples
 
 - [Basic Example](examples/basic/) - Simple implementation
 - [Advanced Example](examples/advanced/) - Full-featured implementation
 - [Multi-Environment](examples/multi-env/) - Environment-specific configs
 
-## Requirements
+## Packer Requirements
 
 | Name                                                                     | Version  |
 | ------------------------------------------------------------------------ | -------- |
@@ -818,7 +830,7 @@ See the project README and documentation standards for contribution guidelines.
 
 [Description of what this role accomplishes]
 
-## Requirements
+## Role Requirements
 
 - Ansible >= 2.9
 - Target OS: Ubuntu 20.04+, CentOS 8+, RHEL 8+
@@ -868,7 +880,7 @@ dependencies:
         required_variable: "value"
 ```
 
-## Testing
+## Role Testing Examples
 
 This role includes Molecule tests:
 
@@ -958,7 +970,7 @@ packer build \
 - **File**: Copy configuration files
 - **Breakpoint**: Debug point for troubleshooting
 
-## Testing
+## Packer Testing Validation
 
 ### Local Validation
 
