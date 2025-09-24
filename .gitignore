@@ -87,3 +87,4 @@ packer/output-*/
 # This directory contains personal and team notes that should not be in the main repo
 thoughts/
 .ansible/
+.mise.toml.backup-*
