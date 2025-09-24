@@ -242,6 +242,7 @@ echo "📊 JSON results saved to kics-results/"
 
 # ============================================================================
 # ACT (GITHUB ACTIONS LOCAL RUNNER) TASKS
+# ============================================================================
 
 [tasks.act-list]
 description = "List all available GitHub Actions workflows"
@@ -249,47 +250,11 @@ run = "act -l"
 
 [tasks.act-ci]
 description = "Run full CI pipeline locally with act"
-run = "act push --job terraform-format --job terraform-validate --job tflint --job terraform-docs --job yaml-lint --job shellcheck --job markdown-lint --job secret-scan"
-
-[tasks.act-format]
-description = "Run terraform format check locally"
-run = "act push --job terraform-format"
-
-[tasks.act-validate]
-description = "Run terraform validate locally"
-run = "act push --job terraform-validate"
-
-[tasks.act-lint]
-description = "Run TFLint locally"
-run = "act push --job tflint"
-
-[tasks.act-docs]
-description = "Run terraform-docs check locally"
-run = "act push --job terraform-docs"
-
-[tasks.act-security]
-description = "Run security scans (Infisical + KICS) locally"
-run = "act push --job secret-scan --job kics-scan"
-
-[tasks.act-quick]
-description = "Run quick CI checks (format, validate, lint)"
-run = "act push --job terraform-format --job terraform-validate --job tflint"
-
-[tasks.act-shell]
-description = "Run shell checks locally"
-run = "act push --job shellcheck"
+run = "act push"
 
 [tasks.act-pr]
 description = "Simulate a pull request CI run"
 run = "act pull_request"
-
-[tasks.act-debug]
-description = "Run act with verbose debugging"
-run = "act push --verbose"
-
-[tasks.act-dry]
-description = "Dry run to see what act would execute"
-run = "act push --dryrun"
 
 # ============================================================================
 # FORMATTING TASKS
@@ -298,7 +263,7 @@ run = "act push --dryrun"
 # Format Terraform files recursively
 [tasks.fmt]
 description = "Format all Terraform files recursively"
-dir = "infrastructure"
+dir = "terraform"
 run = "terraform fmt -recursive"
 
 # Format YAML files
@@ -309,7 +274,7 @@ run = "yamlfmt -conf .yamlfmt ."
 # Check Terraform formatting without making changes (CI-friendly)
 [tasks.fmt-check]
 description = "Check Terraform formatting (non-mutating, shows diff)"
-dir = "infrastructure"
+dir = "terraform"
 run = "terraform fmt -recursive -check -diff"
 
 # Format all supported file types
@@ -329,7 +294,7 @@ run = "./scripts/generate-docs.sh"
 # Verify documentation is up-to-date (CI-friendly)
 [tasks.docs-check]
 description = "Check if Terraform documentation is up-to-date"
-dir = "infrastructure"
+dir = "terraform"
 run = "terraform-docs --config .terraform-docs.yml --output-check ."
 
 # Pre-commit hook for terraform-docs validation
@@ -356,16 +321,16 @@ run = "yamllint ."
 description = "Lint all Markdown files for style consistency"
 run = "markdownlint-cli2 '**/*.md'"
 
-# Run TFLint on production Terraform code
-[tasks.lint-prod]
-description = "Run TFLint on production environment Terraform code"
-dir = "infrastructure/environments/production"
+# Run TFLint on Terraform code
+[tasks.tflint]
+description = "Run TFLint on Terraform code"
+dir = "terraform"
 run = "tflint --init && tflint"
 
 # Run all linting tasks
 [tasks.lint-all]
 description = "Run all linting tasks (shell, YAML, Markdown, Terraform)"
-depends = ["shellcheck", "yaml-lint", "markdown-lint", "lint-prod"]
+depends = ["shellcheck", "yaml-lint", "markdown-lint", "tflint"]
 
 # ============================================================================
 # TERRAFORM VALIDATION & OPERATIONS
@@ -407,54 +372,20 @@ description = "Output Ansible inventory JSON"
 dir = "terraform"
 run = "terraform output -json ansible_inventory > ../ansible_collections/basher83/automation_server/inventory/inventory.json && echo '✅ Inventory exported to ansible_collections/basher83/automation_server/inventory/inventory.json'"
 
-# Backward compatibility aliases
-[tasks.prod-init]
-alias = "terraform-init"
-
-[tasks.prod-validate]
-alias = "terraform-validate"
-
-[tasks.prod-plan]
-alias = "terraform-plan"
-
-[tasks.prod-apply]
-alias = "terraform-apply"
 
 # ============================================================================
 # COMPOSITE VALIDATION TASKS
 # ============================================================================
 
-# Quick check for production environment
+# Quick check for validation
 [tasks.check]
-description = "Quick validation: format, lint, and validate production"
-depends = ["fmt", "lint-prod", "prod-validate"]
-env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
+description = "Quick validation: format, lint, and validate"
+depends = ["fmt", "terraform-validate"]
 
-# Comprehensive validation including all checks
-[tasks.full-check]
-description = "Complete validation: formatting, linting, docs, and security"
-depends = [
-  "fmt-all",
-  "prod-validate",
-  "lint-all",
-  "docs-check",
-  "infisical-scan",
-  "security-kics",
-]
-env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
-
-# CI/CD pipeline validation (all non-mutating checks)
+# CI/CD pipeline validation
 [tasks.ci-check]
 description = "CI pipeline checks: all validations without modifications"
-depends = [
-  "fmt-check",
-  "prod-validate",
-  "lint-all",
-  "docs-check",
-  "infisical-scan",
-  "security-kics-ci",
-]
-env = { TF_IN_AUTOMATION = "true", TF_INPUT = "false" }
+depends = ["fmt-check", "terraform-validate", "yaml-lint", "shellcheck"]
 
 # ============================================================================
 # UTILITY TASKS
@@ -477,806 +408,55 @@ description = "Show all available mise tasks"
 run = "mise tasks"
 
 # ============================================================================
-# DEPLOYMENT PROCESS TASKS
-# ============================================================================
-
-# Start a new deployment with enhanced metadata and timing
-[tasks.deployment-start]
-description = "Initialize a new deployment checklist with comprehensive metadata and timing"
-shell = "bash -c"
-run = """
-# Capture deployment start time and metadata
-DEPLOYMENT_START=$(date +%s)
-TIMESTAMP=$(date +%Y-%m-%d-%H-%M)
-CHECKLIST="deployments/checklists/${TIMESTAMP}-deployment.md"
-FILENAME="${TIMESTAMP}-deployment.md"
-
-# Auto-detect environment (basic implementation)
-detect_environment() {
-  if [[ "$PWD" == *"/staging"* ]] || [[ "$PWD" == *"/stage"* ]]; then
-    echo "staging"
-  elif [[ "$PWD" == *"/dev"* ]] || [[ "$PWD" == *"/development"* ]]; then
-    echo "development"
-  else
-    echo "production"
-  fi
-}
-
-ENVIRONMENT=$(detect_environment)
-GIT_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "unknown")
-GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
-TERRAFORM_VERSION=$(terraform version 2>/dev/null | head -1 | cut -d' ' -f2 || echo "unknown")
-
-# Copy the template
-cp deployments/deployment-checklist.md "$CHECKLIST"
-
-# Create a temp file with enhanced badge and metadata
-TEMP_FILE=$(mktemp)
-{
-  echo "<!-- Infrastructure Status Badges -->"
-  echo "<img src=\"https://img.shields.io/badge/Terraform-${TERRAFORM_VERSION//v/}-7B42BC?style=plastic&logo=terraform&logoColor=white\" alt=\"Terraform\" />"
-  echo "<img src=\"https://img.shields.io/badge/Proxmox-VE_E57000?style=plastic&logo=proxmox&logoColor=white\" alt=\"Proxmox\" />"
-  echo "<img src=\"https://img.shields.io/badge/Ubuntu_24.04-E95420?style=plastic&logo=ubuntu&logoColor=white\" alt=\"Ubuntu 24.04\" />"
-  echo ""
-  echo "<!-- Deployment Status -->"
-  echo "<img src=\"https://img.shields.io/badge/Deployed-$(date +%Y--%m--%d)-brightgreen?style=plastic&logo=github\" alt=\"Deployed $(date +%Y-%m-%d)\" />"
-  echo "<img src=\"https://img.shields.io/badge/Operator-${USER}-blue?style=plastic&logo=github\" alt=\"Operator: ${USER}\" />"
-  echo "<img src=\"https://img.shields.io/badge/Environment-${ENVIRONMENT}-orange?style=plastic&logo=git\" alt=\"Environment: ${ENVIRONMENT}\" />"
-  echo ""
-  echo "<!-- Git Information -->"
-  echo "<img src=\"https://img.shields.io/badge/Branch-${GIT_BRANCH// /-}-blue?style=plastic&logo=git\" alt=\"Branch: ${GIT_BRANCH}\" />"
-  echo "<img src=\"https://img.shields.io/badge/Commit-${GIT_COMMIT:0:7}-purple?style=plastic&logo=github\" alt=\"Commit: ${GIT_COMMIT:0:7}\" />"
-  echo ""
-  echo "## Deployment Metadata"
-  echo ""
-  echo "- **Deployment ID**: DEP-${TIMESTAMP}"
-  echo "- **Start Time**: $(date '+%Y-%m-%d %H:%M:%S')"
-  echo "- **Operator**: ${USER}"
-  echo "- **Environment**: ${ENVIRONMENT}"
-  echo "- **Git Branch**: ${GIT_BRANCH}"
-  echo "- **Git Commit**: ${GIT_COMMIT}"
-  echo "- **Terraform Version**: ${TERRAFORM_VERSION}"
-  echo "- **Working Directory**: ${PWD}"
-  echo ""
-  echo "## Deployment Metrics (Auto-captured)"
-  echo ""
-  echo "- **Planning Start**: [AUTO-FILLED]"
-  echo "- **Planning Duration**: [AUTO-FILLED]"
-  echo "- **Execution Start**: [AUTO-FILLED]"
-  echo "- **Execution Duration**: [AUTO-FILLED]"
-  echo "- **Validation Start**: [AUTO-FILLED]"
-  echo "- **Validation Duration**: [AUTO-FILLED]"
-  echo "- **Total Duration**: [AUTO-FILLED]"
-  echo "- **Success Status**: [AUTO-FILLED]"
-  echo ""
-  echo "---"
-  echo ""
-  cat "$CHECKLIST"
-} > "$TEMP_FILE"
-
-# Replace the original with the new version
-mv "$TEMP_FILE" "$CHECKLIST"
-
-echo "📋 Enhanced deployment checklist created: $CHECKLIST"
-echo "🏷️  Auto-added comprehensive metadata and timing tracking!"
-echo ""
-echo "📊 **Captured Data**:"
-echo "   • Git commit: ${GIT_COMMIT:0:7}"
-echo "   • Environment: ${ENVIRONMENT}"
-echo "   • Terraform: ${TERRAFORM_VERSION}"
-echo "   • Start time: $(date '+%H:%M:%S')"
-echo ""
-echo "✏️  Edit as you go: $CHECKLIST"
-echo "⏱️  Run 'mise run deployment-phase-*' commands to track timing"
-echo "🚨 Document any issues in the 'Issues & Resolutions Log' section"
-echo "📚 Fill out 'Lessons Learned' section at completion"
-echo "💾 Commit when complete: git add $CHECKLIST && git commit"
-"""
-
-# Phase tracking tasks for timing automation
-[tasks.deployment-phase-planning]
-description = "Mark planning phase start and update checklist"
-run = """
-LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
-if [ -z "$LATEST_CHECKLIST" ]; then
-  echo "❌ No active deployment checklist found. Run 'mise run deployment-start' first."
-  exit 1
-fi
-
-PLANNING_START=$(date +%s)
-sed -i.bak "s/\\*\\*\\*\\*Planning Start\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Planning Start\\*\\*\\*\\*: $(date '+%Y-%m-%d %H:%M:%S')/" "$LATEST_CHECKLIST"
-echo "📋 Planning phase started at $(date '+%H:%M:%S')"
-echo "📝 Updated: $LATEST_CHECKLIST"
-"""
-
-[tasks.deployment-phase-execution]
-description = "Mark execution phase start and update checklist"
-run = """
-LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
-if [ -z "$LATEST_CHECKLIST" ]; then
-  echo "❌ No active deployment checklist found."
-  exit 1
-fi
-
-EXECUTION_START=$(date +%s)
-sed -i.bak "s/\\*\\*\\*\\*Execution Start\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Execution Start\\*\\*\\*\\*: $(date '+%Y-%m-%d %H:%M:%S')/" "$LATEST_CHECKLIST"
-echo "🚀 Execution phase started at $(date '+%H:%M:%S')"
-echo "📝 Updated: $LATEST_CHECKLIST"
-"""
-
-[tasks.deployment-phase-validation]
-description = "Mark validation phase start and update checklist"
-run = """
-LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
-if [ -z "$LATEST_CHECKLIST" ]; then
-  echo "❌ No active deployment checklist found."
-  exit 1
-fi
-
-VALIDATION_START=$(date +%s)
-sed -i.bak "s/\\*\\*\\*\\*Validation Start\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Validation Start\\*\\*\\*\\*: $(date '+%Y-%m-%d %H:%M:%S')/" "$LATEST_CHECKLIST"
-echo "✅ Validation phase started at $(date '+%H:%M:%S')"
-echo "📝 Updated: $LATEST_CHECKLIST"
-"""
-
-[tasks.deployment-finish]
-description = "Complete deployment with final metrics and timing"
-run = """
-LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
-if [ -z "$LATEST_CHECKLIST" ]; then
-  echo "❌ No active deployment checklist found."
-  exit 1
-fi
-
-# Calculate total duration (this is a simplified version)
-DEPLOYMENT_END=$(date +%s)
-END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
-
-# Mark as completed
-sed -i.bak "s/\\*\\*\\*\\*Success Status\\*\\*\\*\\*: \\[AUTO-FILLED\\]/\\*\\*\\*\\*Success Status\\*\\*\\*\\*: ✅ Completed/" "$LATEST_CHECKLIST"
-
-echo "🎯 Deployment completed at $END_TIME"
-echo "📝 Final metrics updated in: $LATEST_CHECKLIST"
-echo ""
-echo "📊 Run 'mise run deployment-metrics' to see analytics"
-echo "💾 Don't forget to commit: git add \"$LATEST_CHECKLIST\" && git commit"
-"""
-
-# Generate deployment metrics dashboard
-[tasks.deployment-metrics]
-description = "Generate comprehensive deployment metrics and analytics dashboard"
-run = """
-echo "📊 Lunar Module - Deployment Analytics Dashboard"
-echo "==============================================="
-echo ""
-
-# Count total deployments
-TOTAL_DEPLOYMENTS=$(ls deployments/checklists/*.md 2>/dev/null | wc -l)
-echo "📈 Total Deployments: $TOTAL_DEPLOYMENTS"
-
-if [ "$TOTAL_DEPLOYMENTS" -eq 0 ]; then
-  echo "No deployment records found. Run 'mise run deployment-start' to begin tracking."
-  exit 0
-fi
-
-echo ""
-echo "📅 Recent Deployments:"
-echo "----------------------"
-
-# Show recent 5 deployments with basic info
-ls -t deployments/checklists/*.md 2>/dev/null | head -5 | while read -r file; do
-  FILENAME=$(basename "$file" .md)
-  DATE=$(echo "$FILENAME" | cut -d'-' -f1-3)
-  TIME=$(echo "$FILENAME" | cut -d'-' -f4-5 | tr '-' ':')
-
-  # Extract operator from file if available
-  OPERATOR=$(grep -m1 "Operator:" "$file" 2>/dev/null | sed 's/.*Operator: //' | sed 's/.*Operator: //' || echo "Unknown")
-
-  echo "📋 $DATE $TIME - $OPERATOR"
-done
-
-echo ""
-echo "📊 Quick Metrics:"
-echo "-----------------"
-
-# Success rate calculation (simplified)
-SUCCESS_COUNT=$(grep -l "✅ Completed" deployments/checklists/*.md 2>/dev/null | wc -l)
-if [ "$TOTAL_DEPLOYMENTS" -gt 0 ]; then
-  SUCCESS_RATE=$((SUCCESS_COUNT * 100 / TOTAL_DEPLOYMENTS))
-  echo "✅ Success Rate: $SUCCESS_RATE% ($SUCCESS_COUNT/$TOTAL_DEPLOYMENTS)"
-fi
-
-# Most active operators
-echo ""
-echo "👥 Top Contributors:"
-echo "-------------------"
-grep -h "Operator:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Operator: //' | sort | uniq -c | sort -nr | head -3 | while read -r count operator; do
-  echo "  $operator: $count deployments"
-done
-
-# Environment distribution
-echo ""
-echo "🌍 Environment Distribution:"
-echo "----------------------------"
-grep -h "Environment:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Environment: //' | sort | uniq -c | sort -nr | while read -r count env; do
-  echo "  $env: $count deployments"
-done
-
-echo ""
-echo "📈 For detailed analytics, run:"
-echo "   mise run deployment-metrics-full"
-echo "   mise run deployment-trends"
-"""
-
-# Full deployment metrics analysis
-[tasks.deployment-metrics-full]
-description = "Generate detailed deployment metrics and performance analysis"
-run = """
-echo "🔍 Lunar Module - Detailed Deployment Analysis"
-echo "=============================================="
-echo ""
-
-# Deployment frequency analysis
-echo "📅 Deployment Frequency:"
-echo "-----------------------"
-
-# Group by month
-echo "Last 12 months:"
-ls deployments/checklists/*.md 2>/dev/null | xargs -n1 basename | cut -d'-' -f1-2 | sort | uniq -c | tail -12 | while read -r count month; do
-  printf "  %s: %2d deployments\n" "$month" "$count"
-done
-
-echo ""
-echo "📈 Performance Trends:"
-echo "----------------------"
-
-# Analyze deployment durations (simplified - would need more structured data)
-echo "Average deployment metrics:"
-echo "  • Most common deployment time: Weekdays 14:00-16:00"
-echo "  • Average operator: $(grep -h "Operator:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Operator: //' | sort | uniq -c | sort -nr | head -1 | awk '{print $2}')"
-
-echo ""
-echo "🎯 Success Analysis:"
-echo "--------------------"
-
-# Analyze what went well vs issues
-echo "Common success patterns:"
-echo "  • Pre-flight checks: $(grep -l "✅.*Environment variables" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
-echo "  • Terraform validation: $(grep -l "✅.*Validate" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
-
-echo ""
-echo "⚠️  Common Issues:"
-echo "------------------"
-echo "  • SSH Authentication: $(grep -l "SSH" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
-echo "  • Network connectivity: $(grep -l "network\\|ping" deployments/checklists/*.md 2>/dev/null | wc -l) deployments"
-
-echo ""
-echo "💡 Recommendations:"
-echo "-------------------"
-echo "  • Standardize SSH key management"
-echo "  • Add network connectivity checks"
-echo "  • Implement automated rollback procedures"
-"""
-
-# Generate deployment trends analysis
-[tasks.deployment-trends]
-description = "Analyze deployment trends and patterns over time"
-run = """
-echo "📈 Lunar Module - Deployment Trends Analysis"
-echo "============================================"
-echo ""
-
-# Check if we have deployment data
-TOTAL_DEPLOYMENTS=$(ls deployments/checklists/*.md 2>/dev/null | wc -l)
-if [ "$TOTAL_DEPLOYMENTS" -eq 0 ]; then
-  echo "No deployment records found for trend analysis."
-  echo "Run 'mise run deployment-start' to begin tracking deployments."
-  exit 0
-fi
-
-echo "📊 Trend Analysis for $TOTAL_DEPLOYMENTS deployments:"
-echo ""
-
-# Deployment timing patterns
-echo "🕐 Deployment Timing Patterns:"
-echo "------------------------------"
-
-# Extract hours from deployment filenames
-echo "Deployments by hour of day:"
-ls deployments/checklists/*.md 2>/dev/null | xargs -n1 basename | cut -d'-' -f4 | sort | uniq -c | sort -nr | head -5 | while read -r count hour; do
-  printf "  %02d:00: %2d deployments\n" "$hour" "$count"
-done
-
-echo ""
-echo "📅 Deployment Day Patterns:"
-echo "---------------------------"
-
-# Extract days from deployment filenames
-echo "Deployments by day of month:"
-ls deployments/checklists/*.md 2>/dev/null | xargs -n1 basename | cut -d'-' -f3 | sort | uniq -c | sort -nr | head -5 | while read -r count day; do
-  printf "  Day %2d: %2d deployments\n" "$day" "$count"
-done
-
-echo ""
-echo "📈 Success Rate Trends:"
-echo "-----------------------"
-
-# Calculate success rate over time (last 10 deployments)
-echo "Recent deployment outcomes:"
-RECENT_FILES=$(ls -t deployments/checklists/*.md 2>/dev/null | head -10)
-
-SUCCESS_COUNT=0
-TOTAL_RECENT=0
-
-for file in $RECENT_FILES; do
-  TOTAL_RECENT=$((TOTAL_RECENT + 1))
-  if grep -q "✅ Completed" "$file" 2>/dev/null; then
-    SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
-  fi
-done
-
-if [ "$TOTAL_RECENT" -gt 0 ]; then
-  SUCCESS_RATE=$((SUCCESS_COUNT * 100 / TOTAL_RECENT))
-  echo "  Last $TOTAL_RECENT deployments: $SUCCESS_RATE% success rate"
-fi
-
-echo ""
-echo "👥 Operator Performance:"
-echo "------------------------"
-
-# Show operator success rates
-echo "Success rates by operator:"
-for operator in $(grep -h "Operator:" deployments/checklists/*.md 2>/dev/null | sed 's/.*Operator: //' | sort | uniq); do
-  OPERATOR_TOTAL=$(grep -l "Operator: $operator" deployments/checklists/*.md 2>/dev/null | wc -l)
-  OPERATOR_SUCCESS=$(grep -l "Operator: $operator" deployments/checklists/*.md 2>/dev/null | xargs grep -l "✅ Completed" 2>/dev/null | wc -l)
-
-  if [ "$OPERATOR_TOTAL" -gt 0 ]; then
-    OPERATOR_RATE=$((OPERATOR_SUCCESS * 100 / OPERATOR_TOTAL))
-    printf "  %-15s: %3d%% (%d/%d)\n" "$operator" "$OPERATOR_RATE" "$OPERATOR_SUCCESS" "$OPERATOR_TOTAL"
-  fi
-done
-
-echo ""
-echo "🎯 Insights & Recommendations:"
-echo "------------------------------"
-
-# Generate insights based on data
-if [ "$SUCCESS_RATE" -lt 80 ] && [ "$TOTAL_RECENT" -gt 5 ]; then
-  echo "⚠️  Recent success rate is below 80%. Consider:"
-  echo "   • Reviewing recent deployment issues"
-  echo "   • Updating pre-flight checklists"
-  echo "   • Providing additional training"
-fi
-
-# Check deployment frequency
-DEPLOYMENTS_LAST_30=$(find deployments/checklists/ -name "*.md" -mtime -30 2>/dev/null | wc -l)
-if [ "$DEPLOYMENTS_LAST_30" -gt 20 ]; then
-  echo "⚡ High deployment frequency detected ($DEPLOYMENTS_LAST_30 in last 30 days)"
-  echo "   • Consider implementing deployment queues"
-  echo "   • Review change management processes"
-elif [ "$DEPLOYMENTS_LAST_30" -lt 5 ]; then
-  echo "🐌 Low deployment frequency detected ($DEPLOYMENTS_LAST_30 in last 30 days)"
-  echo "   • Consider increasing deployment cadence"
-  echo "   • Review bottlenecks in deployment process"
-fi
-
-echo ""
-echo "📋 Next Steps:"
-echo "--------------"
-echo "  • Review detailed metrics: mise run deployment-metrics-full"
-echo "  • Update checklists: mise run deployment-start"
-echo "  • Export data for reports: [future feature]"
-"""
-
-# Add an issue to the current deployment checklist
-[tasks.deployment-add-issue]
-description = "Add an issue to the current deployment checklist"
-shell = "bash -c"
-run = """
-# Find the latest deployment checklist
-LATEST_CHECKLIST=$(ls -t deployments/checklists/*.md 2>/dev/null | head -1)
-if [ -z "$LATEST_CHECKLIST" ]; then
-  echo "❌ No active deployment checklist found. Run 'mise run deployment-start' first."
-  exit 1
-fi
-
-# Get issue details interactively
-echo "🚨 Adding issue to deployment checklist: $(basename "$LATEST_CHECKLIST")"
-echo ""
-
-# Use environment variables if set, otherwise prompt
-ISSUE_TITLE="${ISSUE_TITLE:-}"
-ISSUE_PHASE="${ISSUE_PHASE:-}"
-ISSUE_TIME="${ISSUE_TIME:-$(date '+%H:%M')}"
-ISSUE_DESC="${ISSUE_DESC:-}"
-ISSUE_ERROR="${ISSUE_ERROR:-}"
-ISSUE_RESOLUTION="${ISSUE_RESOLUTION:-}"
-ISSUE_IMPACT="${ISSUE_IMPACT:-}"
-
-if [ -z "$ISSUE_TITLE" ]; then
-  read -p "Issue Title: " ISSUE_TITLE
-fi
-
-if [ -z "$ISSUE_PHASE" ]; then
-  echo "Phase options: Pre-flight, Take-off, Post-flight, Emergency"
-  read -p "Phase: " ISSUE_PHASE
-fi
-
-if [ -z "$ISSUE_DESC" ]; then
-  read -p "Description: " ISSUE_DESC
-fi
-
-if [ -z "$ISSUE_ERROR" ]; then
-  read -p "Error/Symptoms (or 'none'): " ISSUE_ERROR
-fi
-
-if [ -z "$ISSUE_RESOLUTION" ]; then
-  read -p "Resolution (or 'PENDING'): " ISSUE_RESOLUTION
-fi
-
-if [ -z "$ISSUE_IMPACT" ]; then
-  echo "Impact options: High, Medium, Low"
-  read -p "Impact: " ISSUE_IMPACT
-fi
-
-# Count existing issues to get next number
-ISSUE_COUNT=$(grep -c "### Issue #" "$LATEST_CHECKLIST" || echo "0")
-NEXT_ISSUE=$((ISSUE_COUNT + 1))
-
-# Find the insertion point (after the Issues & Resolutions Log header)
-if grep -q "## 🚨 Issues & Resolutions Log" "$LATEST_CHECKLIST"; then
-  # Create the new issue entry
-  ISSUE_ENTRY="
-### Issue #$NEXT_ISSUE: $ISSUE_TITLE
-- **Phase**: $ISSUE_PHASE
-- **Time**: $ISSUE_TIME
-- **Description**: $ISSUE_DESC
-- **Error/Symptoms**:
-  ```
-  $ISSUE_ERROR
-  ```
-- **Root Cause**: [To be determined]
-- **Resolution**: $ISSUE_RESOLUTION
-- **Time to Resolve**: [To be updated]
-- **Impact**: $ISSUE_IMPACT
-- **Prevention**: [To be documented]
-"
-
-  # Insert the new issue after the first existing issue or after the guidelines
-  if grep -q "### Issue #1:" "$LATEST_CHECKLIST"; then
-    # Insert after the first issue block
-    awk -v entry="$ISSUE_ENTRY" '/^### Issue #1:/{p=1} p && /^$/ && !inserted {print entry; inserted=1} 1' "$LATEST_CHECKLIST" > "$LATEST_CHECKLIST.tmp"
-  else
-    # Insert after the guidelines section
-    awk -v entry="$ISSUE_ENTRY" '/^> - Suggest prevention measures/{print; print entry; next} 1' "$LATEST_CHECKLIST" > "$LATEST_CHECKLIST.tmp"
-  fi
-
-  mv "$LATEST_CHECKLIST.tmp" "$LATEST_CHECKLIST"
-
-  echo "✅ Added Issue #$NEXT_ISSUE: $ISSUE_TITLE"
-  echo "📝 Updated: $LATEST_CHECKLIST"
-  echo "📝 Remember to update root cause and prevention measures!"
-else
-  echo "❌ Issues section not found in checklist. Please use the updated template."
-  exit 1
-fi
-"""
-
-# Show recent deployments
-[tasks.deployment-history]
-description = "Show recent deployment records"
-run = """
-echo "📚 Recent Deployments:"
-echo ""
-ls -la deployments/checklists/*.md 2>/dev/null | tail -10 || echo "No deployment records found"
-"""
-
-# ============================================================================
 # DEPLOYMENT PIPELINE TASKS (PACKER → TERRAFORM → ANSIBLE)
 # ============================================================================
 
-# Create outputs directory for cross-stage data passing
-[tasks.deploy-init]
-description = "Initialize deployment pipeline and create output directories"
-run = """
-echo "🚀 Initializing deployment pipeline..."
-mkdir -p deployments/outputs
-echo "✅ Created deployments/outputs directory"
-echo "📋 Pipeline ready for Packer → Terraform → Ansible deployment"
-"""
 
-# Stage 1: Packer Build with Output Capture
-[tasks.deploy-packer]
-description = "Build VM template with Packer and capture outputs"
-depends = ["deploy-init"]
-run = """
-START_TIME=$(date +%s)
-echo "🏗️ Stage 1: Building VM template with Packer..."
 
-# Build with Packer
-cd packer && packer build ubuntu-server-numbat-docker.pkr.hcl
-
-# Capture Packer outputs
-echo "📝 Capturing Packer build outputs..."
-cat > ../deployments/outputs/packer-outputs.json << EOF
-{
-  "template_id": "1001",
-  "template_name": "ubuntu-server-numbat",
-  "build_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "docker_version": "$(docker --version 2>/dev/null | cut -d' ' -f3 | tr -d ',' || echo 'pre-installed')",
-  "packer_version": "$(packer version | head -1)",
-  "source_commit": "$(git rev-parse HEAD)"
-}
-EOF
-
-echo "✅ Packer build completed and outputs saved"
-echo "📄 Outputs: deployments/outputs/packer-outputs.json"
-
-END_TIME=$(date +%s)
-DURATION=$((END_TIME - START_TIME))
-echo "Task completed in ${DURATION} seconds"
-echo "$(date): deploy-packer completed in ${DURATION}s" >> deployment-metrics.log
-"""
-
-# Stage 2: Terraform Deploy with Output Capture
+# Deploy infrastructure with Terraform
 [tasks.deploy-terraform]
-description = "Deploy infrastructure with Terraform"
-depends = ["deploy-init"]
+description = "Deploy infrastructure with Terraform and generate Ansible inventory"
 dir = "terraform"
 run = """
-START_TIME=$(date +%s)
-echo "🚀 Stage 2: Deploying infrastructure with Terraform..."
-
-# Check if we have a template override or use default
-if [ -f "../deployments/outputs/template.json" ]; then
-  TEMPLATE_ID=$(jq -r '.template_id' ../deployments/outputs/template.json)
-  echo "📋 Using template ID from file: $TEMPLATE_ID"
-else
-  echo "📋 Using default template ID: 8024 (jumpman24)"
-  TEMPLATE_ID="8024"
-fi
-
-# Initialize and apply Terraform
+echo "🚀 Deploying infrastructure with Terraform..."
 terraform init -input=false >/dev/null 2>&1
 terraform apply -auto-approve
 
-# Capture Terraform outputs for Ansible
-echo "📝 Generating Ansible inventory from Terraform outputs..."
-terraform output -json > ../deployments/outputs/terraform-outputs.json
-
-# Generate Ansible inventory from Terraform outputs
+# Generate Ansible inventory
 mkdir -p ../ansible_collections/basher83/automation_server/inventory
-echo "📋 Generating inventory from Terraform outputs..."
 terraform output -json ansible_inventory > ../ansible_collections/basher83/automation_server/inventory/inventory.json
-
 echo "✅ Terraform deployment completed and inventory generated"
-echo "📄 Outputs: deployments/outputs/terraform-outputs.json"
-echo "📋 Inventory: ansible_collections/basher83/automation_server/inventory/inventory.json"
-
-END_TIME=$(date +%s)
-DURATION=$((END_TIME - START_TIME))
-echo "Task completed in ${DURATION} seconds"
-echo "$(date): deploy-terraform completed in ${DURATION}s" >> ../deployment-metrics.log
 """
 
-# Stage 3: Ansible Configuration with Output Capture
+# Configure VM with Ansible
 [tasks.deploy-ansible]
-description = "Configure VM with Ansible using Terraform outputs"
-depends = ["deploy-init"]
-dir = "ansible"
+description = "Configure VM with Ansible using inventory from Terraform"
+dir = "ansible_collections/basher83/automation_server"
 run = """
-START_TIME=$(date +%s)
-echo "⚙️ Stage 3: Configuring VM with Ansible..."
+echo "⚙️ Configuring VM with Ansible..."
 
-# Check for Terraform outputs
-if [ ! -f "../deployments/outputs/terraform-outputs.json" ]; then
-  echo "❌ No Terraform outputs found. Run 'mise run deploy-terraform' first."
-  exit 1
-fi
+# Test connectivity
+echo "📋 Testing Ansible connectivity..."
+ansible all -i inventory/inventory.json -m ping
 
-# Check for inventory file
-if [ ! -f "inventory/hosts.yml" ]; then
-  echo "❌ No Ansible inventory found. Run 'mise run deploy-terraform' to generate."
-  exit 1
-fi
-
-# Wait for VM to be ready
-echo "⏳ Waiting for VM to be ready for SSH..."
-VM_IP=$(jq -r '.vm_ip.value // "192.168.10.250"' ../deployments/outputs/terraform-outputs.json)
-for i in {1..30}; do
-  if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no ansible@$VM_IP 'exit' 2>/dev/null; then
-    echo "✅ SSH connection established"
-    break
-  fi
-  echo "Attempt $i/30: Waiting for SSH..."
-  sleep 10
-done
-
-# Run post-deployment configuration playbook
-if [ -f "playbooks/post-deploy.yml" ]; then
-  echo "🎯 Running post-deployment configuration..."
-  ansible-playbook -i inventory/hosts.yml playbooks/post-deploy.yml
+# Run site playbook
+if [ -f "playbooks/site.yml" ]; then
+  echo "🎯 Running site configuration playbook..."
+  ansible-playbook -i inventory/inventory.json playbooks/site.yml
 else
-  echo "📋 Testing Ansible connectivity and golden image..."
-  ansible all -i inventory/hosts.yml -m ping
-
-  echo "✅ Verifying golden image components..."
-  # Verify Docker is pre-installed from golden image
-  ansible all -i inventory/hosts.yml -m command -a 'docker --version'
-  ansible all -i inventory/hosts.yml -m command -a 'systemctl is-active docker'
-  # Verify development tools from golden image
-  ansible all -i inventory/hosts.yml -m command -a '/home/ansible/.local/bin/uv --version' -b
-  ansible all -i inventory/hosts.yml -m command -a '/home/ansible/.local/bin/mise --version' -b
-  # Verify nvm and Node.js installation
-  ansible all -i inventory/hosts.yml -m shell -a 'source ~/.nvm/nvm.sh && nvm --version' -b
-  ansible all -i inventory/hosts.yml -m shell -a 'source ~/.nvm/nvm.sh && node --version' -b
+  echo "✅ Connectivity test successful"
 fi
-
-# Capture Ansible results
-echo "📝 Capturing Ansible results..."
-cat > ../deployments/outputs/ansible-results.json << EOF
-{
-  "deployment_status": "success",
-  "configured_services": ["docker"],
-  "docker_status": "$(ansible all -i inventory/hosts.yml -m command -a 'systemctl is-active docker' 2>/dev/null | grep -o 'active' || echo 'unknown')",
-  "completion_time": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "vm_ip": "$VM_IP"
-}
-EOF
-
-echo "✅ Ansible configuration completed"
-echo "📄 Results: deployments/outputs/ansible-results.json"
-
-END_TIME=$(date +%s)
-DURATION=$((END_TIME - START_TIME))
-echo "Task completed in ${DURATION} seconds"
-echo "$(date): deploy-ansible completed in ${DURATION}s" >> ../deployment-metrics.log
 """
 
-# Complete Pipeline: Packer → Terraform → Ansible
+# Complete deployment pipeline
 [tasks.deploy-full]
-description = "Run complete deployment pipeline: Packer → Terraform → Ansible"
-depends = ["deploy-packer", "deploy-terraform", "deploy-ansible"]
+description = "Run complete deployment pipeline: Terraform → Ansible"
+depends = ["deploy-terraform", "deploy-ansible"]
 run = """
-START_TIME=$(date +%s)
 echo "🎉 Complete deployment pipeline finished!"
-echo ""
-echo "📊 Pipeline Summary:"
-echo "==================="
-echo "🏗️  Packer: $(jq -r '.template_name' deployments/outputs/packer-outputs.json 2>/dev/null || echo 'completed')"
-echo "🚀 Terraform: $(jq -r '.vm_ip.value // "deployed"' deployments/outputs/terraform-outputs.json 2>/dev/null)"
-echo "⚙️  Ansible: $(jq -r '.deployment_status' deployments/outputs/ansible-results.json 2>/dev/null || echo 'completed')"
-echo ""
 echo "🔍 Run smoke tests: mise run smoke-test"
-echo "📋 View outputs: ls -la deployments/outputs/"
-
-END_TIME=$(date +%s)
-DURATION=$((END_TIME - START_TIME))
-echo "Task completed in ${DURATION} seconds"
-echo "$(date): deploy-full completed in ${DURATION}s" >> deployment-metrics.log
 """
 
-# Pipeline with deployment tracking
-[tasks.deploy-full-tracked]
-description = "Run full pipeline with deployment tracking and analytics"
-run = """
-START_TIME=$(date +%s)
-echo "📋 Starting tracked deployment pipeline..."
-
-# Start deployment tracking
-mise run deployment-start
-
-# Mark phases and run pipeline
-mise run deployment-phase-planning
-echo "📝 Planning phase: Pipeline validation"
-sleep 2
-
-mise run deployment-phase-execution
-echo "🚀 Executing full pipeline..."
-mise run deploy-full
-
-mise run deployment-phase-validation
-echo "✅ Running validation and smoke tests..."
-mise run smoke-test
-
-# Complete deployment
-mise run deployment-finish
-
-echo "🎉 Tracked deployment pipeline completed!"
-
-END_TIME=$(date +%s)
-DURATION=$((END_TIME - START_TIME))
-echo "Task completed in ${DURATION} seconds"
-echo "$(date): deploy-full-tracked completed in ${DURATION}s" >> deployment-metrics.log
-"""
-
-# Verify deployment pipeline integrity
-[tasks.deploy-verify]
-description = "Verify complete deployment pipeline and outputs"
-run = """
-echo "🔍 Verifying deployment pipeline..."
-echo ""
-
-# Check output files
-echo "📄 Checking output files:"
-for file in packer-outputs.json terraform-outputs.json ansible-results.json; do
-  if [ -f "deployments/outputs/$file" ]; then
-    echo "  ✅ $file exists"
-    echo "     Size: $(du -h deployments/outputs/$file | cut -f1)"
-  else
-    echo "  ❌ $file missing"
-  fi
-done
-
-echo ""
-echo "🎯 Running comprehensive smoke tests..."
-mise run smoke-test
-
-echo ""
-echo "📊 Pipeline Status Summary:"
-echo "==========================="
-if [ -f "deployments/outputs/packer-outputs.json" ]; then
-  echo "🏗️  Packer: $(jq -r '.template_name + " (" + .build_time + ")"' deployments/outputs/packer-outputs.json)"
-fi
-if [ -f "deployments/outputs/terraform-outputs.json" ]; then
-  echo "🚀 Terraform: VM deployed at $(jq -r '.vm_ip.value // "unknown IP"' deployments/outputs/terraform-outputs.json)"
-fi
-if [ -f "deployments/outputs/ansible-results.json" ]; then
-  echo "⚙️  Ansible: $(jq -r '.deployment_status + " (" + .completion_time + ")"' deployments/outputs/ansible-results.json)"
-fi
-"""
-
-# Rollback deployment (emergency)
-[tasks.deploy-rollback]
-description = "Emergency rollback of deployment"
-dir = "infrastructure/environments/production"
-run = """
-echo "⚠️  EMERGENCY ROLLBACK INITIATED"
-echo ""
-read -p "Are you sure you want to destroy the deployment? (yes/no): " -r
-if [[ $REPLY != "yes" ]]; then
-  echo "❌ Rollback cancelled"
-  exit 1
-fi
-
-echo "🔥 Destroying Terraform resources..."
-terraform destroy -auto-approve
-
-echo "🧹 Cleaning up output files..."
-rm -f ../../../deployments/outputs/terraform-outputs.json
-rm -f ../../../deployments/outputs/ansible-results.json
-rm -f ../../../ansible/inventory/hosts.yml
-
-echo "✅ Rollback completed"
-echo "⚠️  Packer template remains (manual cleanup required if needed)"
-"""
-
-# Environment-specific deployment
-[tasks.deploy-env]
-description = "Deploy to specific environment (ENV=production|staging|development)"
-run = """
-ENVIRONMENT=${ENV:-production}
-echo "🌍 Deploying to environment: $ENVIRONMENT"
-
-if [ ! -d "infrastructure/environments/$ENVIRONMENT" ]; then
-  echo "❌ Environment '$ENVIRONMENT' not found"
-  echo "Available environments:"
-  ls -1 infrastructure/environments/
-  exit 1
-fi
-
-echo "📂 Using environment: infrastructure/environments/$ENVIRONMENT"
-cd "infrastructure/environments/$ENVIRONMENT"
-
-# Run deployment for specific environment
-../../../scripts/deploy-env.sh "$ENVIRONMENT"
-"""
-
-# ============================================================================
-# SMOKE TESTING TASKS
-# ============================================================================
-
-# Run full smoke test suite
 [tasks.smoke-test]
 description = "Run infrastructure smoke tests for jump-man VM"
 run = "./scripts/smoke-test.sh"
@@ -1311,14 +491,4 @@ ssh -o ConnectTimeout=10 ansible@192.168.10.250 << 'EOF'
   docker system info --format "Server Version: {{.ServerVersion}}"
   docker system info --format "Storage Driver: {{.Driver}}"
 EOF
-"""
-
-# Run smoke tests after apply
-[tasks.prod-deploy-and-test]
-description = "Deploy production infrastructure and run smoke tests"
-depends = ["prod-apply"]
-run = """
-echo "⏳ Waiting for VM to be fully ready..."
-sleep 30
-./scripts/smoke-test.sh
 """

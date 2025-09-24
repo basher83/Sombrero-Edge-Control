@@ -7,6 +7,7 @@ Simplified Terraform configuration for provisioning the jump-man VM on Proxmox.
 Stage 2 of the infrastructure pipeline: Provision VM infrastructure from a Packer-built template.
 
 **Pipeline Flow:**
+
 1. **Packer** → Creates golden image template (ID: 8024)
 2. **Terraform** → Provisions VM from template with networking (this stage)
 3. **Ansible** → Configures software and services
