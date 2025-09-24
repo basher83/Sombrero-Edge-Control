@@ -7,10 +7,11 @@ All notable changes to the Jump Host Infrastructure project will be documented i
 _This changelog follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
-## [Unreleased] - 2025-09-22
+## [Unreleased] - 2025-09-23
 
 ### Added
 
+- **Target Template Documentation**: Added documentation for existing Proxmox VM template (ID: 8024) with pre-installed DevOps tooling (`docs/infrastructure/target-template.md`)
 - **Bootstrap Roles Implementation (ANS-001)**: Production-ready bootstrap and bootstrap_check roles with DebOps patterns (95/100 score):
   - Enhanced Python installation with APT cache management
   - Connection reset after Python installation for fresh VMs
@@ -61,6 +62,22 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Changed
 
+- **Terraform Architecture Simplification** (BREAKING CHANGE): Complete refactor of Terraform structure:
+  - Moved from complex module-based architecture (`infrastructure/` directory) to simplified single directory (`terraform/`)
+  - Removed VM module abstraction - direct resource definition in main.tf
+  - Hardcoded template ID 8024 as default (jumpman24 template)
+  - Reduced codebase from ~500 lines across multiple directories to ~200 lines in single directory
+  - Updated all mise tasks from `prod-*` to `terraform-*` with backward compatibility aliases
+- **Mise Configuration Cleanup**: Major simplification of .mise.toml:
+  - Reduced from 1,324 lines to 495 lines (63% reduction)
+  - Reduced from 76 tasks to 45 tasks (41% reduction)
+  - Removed 496-line deployment tracking system (overengineered feature)
+  - Consolidated ACT tasks from 12 to 3 essential ones
+  - Removed backward compatibility aliases and complex deployment pipeline
+- **Pull Request Template Simplification**: Streamlined from 273 lines to 59 lines, keeping only essential sections
+- **Dependency Updates**:
+  - Updated Python to 3.13.7 (Renovate bot PR #18)
+  - Updated Cosign to 2.6.0 (Renovate bot PR #17)
 - **Task Tracker Status**: Updated to 91% complete (10/11 tasks) with all Ansible Configuration tasks now finished:
   - ANS-001 Bootstrap Playbook: Implemented with DebOps patterns (September 22)
   - ANS-002, ANS-003, ANS-004: Discovered already implemented in production
@@ -109,6 +126,18 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Removed
 
+- **Infrastructure Directory**: Completely removed complex `infrastructure/` directory structure:
+  - Deleted `infrastructure/environments/production/` with all cloud-init configurations
+  - Removed `infrastructure/modules/vm/` module abstraction
+  - Removed 1,756 lines of overengineered Terraform code
+- **Mise Deployment Tracking**: Removed entire deployment tracking system (496 lines):
+  - deployment-start, deployment-phase-*, deployment-finish tasks
+  - deployment-metrics, deployment-trends analysis tasks
+  - deployment-add-issue interactive task
+- **Redundant Mise Tasks**: Removed 31 unnecessary tasks including:
+  - 9 ACT task variations (kept only act-list, act-ci, act-pr)
+  - prod-deploy-and-test and other composite tasks
+  - Complex deployment pipeline tasks (deploy-init, deploy-packer, deploy-verify, etc.)
 - **Legacy Ansible Directory**: Archived old ansible/ directory structure (backed up as `ansible-legacy-backup-20250921-235432.tar.gz`)
 - **Unused Documentation**: Removed ACTIONABLE-INSIGHTS.md and outdated references
 - **Complex Cloud-Init Scripts**: Removed docker-install.sh and firewall-setup.sh in favor of Ansible roles
