@@ -16,7 +16,8 @@ Deploy Netdata real-time monitoring agent on the jump host for comprehensive sys
 ## Research Summary
 
 **Selected Solution**: Official Netdata Ansible Repository (Score: 85/100)
-- **Repository**: https://github.com/netdata/ansible
+
+- **Repository**: <https://github.com/netdata/ansible>
 - **Maintenance**: Recently updated (December 2024)
 - **Ubuntu 24.04**: Supported (tested on Ubuntu 18, 20, 22)
 - **Docker Monitoring**: Automatic container detection via cgroups
@@ -408,6 +409,7 @@ curl http://192.168.10.250:19999/api/v1/info | jq .
 Open browser to: `http://192.168.10.250:19999`
 
 Features available:
+
 - Real-time system metrics (1-second granularity)
 - Docker container monitoring
 - Network interface statistics
