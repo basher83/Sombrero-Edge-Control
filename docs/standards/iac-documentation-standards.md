@@ -216,12 +216,15 @@ module "example" {
 ```
 
 **Automated Documentation**:
+
 - Use `terraform-docs` to generate provider, input, and output tables
 - Integrate terraform-docs into CI/CD pipeline for automatic updates
 - Version documentation alongside module versioning
 
 #### Root Module Documentation
+
 Root modules (environments) require:
+
 - **Architecture diagrams** showing resource relationships
 - **Environment-specific variables** and their purposes
 - **Deployment procedures** including prerequisites
@@ -230,9 +233,11 @@ Root modules (environments) require:
 ### Packer Documentation Standards
 
 #### Template Documentation
+
 Every Packer template requires:
 
 **README.md Structure**:
+
 ```markdown
 # Template Name
 
@@ -529,6 +534,7 @@ docs/
 ````
 
 **Tables**:
+
 ```markdown
 | Header 1 | Header 2 | Header 3 |
 |----------|----------|----------|
