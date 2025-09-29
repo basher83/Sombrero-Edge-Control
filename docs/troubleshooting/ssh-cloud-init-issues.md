@@ -18,19 +18,19 @@ in the Proxmox Terraform provider between `user_account` and `user_data_file_id`
    ansible@192.168.10.250: Permission denied (publickey)
    ```
 
-2. **Cloud-init Processing Issues**
+1. **Cloud-init Processing Issues**
 
    ```text
    WARNING: Unhandled non-multipart (text/x-not-multipart) userdata
    ```
 
-3. **Missing Essential Packages**
+1. **Missing Essential Packages**
 
    - qemu-guest-agent not installed/running
    - jq, Docker, and other packages missing
    - Scripts from vendor-data not created
 
-4. **1Password SSH Key Mismatch**
+1. **1Password SSH Key Mismatch**
    - SSH agent offering different keys than configured in Terraform
    - `jumpman_ed25519` key not loaded in SSH agent
 
@@ -38,11 +38,12 @@ in the Proxmox Terraform provider between `user_account` and `user_data_file_id`
 
 ### Primary Issue: Proxmox Provider Configuration Conflict
 
-**Problem**: The Terraform VM module was using **both** `user_account` and `user_data_file_id` simultaneously in the initialization block.
+**Problem**: The Terraform VM module was using **both** `user_account` and `user_data_file_id`
+simultaneously in the initialization block.
 
 According to the [bpg/proxmox provider documentation](https://registry.terraform.io/providers/bpg/proxmox/latest/docs/resources/virtual_environment_vm):
 
-```
+```yaml
 - user_account - (Optional) The user account configuration (conflicts with user_data_file_id).
 - user_data_file_id - (Optional) The identifier for a file containing custom user data (conflicts with user_account).
 ```
@@ -60,7 +61,7 @@ According to the [bpg/proxmox provider documentation](https://registry.terraform
    - Incorrect vault names (`Devops` vs `DevOps`)
    - Wrong item name (`jump-man` vs `jumpman_ed25519`)
 
-2. **SSH Options Parsing**
+1. **SSH Options Parsing**
    - Invalid SSH option: `StrictHostKeyChecking=accept-new`
    - Caused SSH command failures in smoke tests
 

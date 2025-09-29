@@ -4,7 +4,9 @@ This document covers MegaLinter setup, configuration, and optimizations for the 
 
 ## Overview
 
-[MegaLinter](https://megalinter.io/) is a unified linting tool that aggregates multiple linters for code quality across multiple languages and formats. This project uses MegaLinter to ensure consistent code quality for:
+[MegaLinter](https://megalinter.io/) is a unified linting tool that aggregates multiple
+linters for code quality across multiple languages and formats. This project uses
+MegaLinter to ensure consistent code quality for:
 
 - **Terraform**: `tflint`, `terraform validate`, `terraform fmt`
 - **Ansible**: `ansible-lint`
@@ -33,7 +35,10 @@ This document covers MegaLinter setup, configuration, and optimizations for the 
 
 ### Overview
 
-This project uses a **symlink-based organization strategy** for linter configurations to maintain **backward compatibility** while providing **professional organization**. All linter configuration files are stored in `.github/linters/` with symlinks in the repository root pointing to them.
+This project uses a **symlink-based organization strategy** for linter configurations to
+maintain **backward compatibility** while providing **professional organization**. All linter
+configuration files are stored in `.github/linters/` with symlinks in the repository root
+pointing to them.
 
 ### Benefits
 

@@ -2,7 +2,9 @@
 
 ## Overview
 
-This guide documents how Ansible serves as the single source of truth for ALL configuration management in the Sombrero Edge Control pipeline, handling everything beyond basic SSH access provided by Terraform.
+This guide documents how Ansible serves as the single source of truth for ALL configuration
+management in the Sombrero Edge Control pipeline, handling everything beyond basic SSH
+access provided by Terraform.
 
 ## Architecture Principles
 
@@ -20,7 +22,7 @@ This guide documents how Ansible serves as the single source of truth for ALL co
 
 ## Collection Structure
 
-```
+```text
 ansible_collections/basher83/automation_server/
 ├── galaxy.yml                    # Collection metadata
 ├── playbooks/
@@ -94,7 +96,7 @@ Ensures basic connectivity and prerequisites:
 ---
 - name: Bootstrap Jump Host
   hosts: jump_hosts
-  gather_facts: false  # Can't gather until Python installed
+  gather_facts: false # Can't gather until Python installed
   become: true
 
   tasks:
@@ -420,6 +422,6 @@ ansible-playbook -i inventory/terraform.yml playbooks/site.yml --profile=tasks
 
 ---
 
-*Document Version: 1.0*
-*Last Updated: 2025-01-18*
-*Status: Active*
+_Document Version: 1.0_
+_Last Updated: 2025-01-18_
+_Status: Active_

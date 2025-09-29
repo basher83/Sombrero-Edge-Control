@@ -9,7 +9,9 @@ Status: ⏸️ Blocked
 
 ## Objective
 
-Create an Ansible role to install and configure Docker CE with Docker Compose plugin on the jump host. This replaces the Docker installation previously handled by cloud-init, ensuring consistent and idempotent configuration management.
+Create an Ansible role to install and configure Docker CE with Docker Compose plugin on the
+jump host. This replaces the Docker installation previously handled by cloud-init, ensuring
+consistent and idempotent configuration management.
 
 ## Prerequisites
 
@@ -120,7 +122,7 @@ Create `roles/docker/tasks/main.yml`:
     dest: /etc/docker/daemon.json
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: restart docker
 
 - name: Create docker group
@@ -139,7 +141,7 @@ Create `roles/docker/tasks/main.yml`:
   file:
     path: "{{ docker_compose_path }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Reset ssh connection to apply group changes
   meta: reset_connection

@@ -131,7 +131,8 @@ Coding standards, documentation guidelines, and quality assurance standards.
 - **[ansible-standards.md](./standards/ansible-standards.md)** - Ansible coding and structure standards
 - **[documentation-standards.md](./standards/documentation-standards.md)** - Documentation writing and formatting standards
 - **[git-standards.md](./standards/git-standards.md)** - Git workflow and commit standards
-- **[iac-documentation-standards.md](./standards/iac-documentation-standards.md)** - Infrastructure as Code documentation standards
+- **[iac-documentation-standards.md](./standards/iac-documentation-standards.md)** - Infrastructure as
+  Code documentation standards
 - **[iac-smoke-testing-theory.md](./standards/iac-smoke-testing-theory.md)** - Infrastructure smoke testing theory and standards
 - **[linting-standard.md](./standards/linting-standard.md)** - Code linting and formatting standards
 

@@ -31,11 +31,11 @@ packer/
 ## Prerequisites
 
 1. **Proxmox API Access**: Valid API token with VM creation permissions
-2. **Ubuntu Cloud Image Template**: Must exist on Proxmox (named "ubuntu24" or configure in variables)
+1. **Ubuntu Cloud Image Template**: Must exist on Proxmox (named "ubuntu24" or configure in variables)
    - This is a cloud-init enabled template created from Ubuntu cloud image
    - Much smaller and faster than installing from ISO
-3. **Network Access**: Packer needs access to Proxmox API and VM network
-4. **SSH Key**: For passwordless authentication to the created template
+1. **Network Access**: Packer needs access to Proxmox API and VM network
+1. **SSH Key**: For passwordless authentication to the created template
 
 ## Configuration
 
@@ -195,9 +195,9 @@ ansible-playbook -i inventory/hosts.yml playbooks/jump-man.yml
 ### Modifying the Template
 
 1. **Change Ubuntu Version**: Update the ISO file path in the template
-2. **Add Software**: Modify provisioner sections to install additional packages
-3. **Adjust Resources**: Change CPU, memory, or disk settings
-4. **Network Configuration**: Modify network adapter settings
+1. **Add Software**: Modify provisioner sections to install additional packages
+1. **Adjust Resources**: Change CPU, memory, or disk settings
+1. **Network Configuration**: Modify network adapter settings
 
 ### Adding New Provisioners
 
@@ -222,18 +222,18 @@ provisioner "shell" {
    - Check network connectivity
    - Ensure API token has correct permissions
 
-2. **ISO Not Found**
+1. **ISO Not Found**
 
    - Verify ISO is uploaded to specified storage pool
    - Check ISO filename matches template configuration
 
-3. **SSH Connection Timeout**
+1. **SSH Connection Timeout**
 
    - Ensure SSH key is correctly added to autoinstall
    - Check network configuration allows SSH access
    - Verify cloud-init completed successfully
 
-4. **Build Hangs**
+1. **Build Hangs**
    - Check Proxmox console for boot issues
    - Verify autoinstall configuration is valid
    - Use debug mode: `mise run packer-build-debug`
@@ -264,9 +264,9 @@ graph LR
 ```
 
 1. **Packer**: Creates golden image with base software
-2. **Terraform**: Clones template and provisions infrastructure
-3. **Cloud-init**: Performs initial VM configuration
-4. **Ansible**: Handles complex post-deployment setup
+1. **Terraform**: Clones template and provisions infrastructure
+1. **Cloud-init**: Performs initial VM configuration
+1. **Ansible**: Handles complex post-deployment setup
 
 ### When to Use Each Tool
 
@@ -285,7 +285,7 @@ graph LR
    mise run packer-build
    ```
 
-2. Version management:
+1. Version management:
    - Tag template builds with dates
    - Keep previous template for rollback
    - Document changes in build notes

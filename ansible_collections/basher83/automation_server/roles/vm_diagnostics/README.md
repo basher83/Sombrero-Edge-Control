@@ -1,6 +1,8 @@
 # VM Diagnostics Role
 
-This role provides comprehensive VM diagnostics and troubleshooting capabilities for the Sombrero Edge Control infrastructure. It replaces manual diagnostic commands with automated Ansible tasks for systematic problem analysis and resolution.
+This role provides comprehensive VM diagnostics and troubleshooting capabilities
+for the Sombrero Edge Control infrastructure. It replaces manual diagnostic commands
+with automated Ansible tasks for systematic problem analysis and resolution.
 
 ## Research Background
 
@@ -28,11 +30,11 @@ Research conducted using ansible-research subagent with 100-point scoring system
 This role implements comprehensive VM diagnostics across six key areas:
 
 1. **System Diagnostics** - Hardware, resources, kernel, boot analysis
-2. **Log Collection & Analysis** - Centralized collection, parsing, trend analysis
-3. **Network Diagnostics** - Connectivity, DNS, routing, firewall analysis
-4. **Service Diagnostics** - Status, dependencies, performance, configuration
-5. **Performance Analysis** - Resource trends, bottlenecks, I/O testing
-6. **Troubleshooting Automation** - Workflows, reports, remediation
+1. **Log Collection & Analysis** - Centralized collection, parsing, trend analysis
+1. **Network Diagnostics** - Connectivity, DNS, routing, firewall analysis
+1. **Service Diagnostics** - Status, dependencies, performance, configuration
+1. **Performance Analysis** - Resource trends, bottlenecks, I/O testing
+1. **Troubleshooting Automation** - Workflows, reports, remediation
 
 ## Features
 
@@ -116,7 +118,7 @@ This role implements comprehensive VM diagnostics across six key areas:
           - logs
           - performance
           - troubleshooting
-        diagnostic_depth: "comprehensive"  # basic, standard, comprehensive
+        diagnostic_depth: "comprehensive" # basic, standard, comprehensive
         collect_logs: true
         log_collection_paths:
           - /var/log/cloud-init.log
@@ -131,7 +133,7 @@ This role implements comprehensive VM diagnostics across six key areas:
         performance_testing: true
         network_diagnostics: true
         service_analysis: true
-        automated_remediation: false  # Enable cautiously
+        automated_remediation: false # Enable cautiously
         retain_diagnostics_days: 7
 ```
 

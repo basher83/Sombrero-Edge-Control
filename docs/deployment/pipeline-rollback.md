@@ -29,8 +29,8 @@ terraform apply -var="template_id=8024"  # Old template
 If the pipeline fails catastrophically:
 
 1. **Destroy VM**: `terraform destroy -auto-approve`
-2. **Use known good template**: `terraform apply -var="template_id=8024"`
-3. **Re-run Ansible**: `./scripts/stage-3-ansible.sh`
+1. **Use known good template**: `terraform apply -var="template_id=8024"`
+1. **Re-run Ansible**: `./scripts/stage-3-ansible.sh`
 
 ## Validation After Rollback
 

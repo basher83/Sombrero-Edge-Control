@@ -32,18 +32,23 @@ Add these sections to the bottom of your checklist:
 ## Deployment Notes
 
 ### What Went Well
+
 -
 
 ### Issues Encountered
+
 -
 
 ### Lessons Learned
+
 -
 
 ### Tips for Next Deployment
+
 -
 
 ### Deployment Metrics
+
 - Start Time:
 - End Time:
 - Total Duration:
@@ -61,10 +66,10 @@ git commit -m "docs: deployment record for jump-man $(date +%Y-%m-%d)"
 ## Why This Process?
 
 1. **Audit Trail**: Track who deployed what and when
-2. **Knowledge Sharing**: Learn from each deployment
-3. **Troubleshooting**: Reference past issues and solutions
-4. **Continuous Improvement**: Identify patterns and improve process
-5. **Onboarding**: New team members can review past deployments
+1. **Knowledge Sharing**: Learn from each deployment
+1. **Troubleshooting**: Reference past issues and solutions
+1. **Continuous Improvement**: Identify patterns and improve process
+1. **Onboarding**: New team members can review past deployments
 
 ## Deployment Record Retention
 

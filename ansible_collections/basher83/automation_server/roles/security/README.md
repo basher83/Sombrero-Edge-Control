@@ -27,8 +27,8 @@ This role implements multiple layers of security hardening including:
 
 ```yaml
 # CIS Benchmark Compliance
-security_cis_level: 1           # 1 (basic) or 2 (advanced)
-security_cis_profile: "server"  # 'server' or 'workstation'
+security_cis_level: 1 # 1 (basic) or 2 (advanced)
+security_cis_profile: "server" # 'server' or 'workstation'
 
 # Feature Toggles
 security_kernel_hardening_enabled: true
@@ -60,8 +60,8 @@ security_ssh_allowed_ciphers: "chacha20-poly1305@openssh.com,aes256-gcm@openssh.
 ### Fail2ban Configuration
 
 ```yaml
-security_fail2ban_bantime: 3600      # 1 hour
-security_fail2ban_findtime: 600      # 10 minutes
+security_fail2ban_bantime: 3600 # 1 hour
+security_fail2ban_findtime: 600 # 10 minutes
 security_fail2ban_maxretry: 5
 security_fail2ban_ignoreip: "127.0.0.1/8 ::1"
 security_fail2ban_jails:
@@ -318,9 +318,9 @@ ansible-playbook -i inventory site.yml --limit jump-man
 If locked out after hardening:
 
 1. Use console access
-2. Check `/etc/ssh/sshd_config.backup.*`
-3. Restore: `cp /etc/ssh/sshd_config.backup.<timestamp> /etc/ssh/sshd_config`
-4. Restart SSH: `systemctl restart sshd`
+1. Check `/etc/ssh/sshd_config.backup.*`
+1. Restore: `cp /etc/ssh/sshd_config.backup.<timestamp> /etc/ssh/sshd_config`
+1. Restart SSH: `systemctl restart sshd`
 
 ### Fail2ban False Positives
 
@@ -341,9 +341,9 @@ If experiencing performance issues:
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make changes and test thoroughly
-4. Submit a pull request
+1. Create a feature branch
+1. Make changes and test thoroughly
+1. Submit a pull request
 
 ## License
 

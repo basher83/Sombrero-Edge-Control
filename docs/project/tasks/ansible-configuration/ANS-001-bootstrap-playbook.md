@@ -10,9 +10,14 @@ Last Updated: 2025-09-22
 
 ## Objective
 
-Create a bootstrap playbook that establishes initial connectivity and prepares the VM for full configuration. This playbook ensures Python is installed, sets up the ansible user properly, and verifies network connectivity before proceeding with complex configuration tasks.
+Create a bootstrap playbook that establishes initial connectivity and prepares the VM for
+full configuration. This playbook ensures Python is installed, sets up the ansible user
+properly, and verifies network connectivity before proceeding with complex configuration
+tasks.
 
-**Research Update**: Based on comprehensive research of production patterns (DebOps score: 95/100), this implementation incorporates enterprise-grade bootstrap patterns with enhanced idempotency, error handling, and Ubuntu 24.04 optimizations.
+**Research Update**: Based on comprehensive research of production patterns (DebOps
+score: 95/100), this implementation incorporates enterprise-grade bootstrap patterns with
+enhanced idempotency, error handling, and Ubuntu 24.04 optimizations.
 
 ## Prerequisites
 
@@ -72,9 +77,9 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
 - name: Configure sudo for ansible user
   lineinfile:
     path: /etc/sudoers.d/ansible
-    line: 'ansible ALL=(ALL) NOPASSWD:ALL'
+    line: "ansible ALL=(ALL) NOPASSWD:ALL"
     create: yes
-    validate: 'visudo -cf %s'
+    validate: "visudo -cf %s"
 
 - name: Set hostname
   hostname:
@@ -129,7 +134,7 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
   file:
     path: /etc/systemd/resolved.conf.d
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Configure DNS (Ubuntu 24.04 pattern)
   copy:
@@ -155,7 +160,7 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
   file:
     path: "{{ item }}"
     state: directory
-    mode: '0755'
+    mode: "0755"
   loop:
     - /opt/scripts
     - /opt/configs
@@ -165,7 +170,7 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
   file:
     path: /etc/ansible/facts.d
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Save bootstrap completion fact
   copy:
@@ -176,7 +181,7 @@ Create `ansible_collections/basher83/automation_server/roles/bootstrap/tasks/mai
         "bootstrap_version": "1.0.0"
       }
     dest: /etc/ansible/facts.d/bootstrap.fact
-    mode: '0644'
+    mode: "0644"
 
 - name: Save bootstrap completion marker
   file:
@@ -254,7 +259,7 @@ Update `ansible_collections/basher83/automation_server/playbooks/site.yml`:
 ---
 - name: Complete Jump Host Configuration
   hosts: jump_hosts
-  gather_facts: false  # Disable initially since Python may not be installed
+  gather_facts: false # Disable initially since Python may not be installed
 
   pre_tasks:
     - name: Bootstrap system if needed
@@ -350,7 +355,7 @@ ansible_become_method: sudo
 ansible_python_interpreter: /usr/bin/python3
 
 # Connection settings
-ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 ansible_ssh_pipelining: yes
 
 # NOTE: Host key checking is disabled for initial bootstrap convenience.

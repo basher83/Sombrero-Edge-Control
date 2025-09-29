@@ -26,8 +26,8 @@ Deploy an Ubuntu 24.04 VM to Proxmox (node: lloyd) named "jump-man" using a
 three-stage pipeline with clear separation of concerns:
 
 1. **Packer**: Build minimal golden image with OS and cloud-init capability
-2. **Terraform**: Provision infrastructure with minimal cloud-init (SSH access only)
-3. **Ansible**: Complete configuration management and package installation
+1. **Terraform**: Provision infrastructure with minimal cloud-init (SSH access only)
+1. **Ansible**: Complete configuration management and package installation
 
 Required packages (installed by Ansible, NOT cloud-init):
 

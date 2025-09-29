@@ -1,6 +1,7 @@
 # Ansible Role: Firewall
 
-A comprehensive iptables-based firewall role with full Docker compatibility, designed to work seamlessly with Docker's automatic iptables management while providing host and container security.
+A comprehensive iptables-based firewall role with full Docker compatibility, designed to work
+seamlessly with Docker's automatic iptables management while providing host and container security.
 
 ## ⚠️ CRITICAL: Docker Compatibility
 
@@ -17,9 +18,9 @@ Key Docker compatibility features:
 ### Important Docker Firewall Facts
 
 1. **Docker bypasses host firewall rules**: Ports published with `-p` are accessible regardless of INPUT chain rules
-2. **DOCKER-USER chain is your friend**: This chain is evaluated before Docker's rules and persists across Docker restarts
-3. **Never use UFW with Docker**: UFW is incompatible with Docker's iptables management
-4. **Never flush iptables with Docker running**: This will break all container networking
+1. **DOCKER-USER chain is your friend**: This chain is evaluated before Docker's rules and persists across Docker restarts
+1. **Never use UFW with Docker**: UFW is incompatible with Docker's iptables management
+1. **Never flush iptables with Docker running**: This will break all container networking
 
 ## Requirements
 
@@ -35,7 +36,7 @@ Key Docker compatibility features:
 This role supports two methods for managing firewall rules:
 
 1. **Priority-based rules** (Recommended) - Numbered rule groups processed in order
-2. **Legacy method** - Traditional individual rule application
+1. **Legacy method** - Traditional individual rule application
 
 ```yaml
 # Enable priority-based rule system (recommended)
@@ -79,7 +80,7 @@ firewall_docker_user_rules:
 
 ```yaml
 # Firewall backend
-firewall_backend: "iptables"  # iptables, iptables-nft, or iptables-legacy
+firewall_backend: "iptables" # iptables, iptables-nft, or iptables-legacy
 firewall_enable: true
 
 # Default policies (Docker manages FORWARD)
@@ -108,13 +109,13 @@ firewall_input_rules:
     port: 80
     protocol: tcp
     source: "0.0.0.0/0"
-    state: "disabled"  # Enable as needed
+    state: "disabled" # Enable as needed
 
   - name: "HTTPS"
     port: 443
     protocol: tcp
     source: "0.0.0.0/0"
-    state: "disabled"  # Enable as needed
+    state: "disabled" # Enable as needed
 ```
 
 ### Security Features
@@ -163,7 +164,7 @@ firewall_log_dropped: true
 
           # Enable web services
           200_web_services:
-            enabled: true  # Overrides default disabled state
+            enabled: true # Overrides default disabled state
 ```
 
 ### Basic Setup with Docker
@@ -173,8 +174,8 @@ firewall_log_dropped: true
 - hosts: docker_hosts
   become: true
   roles:
-    - role: docker      # Install Docker first
-    - role: firewall    # Then configure firewall
+    - role: docker # Install Docker first
+    - role: firewall # Then configure firewall
       vars:
         firewall_docker_compatibility: true
         firewall_input_rules:
@@ -236,7 +237,8 @@ firewall_log_dropped: true
 
 ### Understanding DOCKER-USER Chain
 
-The DOCKER-USER chain is evaluated **before** Docker's automatic rules. This is the ONLY reliable place to add restrictions for container traffic.
+The DOCKER-USER chain is evaluated **before** Docker's automatic rules. This is the ONLY
+reliable place to add restrictions for container traffic.
 
 ```bash
 # View current DOCKER-USER rules
@@ -252,9 +254,9 @@ iptables -I DOCKER-USER -i eth0 -p tcp --dport 80 -j ACCEPT
 ### Common Docker Scenarios
 
 1. **Public Web Server**: Allow only HTTP/HTTPS from external
-2. **Internal Services**: Block all external, allow from trusted networks
-3. **Development**: Allow all (default Docker behavior)
-4. **Database Containers**: Never expose externally, internal only
+1. **Internal Services**: Block all external, allow from trusted networks
+1. **Development**: Allow all (default Docker behavior)
+1. **Database Containers**: Never expose externally, internal only
 
 ## Troubleshooting
 
@@ -279,8 +281,8 @@ iptables -S
 The role includes SSH rate limiting. If locked out:
 
 1. Wait 60 seconds for rate limit to reset
-2. Use console access to disable rate limiting
-3. Adjust `firewall_ssh_rate_limit_burst` if needed
+1. Use console access to disable rate limiting
+1. Adjust `firewall_ssh_rate_limit_burst` if needed
 
 ### Validation
 
@@ -301,18 +303,19 @@ ansible-playbook -i inventory site.yml --tags firewall_validate
 
 ### Docker Security Model
 
-1. **Published Ports Bypass Firewall**: When you run `docker run -p 80:80`, port 80 is accessible from anywhere, regardless of INPUT rules
-2. **Use DOCKER-USER Chain**: This is the only reliable way to restrict container access
-3. **Internal Container Communication**: Containers can communicate freely unless you configure Docker network policies
-4. **Bridge Network**: Default docker0 bridge is 172.17.0.0/16
+1. **Published Ports Bypass Firewall**: When you run `docker run -p 80:80`, port 80 is
+   accessible from anywhere, regardless of INPUT rules
+1. **Use DOCKER-USER Chain**: This is the only reliable way to restrict container access
+1. **Internal Container Communication**: Containers can communicate freely unless you configure Docker network policies
+1. **Bridge Network**: Default docker0 bridge is 172.17.0.0/16
 
 ### Best Practices
 
 1. Never expose database containers with `-p`
-2. Use Docker networks for internal communication
-3. Implement DOCKER-USER rules for production
-4. Regular rule audits with validation playbook
-5. Keep backups before major changes
+1. Use Docker networks for internal communication
+1. Implement DOCKER-USER rules for production
+1. Regular rule audits with validation playbook
+1. Keep backups before major changes
 
 ## Testing
 

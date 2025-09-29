@@ -12,7 +12,9 @@ See [ADR-20250118](../decisions/20250118-pipeline-separation.md) for the archite
 
 ## Overview
 
-This document provides best practices for maintaining clean separation between Terraform and Ansible in our three-stage pipeline, ensuring tool independence while maintaining efficient data handoffs.
+This document provides best practices for maintaining clean separation between Terraform
+and Ansible in our three-stage pipeline, ensuring tool independence while maintaining
+efficient data handoffs.
 
 ## 🎯 Integration Patterns Comparison
 
@@ -127,7 +129,7 @@ Terraform provides ONLY minimal cloud-init for SSH access. ALL configuration hap
 ```yaml
 # DON'T DO THIS
 - name: Add user
-  command: useradd myuser  # Fails if user exists
+  command: useradd myuser # Fails if user exists
 ```
 
 **✅ Better Approach:**
@@ -245,12 +247,12 @@ data "aws_secretsmanager_secret_version" "ansible_vault_password" {
 
 ### Access Control Matrix
 
-| Component | Access Level | Authentication | Authorization |
-|-----------|-------------|----------------|---------------|
-| Packer Builds | Service Account | API Token | Build permissions only |
-| Terraform | CI/CD Service | OIDC/Workload Identity | Infrastructure permissions |
-| Ansible | SSH Key | ED25519 | sudo for configuration |
-| Proxmox | API Token | PVE API | VM management permissions |
+| Component     | Access Level    | Authentication         | Authorization              |
+| ------------- | --------------- | ---------------------- | -------------------------- |
+| Packer Builds | Service Account | API Token              | Build permissions only     |
+| Terraform     | CI/CD Service   | OIDC/Workload Identity | Infrastructure permissions |
+| Ansible       | SSH Key         | ED25519                | sudo for configuration     |
+| Proxmox       | API Token       | PVE API                | VM management permissions  |
 
 ## 📊 Performance Optimization
 
@@ -320,31 +322,31 @@ esac
 
 **Required Skill Levels:**
 
-| Role | Terraform | Ansible | Packer | DevOps |
-|------|-----------|---------|--------|---------|
-| Platform Engineer | Expert | Expert | Advanced | Expert |
-| DevOps Engineer | Advanced | Expert | Advanced | Advanced |
-| Infrastructure Developer | Advanced | Intermediate | Intermediate | Intermediate |
-| Developer | Basic | Basic | Basic | Intermediate |
+| Role                     | Terraform | Ansible      | Packer       | DevOps       |
+| ------------------------ | --------- | ------------ | ------------ | ------------ |
+| Platform Engineer        | Expert    | Expert       | Advanced     | Expert       |
+| DevOps Engineer          | Advanced  | Expert       | Advanced     | Advanced     |
+| Infrastructure Developer | Advanced  | Intermediate | Intermediate | Intermediate |
+| Developer                | Basic     | Basic        | Basic        | Intermediate |
 
 ### Training Recommendations
 
 **Learning Path:**
 
 1. **Foundation**: Terraform Associate certification
-2. **Intermediate**: Ansible Automation Platform certification
-3. **Advanced**: Packer and immutable infrastructure patterns
-4. **Expert**: Multi-cloud orchestration and GitOps
+1. **Intermediate**: Ansible Automation Platform certification
+1. **Advanced**: Packer and immutable infrastructure patterns
+1. **Expert**: Multi-cloud orchestration and GitOps
 
 ### Change Management Process
 
 **Implementation Phases:**
 
 1. **Assessment**: Current state analysis and gap identification
-2. **Pilot**: Small-scale implementation with monitoring
-3. **Expansion**: Gradual rollout with feedback loops
-4. **Optimization**: Performance tuning and best practice refinement
-5. **Standardization**: Documentation and training program
+1. **Pilot**: Small-scale implementation with monitoring
+1. **Expansion**: Gradual rollout with feedback loops
+1. **Optimization**: Performance tuning and best practice refinement
+1. **Standardization**: Documentation and training program
 
 ## 🔄 Continuous Improvement
 
@@ -425,6 +427,8 @@ jobs:
 
 - [ ] Advanced multi-environment support
 - [ ] Automated compliance checking
-- [ ] AI-assisted optimization
+- [ ] AI-assisted
+      optimization
 
-This guide provides a foundation for continuously improving the Terraform + Ansible integration while maintaining the excellent existing pipeline structure.
+This guide provides a foundation for continuously improving the Terraform + Ansible
+integration while maintaining the excellent existing pipeline structure.

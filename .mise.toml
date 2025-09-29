@@ -319,7 +319,7 @@ run = "yamllint ."
 # Lint Markdown files for style consistency
 [tasks.markdown-lint]
 description = "Lint all Markdown files for style consistency"
-run = "markdownlint-cli2 '**/*.md'"
+run = "markdownlint-cli2 --config .markdownlint-cli2.jsonc '**/*.md'"
 
 # Run TFLint on Terraform code
 [tasks.tflint]
@@ -410,7 +410,6 @@ run = "mise tasks"
 # ============================================================================
 # DEPLOYMENT PIPELINE TASKS (PACKER → TERRAFORM → ANSIBLE)
 # ============================================================================
-
 
 
 # Deploy infrastructure with Terraform

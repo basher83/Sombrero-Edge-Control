@@ -9,7 +9,9 @@ Status: ✅ Complete
 
 ## Objective
 
-Implement clean handoff mechanisms between the three pipeline stages (Packer → Terraform → Ansible), ensuring each tool can operate independently while maintaining smooth data flow. Create automation scripts and documentation for the complete deployment pipeline.
+Implement clean handoff mechanisms between the three pipeline stages (Packer → Terraform
+→ Ansible), ensuring each tool can operate independently while maintaining smooth data flow.
+Create automation scripts and documentation for the complete deployment pipeline.
 
 ## Prerequisites
 

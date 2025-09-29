@@ -1,15 +1,17 @@
 # VM Lifecycle Role
 
-This role manages VM lifecycle operations including rollback, cleanup, and reset operations for the Sombrero Edge Control infrastructure. It provides systematic approaches to infrastructure state management and recovery operations.
+This role manages VM lifecycle operations including rollback, cleanup, and reset operations
+for the Sombrero Edge Control infrastructure. It provides systematic approaches to
+infrastructure state management and recovery operations.
 
 ## Role Overview
 
 This role implements comprehensive VM lifecycle management across four key areas:
 
 1. **Rollback Operations** - Safe VM destruction and state restoration
-2. **Cleanup Operations** - Resource cleanup and artifact removal
-3. **Reset Operations** - VM reset to known good state
-4. **State Management** - Infrastructure state validation and management
+1. **Cleanup Operations** - Resource cleanup and artifact removal
+1. **Reset Operations** - VM reset to known good state
+1. **State Management** - Infrastructure state validation and management
 
 ## Features
 
@@ -70,7 +72,7 @@ This role implements comprehensive VM lifecycle management across four key areas
   roles:
     - role: vm_lifecycle
       vars:
-        lifecycle_operation: "rollback"  # rollback, cleanup, reset, validate
+        lifecycle_operation: "rollback" # rollback, cleanup, reset, validate
         confirm_destructive_operations: true
         preserve_data: false
         backup_before_operation: true

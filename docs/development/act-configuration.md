@@ -4,7 +4,9 @@ This document describes the act configuration for running GitHub Actions locally
 
 ## Overview
 
-[Act](https://github.com/nektos/act) runs GitHub Actions workflows locally using Docker containers, providing immediate feedback without pushing to GitHub. This saves time, reduces CI minutes usage, and enables local debugging of workflow issues.
+[Act](https://github.com/nektos/act) runs GitHub Actions workflows locally using Docker
+containers, providing immediate feedback without pushing to GitHub. This saves time,
+reduces CI minutes usage, and enables local debugging of workflow issues.
 
 ## Configuration Files
 
@@ -209,19 +211,19 @@ act --container-options "--cpus 2"
    mise run act-quick  # Fast validation
    ```
 
-2. **Full Validation**: Before committing
+1. **Full Validation**: Before committing
 
    ```bash
    mise run act-ci    # Complete CI pipeline
    ```
 
-3. **PR Simulation**: Before creating PR
+1. **PR Simulation**: Before creating PR
 
    ```bash
    mise run act-pr    # Test PR-specific checks
    ```
 
-4. **Debug Issues**: When failures occur
+1. **Debug Issues**: When failures occur
 
    ```bash
    mise run act-debug  # Verbose output
@@ -346,9 +348,9 @@ mise run act-dry
 ### Speed Improvements
 
 1. **Container Reuse**: Already enabled via `--reuse`
-2. **Local Caching**: Act caches in `~/.cache/act/`
-3. **Parallel Jobs**: Run multiple terminals for different jobs
-4. **Selective Testing**: Test only relevant jobs
+1. **Local Caching**: Act caches in `~/.cache/act/`
+1. **Parallel Jobs**: Run multiple terminals for different jobs
+1. **Selective Testing**: Test only relevant jobs
 
 ### Resource Management
 

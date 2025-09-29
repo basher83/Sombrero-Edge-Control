@@ -11,23 +11,26 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Documentation Philosophy](#documentation-philosophy)
-3. [GitHub Integration Standards](#github-integration-standards)
-4. [Tool-Specific Documentation Requirements](#tool-specific-documentation-requirements)
-5. [Content Standards and Guidelines](#content-standards-and-guidelines)
-6. [File Structure and Organization](#file-structure-and-organization)
-7. [Markdown Standards and Formatting](#markdown-standards-and-formatting)
-8. [Code Review and Quality Assurance](#code-review-and-quality-assurance)
-9. [Maintenance and Lifecycle Management](#maintenance-and-lifecycle-management)
-10. [Templates and Examples](#templates-and-examples)
-11. [Compliance and Security Documentation](#compliance-and-security-documentation)
-12. [Automation and Tooling](#automation-and-tooling)
+1. [Documentation Philosophy](#documentation-philosophy)
+1. [GitHub Integration Standards](#github-integration-standards)
+1. [Tool-Specific Documentation Requirements](#tool-specific-documentation-requirements)
+1. [Content Standards and Guidelines](#content-standards-and-guidelines)
+1. [File Structure and Organization](#file-structure-and-organization)
+1. [Markdown Standards and Formatting](#markdown-standards-and-formatting)
+1. [Code Review and Quality Assurance](#code-review-and-quality-assurance)
+1. [Maintenance and Lifecycle Management](#maintenance-and-lifecycle-management)
+1. [Templates and Examples](#templates-and-examples)
+1. [Compliance and Security Documentation](#compliance-and-security-documentation)
+1. [Automation and Tooling](#automation-and-tooling)
 
 ---
 
 ## Overview
 
-This document establishes comprehensive documentation standards for Infrastructure as Code (IaC) repositories utilizing **Terraform**, **Packer**, and **Ansible**. These standards ensure consistency, maintainability, and collaborative efficiency across all infrastructure projects while leveraging GitHub's native features for enhanced developer experience.
+This document establishes comprehensive documentation standards for Infrastructure as Code
+(IaC) repositories utilizing **Terraform**, **Packer**, and **Ansible**. These standards
+ensure consistency, maintainability, and collaborative efficiency across all infrastructure
+projects while leveraging GitHub's native features for enhanced developer experience.
 
 ### Purpose
 
@@ -55,9 +58,9 @@ This standard applies to all repositories containing:
 Documentation must be treated as a first-class citizen alongside infrastructure code:
 
 1. **Version Controlled**: All documentation lives in Git alongside the code it describes
-2. **Peer Reviewed**: Documentation changes follow the same review process as code
-3. **Automated Testing**: Documentation accuracy is validated through automation
-4. **Living Documentation**: Content evolves with the infrastructure it describes
+1. **Peer Reviewed**: Documentation changes follow the same review process as code
+1. **Automated Testing**: Documentation accuracy is validated through automation
+1. **Living Documentation**: Content evolves with the infrastructure it describes
 
 ### Target Audiences
 
@@ -141,9 +144,9 @@ Provide structured templates for:
 #### Required Workflows
 
 1. **Documentation Linting**: Automated markdown linting on all PRs
-2. **Link Validation**: Check all external and internal links
-3. **Deploy to Pages**: Automatic deployment of docs on merge to main
-4. **Security Scanning**: Automated security scanning of IaC code
+1. **Link Validation**: Check all external and internal links
+1. **Deploy to Pages**: Automatic deployment of docs on merge to main
+1. **Security Scanning**: Automated security scanning of IaC code
 
 ---
 
@@ -181,23 +184,23 @@ module "example" {
 | terraform | >= 1.3.0 |
 | aws       | >= 4.0   |
 
-## Providers
+## Provider Requirements
 
 [Provider documentation table]
 
-## Modules
+## Module Dependencies
 
 [Sub-module documentation table]
 
-## Resources
+## Resource Inventory
 
 [Resource documentation table]
 
-## Inputs
+## Input Variables
 
 [Input variables table]
 
-## Outputs
+## Output Values
 
 [Output values table]
 
@@ -221,7 +224,7 @@ module "example" {
 - Integrate terraform-docs into CI/CD pipeline for automatic updates
 - Version documentation alongside module versioning
 
-#### Root Module Documentation
+### Root Module Documentation
 
 Root modules (environments) require:
 
@@ -238,7 +241,7 @@ Every Packer template requires:
 
 **README.md Structure**:
 
-```markdown
+````markdown
 # Template Name
 
 Description of the image being built and its intended use.
@@ -251,15 +254,16 @@ Description of the image being built and its intended use.
 
 ## Variables
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| variable_name | Description | string | "default" | yes |
+| Name          | Description | Type   | Default   | Required |
+| ------------- | ----------- | ------ | --------- | -------- |
+| variable_name | Description | string | "default" | yes      |
 
 ## Usage
 
 ```bash
 # Build command examples
 packer build -var-file="variables.pkrvars.hcl" template.pkr.hcl
+```
 ````
 
 ## Provisioners
@@ -537,9 +541,9 @@ docs/
 
 ```markdown
 | Header 1 | Header 2 | Header 3 |
-|----------|----------|----------|
+| -------- | -------- | -------- |
 | Data     | Data     | Data     |
-````
+```
 
 **Links**:
 
@@ -610,11 +614,11 @@ jobs:
 All documentation changes must be reviewed for:
 
 1. **Technical Accuracy**: Code examples work as documented
-2. **Completeness**: All necessary information is included
-3. **Clarity**: Instructions are clear and unambiguous
-4. **Consistency**: Follows established style and format standards
-5. **Accessibility**: Content is inclusive and accessible
-6. **Security**: No sensitive information is exposed
+1. **Completeness**: All necessary information is included
+1. **Clarity**: Instructions are clear and unambiguous
+1. **Consistency**: Follows established style and format standards
+1. **Accessibility**: Content is inclusive and accessible
+1. **Security**: No sensitive information is exposed
 
 #### Review Checklist Template
 
@@ -817,6 +821,7 @@ No modules.
 ## Contributing
 
 <!-- TODO: Create CONTRIBUTING.md file -->
+
 See the project README and documentation standards for contribution guidelines.
 
 ## License
@@ -869,7 +874,7 @@ dependencies:
       variable: value
 ```
 
-## Example Playbook
+## Example Playbook (with Variables)
 
 ```yaml
 - hosts: servers
@@ -888,7 +893,7 @@ This role includes Molecule tests:
 molecule test
 ```
 
-## Tags
+## Ansible Tags
 
 - `config`: Configuration tasks only
 - `install`: Installation tasks only
@@ -958,12 +963,12 @@ packer build \
 ## Build Process
 
 1. **Launch**: Creates temporary EC2 instance
-2. **Provision**: Runs provisioning scripts
-3. **Cleanup**: Installs cleanup scripts
-4. **Snapshot**: Creates AMI from instance
-5. **Terminate**: Destroys temporary resources
+1. **Provision**: Runs provisioning scripts
+1. **Cleanup**: Installs cleanup scripts
+1. **Snapshot**: Creates AMI from instance
+1. **Terminate**: Destroys temporary resources
 
-## Provisioners
+## Packer Provisioners
 
 - **Shell**: System updates and package installation
 - **Ansible**: Application configuration
@@ -1018,11 +1023,11 @@ This template produces:
 Every IaC project must document:
 
 1. **Security Architecture**: High-level security design decisions
-2. **Access Controls**: IAM policies, RBAC configurations, and permission models
-3. **Data Protection**: Encryption at rest and in transit
-4. **Network Security**: Firewall rules, security groups, and network policies
-5. **Secrets Management**: How sensitive data is handled and stored
-6. **Compliance Mappings**: Alignment with regulatory requirements
+1. **Access Controls**: IAM policies, RBAC configurations, and permission models
+1. **Data Protection**: Encryption at rest and in transit
+1. **Network Security**: Firewall rules, security groups, and network policies
+1. **Secrets Management**: How sensitive data is handled and stored
+1. **Compliance Mappings**: Alignment with regulatory requirements
 
 #### Security Review Checklist
 
@@ -1229,11 +1234,17 @@ required_checks:
 
 ## Conclusion
 
-These documentation standards provide a comprehensive framework for creating, maintaining, and improving Infrastructure as Code documentation. By following these guidelines, teams can ensure their documentation serves as an effective tool for collaboration, onboarding, and operational excellence.
+These documentation standards provide a comprehensive framework for creating, maintaining,
+and improving Infrastructure as Code documentation. By following these guidelines, teams
+can ensure their documentation serves as an effective tool for collaboration, onboarding,
+and operational excellence.
 
-Regular review and improvement of these standards is essential as tools, practices, and team needs evolve. Documentation is not just a deliverable—it's a critical component of infrastructure reliability and team effectiveness.
+Regular review and improvement of these standards is essential as tools, practices, and
+team needs evolve. Documentation is not just a deliverable—it's a critical component of
+infrastructure reliability and team effectiveness.
 
-For questions or suggestions regarding these standards, please create an issue in the documentation standards repository or contact the DevOps team directly.
+For questions or suggestions regarding these standards, please create an issue in the
+documentation standards repository or contact the DevOps team directly.
 
 ---
 

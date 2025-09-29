@@ -2,7 +2,10 @@
 
 ## Overview
 
-This task management system provides structured tracking for the Sombrero-Edge-Control pipeline separation refactor and ongoing infrastructure development. It ensures clear visibility of work items, dependencies, and progress across the three-stage pipeline (Packer, Terraform, Ansible).
+This task management system provides structured tracking for the Sombrero-Edge-Control
+pipeline separation refactor and ongoing infrastructure development. It ensures clear
+visibility of work items, dependencies, and progress across the three-stage pipeline
+(Packer, Terraform, Ansible).
 
 ## Purpose
 

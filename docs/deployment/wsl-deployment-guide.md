@@ -2,7 +2,8 @@
 
 ## Overview
 
-This guide addresses specific considerations and solutions for deploying infrastructure from Windows Subsystem for Linux (WSL) environments.
+This guide addresses specific considerations and solutions for deploying infrastructure
+from Windows Subsystem for Linux (WSL) environments.
 
 ## Known WSL-Specific Issues
 
@@ -211,12 +212,12 @@ find . -type d -exec chmod 755 {} \;
 ## Best Practices for WSL Deployments
 
 1. **Always use WSL filesystem** for projects, not /mnt/c/
-2. **Set up keychain** for persistent SSH agent
-3. **Document WSL version** in deployment logs
-4. **Test network connectivity** before deployments
-5. **Keep WSL updated**: `wsl --update`
-6. **Use WSL 2** for better performance
-7. **Allocate sufficient memory** in .wslconfig
+1. **Set up keychain** for persistent SSH agent
+1. **Document WSL version** in deployment logs
+1. **Test network connectivity** before deployments
+1. **Keep WSL updated**: `wsl --update`
+1. **Use WSL 2** for better performance
+1. **Allocate sufficient memory** in .wslconfig
 
 ## WSL Configuration File
 
@@ -254,6 +255,7 @@ When creating deployment checklists, include:
 
 ```markdown
 ## Deployment Environment Details
+
 - **Platform**: Windows WSL 2
 - **WSL Distribution**: Ubuntu 20.04
 - **Host OS**: Windows 11 Pro

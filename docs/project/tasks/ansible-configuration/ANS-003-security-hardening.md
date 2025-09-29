@@ -9,7 +9,9 @@ Status: ⏸️ Blocked
 
 ## Objective
 
-Implement comprehensive security hardening for the jump host including nftables firewall configuration, SSH hardening, fail2ban setup, and security best practices. This ensures the jump host is properly secured as the central management point for infrastructure operations.
+Implement comprehensive security hardening for the jump host including nftables firewall
+configuration, SSH hardening, fail2ban setup, and security best practices. This ensures the
+jump host is properly secured as the central management point for infrastructure operations.
 
 ## Prerequisites
 
@@ -51,14 +53,14 @@ ssh_allowed_users:
 
 # Firewall Configuration
 firewall_allowed_tcp_ports:
-  - 22    # SSH
-  - 80    # HTTP (for future services)
-  - 443   # HTTPS (for future services)
+  - 22 # SSH
+  - 80 # HTTP (for future services)
+  - 443 # HTTPS (for future services)
 
 firewall_allowed_udp_ports: []
 
 firewall_allowed_networks:
-  - "192.168.10.0/24"  # Local network
+  - "192.168.10.0/24" # Local network
 
 # Fail2ban Configuration
 fail2ban_enabled: true
@@ -91,26 +93,26 @@ Create `roles/security_hardening/tasks/ssh.yml`:
     regexp: "^#?{{ item.key }}"
     line: "{{ item.key }} {{ item.value }}"
     state: present
-    validate: 'sshd -t -f %s'
+    validate: "sshd -t -f %s"
   loop:
-    - { key: 'Port', value: "{{ ssh_port }}" }
-    - { key: 'PermitRootLogin', value: "{{ ssh_permit_root_login }}" }
-    - { key: 'PasswordAuthentication', value: "{{ ssh_password_authentication }}" }
-    - { key: 'PubkeyAuthentication', value: "{{ ssh_pubkey_authentication }}" }
-    - { key: 'PermitEmptyPasswords', value: "{{ ssh_permit_empty_passwords }}" }
-    - { key: 'ChallengeResponseAuthentication', value: "{{ ssh_challenge_response_authentication }}" }
-    - { key: 'GSSAPIAuthentication', value: "{{ ssh_gss_api_authentication }}" }
-    - { key: 'X11Forwarding', value: "{{ ssh_x11_forwarding }}" }
-    - { key: 'MaxAuthTries', value: "{{ ssh_max_auth_tries }}" }
-    - { key: 'MaxSessions', value: "{{ ssh_max_sessions }}" }
-    - { key: 'ClientAliveInterval', value: "{{ ssh_client_alive_interval }}" }
-    - { key: 'ClientAliveCountMax', value: "{{ ssh_client_alive_count_max }}" }
+    - { key: "Port", value: "{{ ssh_port }}" }
+    - { key: "PermitRootLogin", value: "{{ ssh_permit_root_login }}" }
+    - { key: "PasswordAuthentication", value: "{{ ssh_password_authentication }}" }
+    - { key: "PubkeyAuthentication", value: "{{ ssh_pubkey_authentication }}" }
+    - { key: "PermitEmptyPasswords", value: "{{ ssh_permit_empty_passwords }}" }
+    - { key: "ChallengeResponseAuthentication", value: "{{ ssh_challenge_response_authentication }}" }
+    - { key: "GSSAPIAuthentication", value: "{{ ssh_gss_api_authentication }}" }
+    - { key: "X11Forwarding", value: "{{ ssh_x11_forwarding }}" }
+    - { key: "MaxAuthTries", value: "{{ ssh_max_auth_tries }}" }
+    - { key: "MaxSessions", value: "{{ ssh_max_sessions }}" }
+    - { key: "ClientAliveInterval", value: "{{ ssh_client_alive_interval }}" }
+    - { key: "ClientAliveCountMax", value: "{{ ssh_client_alive_count_max }}" }
   notify: restart sshd
 
 - name: Configure allowed SSH users
   lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^#?AllowUsers'
+    regexp: "^#?AllowUsers"
     line: "AllowUsers {{ ssh_allowed_users | join(' ') }}"
     state: present
   when: ssh_allowed_users | length > 0
@@ -136,7 +138,7 @@ Create `roles/security_hardening/tasks/firewall.yml`:
     dest: /etc/nftables.conf
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: reload nftables
 
 - name: Enable and start nftables
@@ -217,7 +219,7 @@ Create `roles/security_hardening/tasks/fail2ban.yml`:
     dest: /etc/fail2ban/jail.local
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: restart fail2ban
 
 - name: Create fail2ban SSH jail
@@ -226,7 +228,7 @@ Create `roles/security_hardening/tasks/fail2ban.yml`:
     dest: /etc/fail2ban/jail.d/sshd.local
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: restart fail2ban
 
 - name: Enable and start fail2ban
@@ -250,15 +252,15 @@ Create `roles/security_hardening/tasks/system.yml`:
     sysctl_file: /etc/sysctl.d/99-hardening.conf
     reload: yes
   loop:
-    - { key: 'net.ipv4.tcp_syncookies', value: '1' }
-    - { key: 'net.ipv4.ip_forward', value: '0' }
-    - { key: 'net.ipv4.conf.all.rp_filter', value: '1' }
-    - { key: 'net.ipv4.conf.all.accept_redirects', value: '0' }
-    - { key: 'net.ipv4.conf.all.send_redirects', value: '0' }
-    - { key: 'net.ipv4.conf.all.accept_source_route', value: '0' }
-    - { key: 'net.ipv4.icmp_echo_ignore_broadcasts', value: '1' }
-    - { key: 'net.ipv4.icmp_ignore_bogus_error_responses', value: '1' }
-    - { key: 'kernel.randomize_va_space', value: '2' }
+    - { key: "net.ipv4.tcp_syncookies", value: "1" }
+    - { key: "net.ipv4.ip_forward", value: "0" }
+    - { key: "net.ipv4.conf.all.rp_filter", value: "1" }
+    - { key: "net.ipv4.conf.all.accept_redirects", value: "0" }
+    - { key: "net.ipv4.conf.all.send_redirects", value: "0" }
+    - { key: "net.ipv4.conf.all.accept_source_route", value: "0" }
+    - { key: "net.ipv4.icmp_echo_ignore_broadcasts", value: "1" }
+    - { key: "net.ipv4.icmp_ignore_bogus_error_responses", value: "1" }
+    - { key: "kernel.randomize_va_space", value: "2" }
   when: kernel_hardening_enabled
 
 - name: Disable unused kernel modules
@@ -274,7 +276,7 @@ Create `roles/security_hardening/tasks/system.yml`:
     dest: /etc/modprobe.d/blacklist-filesystems.conf
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   when: disable_unused_filesystems
 
 - name: Secure shared memory
@@ -293,10 +295,10 @@ Create `roles/security_hardening/tasks/system.yml`:
     group: "{{ item.group | default('root') }}"
     mode: "{{ item.mode }}"
   loop:
-    - { path: '/etc/ssh/sshd_config', mode: '0600' }
-    - { path: '/etc/cron.allow', mode: '0600' }
-    - { path: '/etc/at.allow', mode: '0600' }
-    - { path: '/etc/sudo.conf', mode: '0600' }
+    - { path: "/etc/ssh/sshd_config", mode: "0600" }
+    - { path: "/etc/cron.allow", mode: "0600" }
+    - { path: "/etc/at.allow", mode: "0600" }
+    - { path: "/etc/sudo.conf", mode: "0600" }
 ```
 
 ### 7. **Create Main Task File**
@@ -329,7 +331,7 @@ Create `roles/security_hardening/tasks/main.yml`:
     create: yes
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
 ```
 
 ### 8. **Create Handlers**

@@ -1,6 +1,8 @@
 # CI/CD Pipeline Workflow for Infrastructure Deployment
 
-This document outlines the recommended CI/CD workflow for the Packer → Terraform → Ansible infrastructure pipeline, following industry best practices for immutable infrastructure deployment.
+This document outlines the recommended CI/CD workflow for the Packer → Terraform → Ansible
+infrastructure pipeline, following industry best practices for immutable infrastructure
+deployment.
 
 ## 🏗️ **Pipeline Architecture Overview**
 
@@ -262,8 +264,8 @@ terraform apply
 - ❌ Terraform plan errors
 - ❌ Ansible connectivity issues
 - ❌ Smoke test failures
-- ⚠️  Long-running deployments
-- ⚠️  Resource quota approaching limits
+- ⚠️ Long-running deployments
+- ⚠️ Resource quota approaching limits
 
 ### **Notification Channels**
 
@@ -374,11 +376,11 @@ terraform apply
 ## 🚀 **Next Steps for Implementation**
 
 1. **Test Current Pipeline:** Validate existing manual pipeline
-2. **Create GitHub Workflows:** Implement basic CI/CD automation
-3. **Add Monitoring:** Set up basic pipeline monitoring
-4. **Security Integration:** Add security scanning and compliance checks
-5. **Documentation:** Create comprehensive runbooks and procedures
-6. **Training:** Team training on new processes and tools
+1. **Create GitHub Workflows:** Implement basic CI/CD automation
+1. **Add Monitoring:** Set up basic pipeline monitoring
+1. **Security Integration:** Add security scanning and compliance checks
+1. **Documentation:** Create comprehensive runbooks and procedures
+1. **Training:** Team training on new processes and tools
 
 ## 📝 **Related Documentation**
 
@@ -397,6 +399,8 @@ terraform apply
 - Continuous integration/deployment
 - Security-first approach
 - Comprehensive testing
-- Rapid recovery capabilities
+- Rapid recovery
+  capabilities
 
-The goal is reliable, repeatable, and secure infrastructure deployments with minimal manual intervention and maximum visibility into the process.
+The goal is reliable, repeatable, and secure infrastructure deployments with minimal manual
+intervention and maximum visibility into the process.

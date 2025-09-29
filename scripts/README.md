@@ -123,4 +123,5 @@ mise run smoke-test
 
 ---
 
-**💡 Tip**: All scripts include help text and error handling. Run with `-h` or `--help` for detailed usage information where supported.
+**💡 Tip**: All scripts include help text and error handling. Run with `-h` or `--help` for detailed
+usage information where supported.

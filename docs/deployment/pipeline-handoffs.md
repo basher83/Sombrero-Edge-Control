@@ -20,7 +20,7 @@ This document defines the interfaces between pipeline stages to ensure clean sep
 
 ## Data Flow Diagram
 
-```
+```text
 Packer Template (ID: 8025)
         ↓
 Terraform Infrastructure (VM: jump-man)
@@ -35,6 +35,6 @@ Configured VM (192.168.10.250)
 Each handoff should be validated before proceeding:
 
 1. **Template ID**: Verify template exists with `qm list`
-2. **Inventory JSON**: Validate with `python3 -m json.tool`
-3. **VM Connectivity**: Test SSH access to VM
-4. **Ansible Connectivity**: Test with `ansible -m ping`
+1. **Inventory JSON**: Validate with `python3 -m json.tool`
+1. **VM Connectivity**: Test SSH access to VM
+1. **Ansible Connectivity**: Test with `ansible -m ping`

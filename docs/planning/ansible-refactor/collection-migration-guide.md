@@ -362,7 +362,7 @@ All documentation has been updated to reflect the new collection structure:
 1. **Team Communication**: Migration documented in this guide
 1. **Archive Old Structure**: Legacy `ansible/` directory backed up and removed
 1. **Collection Structure**: Now primary and only Ansible structure
-5. **Monitoring**: System validated and operational
+1. **Monitoring**: System validated and operational
 
 **Backup Available**: Legacy directory archived as `ansible-legacy-backup-YYYYMMDD-HHMMSS.tar.gz`
 

@@ -11,15 +11,18 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 
 ### Added
 
-- **Target Template Documentation**: Added documentation for existing Proxmox VM template (ID: 8024) with pre-installed DevOps tooling (`docs/infrastructure/target-template.md`)
-- **Bootstrap Roles Implementation (ANS-001)**: Production-ready bootstrap and bootstrap_check roles with DebOps patterns (95/100 score):
+- **Target Template Documentation**: Added documentation for existing Proxmox VM template
+  (ID: 8024) with pre-installed DevOps tooling (`docs/infrastructure/target-template.md`)
+- **Bootstrap Roles Implementation (ANS-001)**: Production-ready bootstrap and bootstrap_check
+  roles with DebOps patterns (95/100 score):
   - Enhanced Python installation with APT cache management
   - Connection reset after Python installation for fresh VMs
   - Dual marker system (filesystem + ansible facts) for idempotency
   - Ubuntu 24.04 systemd-resolved DNS configuration
   - Comprehensive error handling with 3-retry logic
   - Test playbook for validation (`playbooks/test-bootstrap.yml`)
-- **Netdata Monitoring Stack (ANS-005)**: Complete monitoring solution using official Netdata Ansible repository (85/100 score):
+- **Netdata Monitoring Stack (ANS-005)**: Complete monitoring solution using official Netdata
+  Ansible repository (85/100 score):
   - Netdata role with Docker container monitoring via cgroups
   - Web dashboard configuration on port 19999
   - Firewall integration for UFW and nftables
@@ -29,21 +32,25 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 - **Ansible Research Reports**:
   - Bootstrap patterns research from DebOps and community collections (`.claude/research-reports/ansible-bootstrap-research-20250922-021729.md`)
   - Netdata Ansible collection analysis evaluating 6 repositories (`.claude/research-reports/ansible-research-20250922-213639.md`)
-- **Pipeline Orchestration Scripts**: Complete three-stage deployment automation (`scripts/deploy-pipeline.sh`, `stage-1-packer.sh`, `stage-2-terraform.sh`, `stage-3-ansible.sh`)
+- **Pipeline Orchestration Scripts**: Complete three-stage deployment automation
+  (`scripts/deploy-pipeline.sh`, `stage-1-packer.sh`, `stage-2-terraform.sh`, `stage-3-ansible.sh`)
 - **Pipeline Documentation Suite**:
   - Pipeline operation guide (`docs/deployment/pipeline-operation.md`)
   - Pipeline handoff specifications (`docs/deployment/pipeline-handoffs.md`)
   - Pipeline rollback procedures (`docs/deployment/pipeline-rollback.md`)
 - **Terraform Inventory Export**: Automated inventory generation for Ansible from Terraform outputs (`infrastructure/environments/production/export-inventory.sh`)
 - **Cursor IDE Integration**: Complete command structure for task management and git operations (`.cursor/commands/`)
-- **Pipeline Separation Architecture**: Complete separation of Packer, Terraform, and Ansible into independent stages with clean handoffs (ADR-20250918)
-- **Ansible Collection Research**: Comprehensive research on community collections for Proxmox, Docker, NetBox, HashiCorp stack, and DNS/IPAM systems
+- **Pipeline Separation Architecture**: Complete separation of Packer, Terraform, and Ansible
+  into independent stages with clean handoffs (ADR-20250918)
+- **Ansible Collection Research**: Comprehensive research on community collections for Proxmox,
+  Docker, NetBox, HashiCorp stack, and DNS/IPAM systems
 - **Pipeline Documentation**:
   - Packer golden image strategy guide (`docs/infrastructure/packer-golden-image.md`)
   - Ansible configuration management guide (`docs/deployment/ansible-configuration-guide.md`)
   - Pipeline separation refactoring plan (`docs/planning/pipeline-separation-refactor.md`)
 - **Architectural Decision**: ADR-20250918 documenting complete pipeline separation decision
-- **Ansible Collection Migration**: Comprehensive migration strategy and documentation for transitioning to Ansible collections structure
+- **Ansible Collection Migration**: Comprehensive migration strategy and documentation for
+  transitioning to Ansible collections structure
 - **Ansible Development Tools**: Added ansible-dev-tools, uv, python 3.12, and antsibull-changelog
   to mise.toml for enhanced Ansible development workflow
 - **Ansible Collection Structure**: Complete basher83.automation_server collection with 11 migrated roles
@@ -105,7 +112,8 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
 - **Error Handling**: Added comprehensive block/rescue/always patterns with backup and rollback mechanisms
 - **MegaLinter Configuration**: Optimized performance with fast mode and non-blocking errors
 - **Documentation Structure**: Added comprehensive guides for Ansible collection migration
-- **Namespace References**: Updated all documentation and metadata from 'sombrero.edge_control' and 'sombrero_edge' to 'basher83.automation_server' namespace
+- **Namespace References**: Updated all documentation and metadata from 'sombrero.edge_control'
+  and 'sombrero_edge' to 'basher83.automation_server' namespace
 - **CI Workflows**: Simplified and fixed workflow syntax issues
 
 ### Fixed
@@ -131,7 +139,7 @@ format and [Semantic Versioning](https://semver.org/spec/v2.0.0.html)._
   - Removed `infrastructure/modules/vm/` module abstraction
   - Removed 1,756 lines of overengineered Terraform code
 - **Mise Deployment Tracking**: Removed entire deployment tracking system (496 lines):
-  - deployment-start, deployment-phase-*, deployment-finish tasks
+  - deployment-start, deployment-phase-\*, deployment-finish tasks
   - deployment-metrics, deployment-trends analysis tasks
   - deployment-add-issue interactive task
 - **Redundant Mise Tasks**: Removed 31 unnecessary tasks including:

@@ -142,8 +142,10 @@ TF_VAR_proxmox_insecure = "true"  # Only for self-signed certs
 
 ### Cloud-init Configuration
 
-- **User Data**: [`cloud-init.jump-man-user-data.yaml`](infrastructure/environments/production/cloud-init.jump-man-user-data.yaml) - Basic user setup and SSH keys
-- **Vendor Data**: [`cloud-init.jump-man.yaml`](infrastructure/environments/production/cloud-init.jump-man.yaml) - Docker installation and system configuration
+- **User Data**: [`cloud-init.jump-man-user-data.yaml`](infrastructure/environments/production/cloud-init.jump-man-user-data.yaml)
+  - Basic user setup and SSH keys
+- **Vendor Data**: [`cloud-init.jump-man.yaml`](infrastructure/environments/production/cloud-init.jump-man.yaml)
+  - Docker installation and system configuration
 
 ## 🔄 Project Workflows
 
@@ -165,7 +167,8 @@ gh pr create --title "VM improvements" --body "$(cat /tmp/tfplan.txt)"
 
 ### Deployment Process
 
-See [deployments/README.md](deployments/README.md) for the complete **Enhanced Deployment System** with automated tracking and analytics:
+See [deployments/README.md](deployments/README.md) for the complete **Enhanced Deployment System**
+with automated tracking and analytics:
 
 ```bash
 mise run deployment-start           # Create deployment checklist with metadata
@@ -185,7 +188,9 @@ terraform apply                    # Apply rollback
 
 ## 🤖 AI Agent Integration
 
-**If you are an AI agent, read [`CLAUDE.md`](CLAUDE.md) first.** This WARP.md summarizes commands and architecture; CLAUDE.md defines interaction rules, task management with Archon MCP, and coding standards.
+**If you are an AI agent, read [`CLAUDE.md`](CLAUDE.md) first.** This WARP.md summarizes commands
+and architecture; CLAUDE.md defines interaction rules, task management with Archon MCP, and coding
+standards.
 
 Key AI agent guidelines:
 
@@ -244,7 +249,9 @@ docker rm $(docker ps -aq --filter "ancestor=checkmarx/kics") # Remove KICS cont
 
 ### Docker Container Management
 
-**KICS Security Scanning**: The `mise run security-kics` tasks now include the `--rm` flag to automatically clean up containers after scanning. This prevents accumulation of stopped KICS containers in Docker Desktop.
+**KICS Security Scanning**: The `mise run security-kics` tasks now include the `--rm` flag to
+automatically clean up containers after scanning. This prevents accumulation of stopped KICS
+containers in Docker Desktop.
 
 ```bash
 # If you see dangling KICS containers (pre-fix cleanup)
@@ -287,4 +294,5 @@ mise run smoke-test 2>&1 | tee logs/smoke-test-$(date +%Y%m%d).log
 
 ---
 
-*This repository deploys a centralized Ubuntu 24.04 jump host (jump-man) for DevOps operations using Terraform and Proxmox with comprehensive automation, tracking, and validation.*
+_This repository deploys a centralized Ubuntu 24.04 jump host (jump-man) for DevOps operations
+using Terraform and Proxmox with comprehensive automation, tracking, and validation._

@@ -1,15 +1,17 @@
 # Terraform Outputs Role
 
-This role parses Terraform outputs and integrates them with Ansible inventory management for the Sombrero Edge Control infrastructure. It provides seamless integration between Terraform-provisioned infrastructure and Ansible automation workflows.
+This role parses Terraform outputs and integrates them with Ansible inventory management
+for the Sombrero Edge Control infrastructure. It provides seamless integration between
+Terraform-provisioned infrastructure and Ansible automation workflows.
 
 ## Role Overview
 
 This role implements comprehensive Terraform output parsing and integration across four key areas:
 
 1. **Output Parsing** - Parse and validate Terraform outputs
-2. **Inventory Generation** - Generate dynamic Ansible inventory from Terraform state
-3. **Variable Integration** - Convert Terraform outputs to Ansible variables
-4. **State Validation** - Validate Terraform state and output consistency
+1. **Inventory Generation** - Generate dynamic Ansible inventory from Terraform state
+1. **Variable Integration** - Convert Terraform outputs to Ansible variables
+1. **State Validation** - Validate Terraform state and output consistency
 
 ## Features
 
@@ -81,7 +83,7 @@ This role implements comprehensive Terraform output parsing and integration acro
         inventory_generation:
           enabled: true
           output_path: "ansible/inventory/terraform.yml"
-          format: "yaml"  # yaml, json, ini
+          format: "yaml" # yaml, json, ini
           group_by:
             - environment
             - vm_type

@@ -40,6 +40,7 @@
     "node_modules",
     ".git",
     ".claude",
+    ".cursor/**",
     "kics-results/**",
     "**/.terraform/**",
     // Exclude terraform-docs generated README files
@@ -47,7 +48,13 @@
     "infrastructure/environments/README.md",
     "infrastructure/environments/production/README.md",
     "infrastructure/modules/README.md",
-    "infrastructure/modules/vm/README.md"
+    "infrastructure/modules/vm/README.md",
+    "examples/**",
+    "thoughts/**",
+    "docs/decisions/**",
+    "docs/ai_docs/**",
+    "docs/planning/**",
+    "deployments/**"
   ],
 
   // Disable banner and progress for CI environments
