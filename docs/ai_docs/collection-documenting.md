@@ -20,13 +20,13 @@ You can use [antsibull-docs](https://pypi.org/project/antsibull-docs) to build a
 
 1. Create your collection and make sure you can use it with ansible-core by adding it to your COLLECTIONS_PATHS
 
-2. Create a directory dest and run: `antsibull-docs sphinx-init --use-current --dest-dir dest namespace.name`
+1. Create a directory dest and run: `antsibull-docs sphinx-init --use-current --dest-dir dest namespace.name`
 
-3. Go into dest and run `pip install -r requirements.txt` (ideally inside a venv)
+1. Go into dest and run `pip install -r requirements.txt` (ideally inside a venv)
 
-4. Run `./build.sh`
+1. Run `./build.sh`
 
-5. Open `build/html/index.html` in a browser
+1. Open `build/html/index.html` in a browser
 
 See [antsibull-docs documentation](https://ansible.readthedocs.io/projects/antsibull-docs/) for complete details.
 

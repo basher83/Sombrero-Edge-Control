@@ -23,10 +23,10 @@ Infrastructure operations generate significant operational knowledge (deployment
 ## Considered Options
 
 1. **Full HumanLayer Integration** - Complete integration with HumanLayer platform including approval workflows
-2. **Thoughts Directory Only** - Adapt HumanLayer's thoughts directory concept without the platform
-3. **Traditional Wiki** - Use external wiki or documentation platform
-4. **Expand docs/ Directory** - Keep everything in existing documentation structure
-5. **No Change** - Continue with ad-hoc notes and lost context
+1. **Thoughts Directory Only** - Adapt HumanLayer's thoughts directory concept without the platform
+1. **Traditional Wiki** - Use external wiki or documentation platform
+1. **Expand docs/ Directory** - Keep everything in existing documentation structure
+1. **No Change** - Continue with ad-hoc notes and lost context
 
 ## Decision Outcome
 
