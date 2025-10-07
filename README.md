@@ -156,10 +156,10 @@ This is a production infrastructure repository. Changes should be:
 
 ## 📄 License
 
-[Your License Here]
+[MIT](LICENSE)
 
 ## 📚 Documentation
 
-- [Infrastructure Documentation](infrastructure/README.md)
+- [Terraform Documentation](terraform/README.md)
 - [Product Requirements](docs/project/PRP/Project-PRP.md)
 - [Change Log](CHANGELOG.md)

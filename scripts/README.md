@@ -29,18 +29,6 @@ Utility scripts for managing the Sombrero Edge Control jump host infrastructure.
 
 **Output**: Generates reports in `report/` directory
 
-### 📚 `generate-docs.sh`
-
-**Purpose**: Generate Terraform documentation for all modules and environments
-**Requirements**: `terraform-docs` (install via `mise install terraform-docs`)
-**Usage**:
-
-```bash
-./scripts/generate-docs.sh
-```
-
-**Output**: Updates README.md files with Terraform documentation
-
 ### 🔄 `restart-vm-ssh.sh`
 
 **Purpose**: Restart jump-man VM with automatic SSH key management
