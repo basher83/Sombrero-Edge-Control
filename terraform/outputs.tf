@@ -10,12 +10,12 @@ output "vm_name" {
 }
 
 output "vm_ip" {
-  value       = split("/", var.vm_ip_address)[0]
+  value       = split("/", var.vm_initialization_ip_config_ipv4_address)[0]
   description = "VM IP address (without CIDR)"
 }
 
 output "ssh_command" {
-  value       = "ssh ${var.ci_username}@${split("/", var.vm_ip_address)[0]}"
+  value       = "ssh ${var.vm_initialization_ip_config_ipv4_address}@${split("/", var.vm_initialization_ip_config_ipv4_address)[0]}"
   description = "SSH command to connect to the VM"
 }
 
@@ -26,25 +26,25 @@ output "ansible_inventory" {
       children = {
         jump_hosts = {
           hosts = {
-            "${var.vm_name}" = {
+            (var.vm_name) = {
               # Connection details
-              ansible_host                 = split("/", var.vm_ip_address)[0]
-              ansible_user                 = var.ci_username
+              ansible_host                 = split("/", var.vm_initialization_ip_config_ipv4_address)[0]
+              ansible_user                 = var.vm_initialization_user_account_username
               ansible_ssh_private_key_file = "~/.ssh/ansible"
               ansible_python_interpreter   = "/usr/bin/python3"
 
               # VM metadata
               vm_id        = proxmox_virtual_environment_vm.jump_man.vm_id
-              proxmox_node = var.proxmox_node
-              template_id  = var.template_id
+              vm_node_name = var.vm_clone_node_name
+              template_id  = var.vm_clone_vm_id
 
               # Network configuration
-              ip_address = split("/", var.vm_ip_address)[0]
-              gateway    = var.vm_gateway
+              ip_address = split("/", var.vm_initialization_ip_config_ipv4_address)[0]
+              gateway    = var.vm_initialization_ip_config_ipv4_gateway
 
               # Resource allocation
-              cpu_cores       = var.vm_cores
-              memory_mb       = var.vm_memory
+              cpu_cores       = var.vm_cpu_cores
+              memory_mb       = var.vm_memory_dedicated
               memory_floating = var.vm_memory_floating
               disk_size_gb    = var.vm_disk_size
 
@@ -66,18 +66,18 @@ resource "local_file" "ansible_inventory" {
       children = {
         jump_hosts = {
           hosts = {
-            "${var.vm_name}" = {
-              ansible_host                 = split("/", var.vm_ip_address)[0]
-              ansible_user                 = var.ci_username
+            (var.vm_name) = {
+              ansible_host                 = split("/", var.vm_initialization_ip_config_ipv4_address)[0]
+              ansible_user                 = var.vm_initialization_user_account_username
               ansible_ssh_private_key_file = "~/.ssh/ansible"
               ansible_python_interpreter   = "/usr/bin/python3"
               vm_id                        = proxmox_virtual_environment_vm.jump_man.vm_id
-              proxmox_node                 = var.proxmox_node
-              template_id                  = var.template_id
-              ip_address                   = split("/", var.vm_ip_address)[0]
-              gateway                      = var.vm_gateway
-              cpu_cores                    = var.vm_cores
-              memory_mb                    = var.vm_memory
+              proxmox_node                 = var.vm_clone_node_name
+              template_id                  = var.vm_clone_vm_id
+              ip_address                   = split("/", var.vm_initialization_ip_config_ipv4_address)[0]
+              gateway                      = var.vm_initialization_ip_config_ipv4_gateway
+              cpu_cores                    = var.vm_cpu_cores
+              memory_mb                    = var.vm_memory_dedicated
               memory_floating              = var.vm_memory_floating
               disk_size_gb                 = var.vm_disk_size
               tags                         = ["jump", "production", "terraform"]

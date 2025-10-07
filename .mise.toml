@@ -295,7 +295,7 @@ run = "./scripts/generate-docs.sh"
 [tasks.docs-check]
 description = "Check if Terraform documentation is up-to-date"
 dir = "terraform"
-run = "terraform-docs --config .terraform-docs.yml --output-check ."
+run = "terraform-docs --config ../.terraform-docs.yml --output-check ."
 
 # Pre-commit hook for terraform-docs validation
 [tasks.pre-commit-docs]
