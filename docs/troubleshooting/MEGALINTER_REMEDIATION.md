@@ -1,6 +1,7 @@
 # MegaLinter Remediation Guide
 
-This document provides detailed remediation steps for the MegaLinter workflow failures identified in the Sombrero Edge Control repository.
+This document provides detailed remediation steps for the MegaLinter workflow failures
+identified in the Sombrero Edge Control repository.
 
 ## Issues Identified and Fixed
 
@@ -8,7 +9,7 @@ This document provides detailed remediation steps for the MegaLinter workflow fa
 
 **Problem**: Docker container startup failures with error:
 
-```
+```text
 docker: Error response from daemon: failed to create task for container: failed to create shim task: OCI runtime create failed
 ```
 
@@ -97,20 +98,20 @@ yamllint .github/workflows/mega-linter.yml
 ### Immediate (Priority 1)
 
 1. **Test in CI**: Push changes and verify improved workflow behavior
-2. **Monitor Docker**: Check if Docker runtime issues persist
-3. **Validate Fallback**: Ensure fallback linting works when MegaLinter fails
+1. **Monitor Docker**: Check if Docker runtime issues persist
+1. **Validate Fallback**: Ensure fallback linting works when MegaLinter fails
 
 ### Short-term (Priority 2)
 
 1. **Ansible Cleanup**: Gradually fix Ansible YAML formatting issues
-2. **Docker Alternative**: Consider alternative Docker configuration or runner
-3. **Local Development**: Improve local testing setup
+1. **Docker Alternative**: Consider alternative Docker configuration or runner
+1. **Local Development**: Improve local testing setup
 
 ### Long-term (Priority 3)
 
 1. **Progressive Enhancement**: Re-enable Ansible linting with appropriate configuration
-2. **Performance Optimization**: Optimize MegaLinter for faster CI runs
-3. **Documentation**: Update troubleshooting guides
+1. **Performance Optimization**: Optimize MegaLinter for faster CI runs
+1. **Documentation**: Update troubleshooting guides
 
 ## Docker Runtime Troubleshooting
 
@@ -119,7 +120,7 @@ If Docker issues persist, try these alternatives:
 ### Alternative 1: Use Different Runner
 
 ```yaml
-runs-on: ubuntu-22.04  # Instead of ubuntu-latest
+runs-on: ubuntu-22.04 # Instead of ubuntu-latest
 ```
 
 ### Alternative 2: Use mega-linter-runner
@@ -175,8 +176,8 @@ Before considering this issue resolved:
 The remediation will be considered successful when:
 
 1. **MegaLinter workflow runs** (even if some linters fail)
-2. **Fallback linting provides feedback** when MegaLinter fails
-3. **No workflow syntax errors** occur
-4. **Basic file quality checks pass** (YAML syntax, trailing whitespace)
+1. **Fallback linting provides feedback** when MegaLinter fails
+1. **No workflow syntax errors** occur
+1. **Basic file quality checks pass** (YAML syntax, trailing whitespace)
 
 This provides a foundation for progressive improvement of code quality while ensuring the CI pipeline remains functional.

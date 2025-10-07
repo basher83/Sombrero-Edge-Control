@@ -1,6 +1,8 @@
 # VM Smoke Tests Role
 
-This role performs comprehensive smoke testing and health validation for VMs in the Sombrero Edge Control infrastructure. It replaces direct SSH commands with idempotent Ansible tasks for system validation.
+This role performs comprehensive smoke testing and health validation for VMs
+in the Sombrero Edge Control infrastructure. It replaces direct SSH commands with
+idempotent Ansible tasks for system validation.
 
 ## Research Background
 
@@ -27,9 +29,9 @@ Research conducted using ansible-research subagent with 100-point scoring system
 This role implements a multi-phase testing approach:
 
 1. **Phase 1**: Basic system health (CPU, memory, disk, network)
-2. **Phase 2**: Service validation (systemd services, Docker containers)
-3. **Phase 3**: Application-specific health checks (HTTP endpoints, security)
-4. **Phase 4**: Performance and resource utilization validation
+1. **Phase 2**: Service validation (systemd services, Docker containers)
+1. **Phase 3**: Application-specific health checks (HTTP endpoints, security)
+1. **Phase 4**: Performance and resource utilization validation
 
 ## Features
 
@@ -152,4 +154,5 @@ This role replaces the following shell-based operations:
 - Shell-based disk space monitoring
 - Direct HTTP endpoint testing
 
-All operations are now idempotent, properly error-handled, and provide structured output for integration with monitoring systems.
+All operations are now idempotent, properly error-handled, and provide structured output for
+integration with monitoring systems.

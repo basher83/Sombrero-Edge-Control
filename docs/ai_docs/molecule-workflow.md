@@ -20,9 +20,9 @@ Each subcommand executes either:
 **Subcommand** → **Sequence** → **Actions** → **Playbooks**
 
 1. **Subcommands** are the commands to execute (e.g., `molecule test`, `molecule converge`)
-2. **Sequences** are ordered lists of actions that can be customized in configuration
-3. **Actions** correspond to individual playbooks containing tasks, roles, or other playbooks
-4. **Playbooks** contain the actual Ansible tasks that perform the work
+1. **Sequences** are ordered lists of actions that can be customized in configuration
+1. **Actions** correspond to individual playbooks containing tasks, roles, or other playbooks
+1. **Playbooks** contain the actual Ansible tasks that perform the work
 
 ### Example Flow
 

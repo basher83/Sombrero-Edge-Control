@@ -6,7 +6,8 @@ Define consistent Ansible patterns that ensure maintainable, testable, and scala
 
 ## Background
 
-After migrating from static inventories and hardcoded credentials to dynamic infrastructure and centralized secrets, we've established patterns that scale with our infrastructure growth.
+After migrating from static inventories and hardcoded credentials to dynamic infrastructure
+and centralized secrets, we've established patterns that scale with our infrastructure growth.
 
 ## Standard
 
@@ -60,10 +61,10 @@ inventory/
 #### Why Dynamic Proxmox Inventories?
 
 1. **Source of Truth**: Proxmox IS the truth for what VMs exist
-2. **Auto-discovery**: New VMs automatically appear
-3. **Consistent Metadata**: Tags, descriptions auto-populate groups
-4. **No Drift**: Can't forget to update inventory
-5. **Multi-cluster**: Each cluster has its own inventory
+1. **Auto-discovery**: New VMs automatically appear
+1. **Consistent Metadata**: Tags, descriptions auto-populate groups
+1. **No Drift**: Can't forget to update inventory
+1. **Multi-cluster**: Each cluster has its own inventory
 
 #### Configuration Pattern
 
@@ -130,20 +131,20 @@ compose:
 #### Complete Hierarchy (highest to lowest precedence)
 
 1. **Extra vars (-e)** - Command line overrides
-2. **Task vars (set_fact, register)** - Runtime variables
-3. **Block vars** - Block-scoped variables
-4. **Role and include vars** - Role variable files
-5. **Play vars** - Playbook-specific vars
-6. **Host facts** - Gathered system facts
-7. **Playbook vars_prompt** - Interactive input
-8. **Playbook vars_files** - Variable files
-9. **Role params** - Role parameters
-10. **Include params** - Include parameters
-11. **Role defaults** - Role default values
-12. **Group vars (all)** - Global group variables
-13. **Group vars (specific)** - Specific group variables
-14. **Host vars** - Host-specific settings
-15. **Inventory vars** - Inventory-defined variables
+1. **Task vars (set_fact, register)** - Runtime variables
+1. **Block vars** - Block-scoped variables
+1. **Role and include vars** - Role variable files
+1. **Play vars** - Playbook-specific vars
+1. **Host facts** - Gathered system facts
+1. **Playbook vars_prompt** - Interactive input
+1. **Playbook vars_files** - Variable files
+1. **Role params** - Role parameters
+1. **Include params** - Include parameters
+1. **Role defaults** - Role default values
+1. **Group vars (all)** - Global group variables
+1. **Group vars (specific)** - Specific group variables
+1. **Host vars** - Host-specific settings
+1. **Inventory vars** - Inventory-defined variables
 
 #### Secrets Management
 
@@ -237,11 +238,11 @@ Always test collection updates in development before production deployment.
 #### Module Security Priority (highest to lowest trust)
 
 1. **ansible.builtin.\*** - Core modules, highest security
-2. **ansible.posix.\*** - POSIX compliance, well-maintained
-3. **Official collections** - Vendor-maintained (e.g., netbox.netbox.\*)
-4. **community.general.\*** - Community-maintained, established
-5. **Other community collections** - Use with caution
-6. **Custom modules** - Requires security review
+1. **ansible.posix.\*** - POSIX compliance, well-maintained
+1. **Official collections** - Vendor-maintained (e.g., netbox.netbox.\*)
+1. **community.general.\*** - Community-maintained, established
+1. **Other community collections** - Use with caution
+1. **Custom modules** - Requires security review
 
 #### Preferred Modules by Function
 
@@ -424,10 +425,10 @@ post_tasks:
 #### Required Testing
 
 1. **Syntax validation**: `ansible-playbook --syntax-check`
-2. **Lint checking**: `ansible-lint playbook.yml`
-3. **Check mode**: `ansible-playbook --check --diff`
-4. **Molecule tests**: For all roles
-5. **Integration tests**: End-to-end scenarios
+1. **Lint checking**: `ansible-lint playbook.yml`
+1. **Check mode**: `ansible-playbook --check --diff`
+1. **Molecule tests**: For all roles
+1. **Integration tests**: End-to-end scenarios
 
 #### Test Structure
 
@@ -777,13 +778,13 @@ ansible-playbook site.yml --tags consul
    cp inventory/templates/infisical.proxmox.yml inventory/cluster/
    ```
 
-2. **Playbook Cleanup**:
+1. **Playbook Cleanup**:
 
    - Extract hardcoded values to variables
    - Move secrets to environment lookups
    - Reorganize into proper directories
 
-3. **Testing Migration**:
+1. **Testing Migration**:
    - Add molecule tests for roles
    - Create check-mode playbooks
    - Implement pre-commit hooks
@@ -800,6 +801,8 @@ ansible-playbook site.yml --tags consul
 ### External Resources
 
 - [Ansible Best Practices](https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html)
-- [Spacelift Ansible Best Practices](https://spacelift.io/blog/ansible-best-practices) - Comprehensive guide covering variables, secrets, testing, and optimization
-- [How to Evaluate Community Ansible Roles](https://www.jeffgeerling.com/blog/2019/how-evaluate-community-ansible-roles-your-playbooks) - Jeff Geerling's guide for vetting third-party roles
+- [Spacelift Ansible Best Practices](https://spacelift.io/blog/ansible-best-practices)
+  - Comprehensive guide covering variables, secrets, testing, and optimization
+- [How to Evaluate Community Ansible Roles](https://www.jeffgeerling.com/blog/2019/how-evaluate-community-ansible-roles-your-playbooks)
+  - Jeff Geerling's guide for vetting third-party roles
 - [terraform-homelab](https://github.com/basher83/terraform-homelab) - Infrastructure provisioning (source of Proxmox VMs)

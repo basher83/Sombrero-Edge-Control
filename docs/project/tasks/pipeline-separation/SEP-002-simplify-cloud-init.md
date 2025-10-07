@@ -9,7 +9,9 @@ Status: ✅ Complete
 
 ## Objective
 
-Simplify the cloud-init configuration to provide only minimal SSH access for the ansible user. Remove all package installations, script executions, and configuration management from cloud-init, delegating these responsibilities to Ansible.
+Simplify the cloud-init configuration to provide only minimal SSH access for the ansible
+user. Remove all package installations, script executions, and configuration management from
+cloud-init, delegating these responsibilities to Ansible.
 
 ## Prerequisites
 
@@ -179,9 +181,11 @@ Expected output:
 
 ### Resource Type Adaptation
 
-- **Task specified**: Use `proxmox_vm_qemu` resource with `ciuser` and `sshkeys` attributes
+- **Task specified**: Use `proxmox_vm_qemu` resource with `ciuser` and `sshkeys`
+  attributes
 - **Implemented**: Used existing `proxmox_virtual_environment_vm` with `user_account` block
-- **Reason**: Existing infrastructure uses the newer `proxmox_virtual_environment_vm` resource type for compatibility and feature support
+- **Reason**: Existing infrastructure uses the newer `proxmox_virtual_environment_vm`
+  resource type for compatibility and feature support
 
 ### Variable Requirements
 
@@ -192,8 +196,10 @@ Expected output:
 ### Validation Method
 
 - **Task specified**: Use `tflint --init` and `tflint` commands
-- **Implemented**: Used `mise run prod-validate` task runner
-- **Reason**: The mise task runner properly handles `terraform init` before validation and is the project's standard validation approach
+- **Implemented**: Used `mise run prod-validate` task
+  runner
+- **Reason**: The mise task runner properly handles `terraform init` before validation and is the
+  project's standard validation approach
 
 ## References
 

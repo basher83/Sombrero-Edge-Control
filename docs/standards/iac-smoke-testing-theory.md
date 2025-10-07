@@ -2,18 +2,23 @@
 
 ## Executive Summary
 
-Smoke testing in Infrastructure as Code (IaC) represents a critical validation layer that bridges the gap between infrastructure provisioning and production readiness. This document provides the theoretical foundation and industry context for our smoke testing implementation.
+Smoke testing in Infrastructure as Code (IaC) represents a critical validation layer that
+bridges the gap between infrastructure provisioning and production readiness. This document
+provides the theoretical foundation and industry context for our smoke testing implementation.
 
 ## Theoretical Foundation
 
 ### Definition in IaC Context
 
-In Infrastructure as Code deployments, smoke tests are **lightweight, automated validation checks** that verify the basic functionality and connectivity of provisioned infrastructure immediately after deployment. Unlike traditional software smoke tests that focus on application functionality, IaC smoke tests validate:
+In Infrastructure as Code deployments, smoke tests are **lightweight, automated validation
+checks** that verify the basic functionality and connectivity of provisioned infrastructure
+immediately after deployment. Unlike traditional software smoke tests that focus on application
+functionality, IaC smoke tests validate:
 
 1. **Infrastructure Resources**: Existence and accessibility of provisioned resources
-2. **Network Connectivity**: Communication paths between components
-3. **Service Configuration**: Basic operational status of configured services
-4. **Security Posture**: Authentication, authorization, and access controls
+1. **Network Connectivity**: Communication paths between components
+1. **Service Configuration**: Basic operational status of configured services
+1. **Security Posture**: Authentication, authorization, and access controls
 
 ### The Testing Pyramid in IaC
 
@@ -388,51 +393,61 @@ jobs:
 ### Key Performance Indicators
 
 1. **Test Execution Time**
+
    - Target: < 60 seconds for full suite
    - Measure: Per-test and aggregate timing
 
-2. **Failure Rate**
+1. **Failure Rate**
+
    - Target: < 5% false positives
    - Measure: Failures that don't indicate real issues
 
-3. **Coverage**
+1. **Coverage**
+
    - Target: 100% of critical paths
    - Measure: Percentage of infrastructure validated
 
-4. **Mean Time to Detection (MTTD)**
+1. **Mean Time to Detection (MTTD)**
    - Target: < 2 minutes from deployment
    - Measure: Time from issue introduction to detection
 
 ### Continuous Improvement
 
 1. **Regular Review**
+
    - Monthly analysis of test failures
    - Quarterly test suite optimization
    - Annual strategy assessment
 
-2. **Feedback Loop**
+1. **Feedback Loop**
    - Post-incident test additions
    - Developer feedback integration
    - Performance optimization
 
 ## Conclusion
 
-Smoke testing in Infrastructure as Code represents a critical quality gate that ensures infrastructure reliability and operational readiness. By implementing comprehensive smoke tests that validate infrastructure provisioning, configuration management, and service availability, organizations can:
+Smoke testing in Infrastructure as Code represents a critical quality gate that ensures
+infrastructure reliability and operational readiness. By implementing comprehensive smoke tests
+that validate infrastructure provisioning, configuration management, and service availability,
+organizations can:
 
 1. **Reduce Deployment Failures**: Catch issues before they impact production
-2. **Accelerate Delivery**: Provide rapid feedback on infrastructure changes
-3. **Improve Reliability**: Ensure consistent infrastructure behavior
-4. **Enable Confidence**: Allow teams to deploy with certainty
+1. **Accelerate Delivery**: Provide rapid feedback on infrastructure changes
+1. **Improve Reliability**: Ensure consistent infrastructure behavior
+1. **Enable Confidence**: Allow teams to deploy with
+   certainty
 
-The key to successful IaC smoke testing lies in balancing comprehensiveness with speed, providing clear actionable feedback, and continuously evolving tests to match infrastructure changes.
+The key to successful IaC smoke testing lies in balancing comprehensiveness with speed,
+providing clear actionable feedback, and continuously evolving tests to match infrastructure
+changes.
 
 ## References
 
 1. [HashiCorp: Testing Terraform](https://www.hashicorp.com/blog/testing-hashicorp-terraform)
-2. [Testing Infrastructure with Ansible](https://www.augmentedmind.de/2022/12/11/infrastructure-testing-ansible/)
-3. [AWS: Terraform CI/CD and Testing](https://aws.amazon.com/blogs/devops/terraform-ci-cd-and-testing-on-aws-with-the-new-terraform-test-framework/)
-4. [Molecule: Testing Ansible Roles](https://ansible.readthedocs.io/projects/molecule/)
-5. [Google SRE: Testing for Reliability](https://sre.google/sre-book/testing-reliability/)
-6. [Infrastructure Testing Best Practices](https://www.codecentric.de/knowledge-hub/blog/test-driven-infrastructure-ansible-molecule)
-7. [Terraform Test Framework Documentation](https://developer.hashicorp.com/terraform/language/tests)
-8. [Ansible Testing Strategies](https://www.sysbee.net/blog/testing-ansible-playbooks-with-molecule/)
+1. [Testing Infrastructure with Ansible](https://www.augmentedmind.de/2022/12/11/infrastructure-testing-ansible/)
+1. [AWS: Terraform CI/CD and Testing](https://aws.amazon.com/blogs/devops/terraform-ci-cd-and-testing-on-aws-with-the-new-terraform-test-framework/)
+1. [Molecule: Testing Ansible Roles](https://ansible.readthedocs.io/projects/molecule/)
+1. [Google SRE: Testing for Reliability](https://sre.google/sre-book/testing-reliability/)
+1. [Infrastructure Testing Best Practices](https://www.codecentric.de/knowledge-hub/blog/test-driven-infrastructure-ansible-molecule)
+1. [Terraform Test Framework Documentation](https://developer.hashicorp.com/terraform/language/tests)
+1. [Ansible Testing Strategies](https://www.sysbee.net/blog/testing-ansible-playbooks-with-molecule/)

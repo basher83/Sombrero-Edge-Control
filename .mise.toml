@@ -28,7 +28,7 @@ packer = "1.14.2"
 terraform = "1.13.2"                # Pin to Terraform >=1.10 for Ephemeral Resources support
 ansible-core = "2.19.1"
 "pipx:ansible-dev-tools" = "latest"
-uv = "latest"
+uv = "0.8.22"
 python = "3.13.7"
 
 terraform-docs = "0.20.0" # Documentation generation
@@ -51,6 +51,7 @@ shellcheck = "0.11.0"                 # Shell script linting
 markdownlint-cli2 = "0.18.1"          # Markdown linting
 act = "0.2.81"
 "pipx:antsibull-changelog" = "latest"
+git-cliff = "2.10.1"
 
 
 # ============================================================================
@@ -320,7 +321,7 @@ run = "yamllint ."
 # Lint Markdown files for style consistency
 [tasks.markdown-lint]
 description = "Lint all Markdown files for style consistency"
-run = "markdownlint-cli2 '**/*.md'"
+run = "markdownlint-cli2 --config .markdownlint-cli2.jsonc '**/*.md'"
 
 # Run TFLint on Terraform code
 [tasks.tflint]
@@ -413,7 +414,6 @@ run = "mise tasks"
 # ============================================================================
 
 
-
 # Deploy infrastructure with Terraform
 [tasks.deploy-terraform]
 description = "Deploy infrastructure with Terraform and generate Ansible inventory"
@@ -493,3 +493,7 @@ ssh -o ConnectTimeout=10 ansible@192.168.10.250 << 'EOF'
   docker system info --format "Storage Driver: {{.Driver}}"
 EOF
 """
+
+[tasks.changelog]
+description = "Update changelog using git-cliff"
+run = "git-cliff -o CHANGELOG.md"

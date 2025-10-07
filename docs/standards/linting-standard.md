@@ -2,12 +2,17 @@
 
 ## Why MegaLinter
 
-- MegaLinter centralizes linting for Markdown, Terraform, Ansible, YAML, JSON, and Shell, plus built-in Markdown link checks, reducing fragmentation and CI complexity in a single, configurable workflow.[^2][^4]
-- It supports "apply fixes" modes, multiple reporters (including JSON/SARIF), and repo-wide excludes/filters to keep runs focused and fast in large IaC repositories.[^5][^2]
+- MegaLinter centralizes linting for Markdown, Terraform, Ansible, YAML, JSON, and Shell,
+  plus built-in Markdown link checks, reducing fragmentation and CI complexity in a single,
+  configurable workflow.[^2][^4]
+- It supports "apply fixes" modes, multiple reporters (including JSON/SARIF), and repo-wide
+  excludes/filters to keep runs focused and fast in large IaC repositories.[^5][^2]
 
 ## Drop-in GitHub Action
 
-- The workflow below runs MegaLinter on pull requests, uses repository-aware filtering, and can optionally apply fixes via environment variables documented by MegaLinter's configuration reference.[^3][^2]
+- The workflow below runs MegaLinter on pull requests, uses repository-aware filtering,
+  and can optionally apply fixes via environment variables documented by MegaLinter's
+  configuration reference.[^3][^2]
 
 ```yaml
 # .github/workflows/mega-linter.yml
@@ -68,12 +73,18 @@ jobs:
 
 Notes:
 
-- The enabled linter keys align to MegaLinter's descriptors where Markdown includes markdownlint and markdown-link-check, Terraform includes tflint/terraform-fmt/terrascan, Ansible uses ansible-lint, YAML uses yamllint, JSON uses eslint-plugin-jsonc, and Shell uses shfmt.[^6][^4][^7][^8]
-- Filters target the actual paths in this repository structure (infrastructure/, ansible/, packer/, docs/), matching the attached project layout for Terraform, Packer, and Ansible content.[^1]
+- The enabled linter keys align to MegaLinter's descriptors where Markdown includes
+  markdownlint and markdown-link-check, Terraform includes tflint/terraform-fmt/terrascan,
+  Ansible uses ansible-lint, YAML uses yamllint, JSON uses eslint-plugin-jsonc, and Shell
+  uses shfmt.[^6][^4][^7][^8]
+- Filters target the actual paths in this repository structure (infrastructure/, ansible/,
+  packer/, docs/), matching the attached project layout for Terraform, Packer, and Ansible
+  content.[^1]
 
 ## .mega-linter.yml (Repo-level Config)
 
-- Place this at the repository root to standardize behavior and point linters to rule files under .github/linters as recommended by MegaLinter.[^2]
+- Place this at the repository root to standardize behavior and point linters to rule files
+  under .github/linters as recommended by MegaLinter.[^2]
 
 ```yaml
 # .mega-linter.yml
@@ -109,15 +120,19 @@ VALIDATE_ALL_CODEBASE: true
 
 Notes:
 
-- For Packer templates in HCL, terraform-fmt will format files but tflint does not lint Packer-specific constructs; this setup gains consistent formatting with terraform-fmt across .tf/.hcl while keeping tflint focused on Terraform code.[^8][^2]
+- For Packer templates in HCL, terraform-fmt will format files but tflint does not lint
+  Packer-specific constructs; this setup gains consistent formatting with terraform-fmt across
+  .tf/.hcl while keeping tflint focused on Terraform code.[^8][^2]
 
 ## Markdown Rules and Link Checks
 
-- Keep markdownlint rules in .github/linters to be picked up automatically by the MARKDOWN descriptor, and configure markdown-link-check using its native JSON file so MegaLinter can apply it across docs and READMEs.[^9][^4]
+- Keep markdownlint rules in .github/linters to be picked up automatically by the MARKDOWN
+  descriptor, and configure markdown-link-check using its native JSON file so MegaLinter can
+  apply it across docs and READMEs.[^9][^4]
 
 Example rules folder:
 
-```
+```text
 # Repository root (symlinks for compatibility)
 ├── .yamllint → .github/linters/.yamllint.yaml 🔗
 ├── .yamlfmt → .github/linters/.yamlfmt 🔗
@@ -171,29 +186,36 @@ Example .markdown-link-check.json:
 
 ## Tool-specific Rule Pointers
 
-- Terraform: include .tflint.hcl and optionally enable terrascan via .terrascan.toml to catch IaC policy issues in the same run, managed by MegaLinter.[^8][^2]
-- Ansible: include a .ansible-lint file with skip_list/warn_list/exclude_paths for repo‑wide posture under MegaLinter's ANSIBLE_ANSIBLE_LINT.[^10][^2]
-- YAML/JSON/Shell: use consolidated `.yamllint.yaml` for linting and `.yamlfmt` for formatting, with JSONC rules for eslint-plugin-jsonc and shfmt formatting behavior under rules path for consistent enforcement.[^7][^6]
+- Terraform: include .tflint.hcl and optionally enable terrascan via .terrascan.toml to catch
+  IaC policy issues in the same run, managed by MegaLinter.[^8][^2]
+- Ansible: include a .ansible-lint file with skip_list/warn_list/exclude_paths for repo‑wide
+  posture under MegaLinter's ANSIBLE_ANSIBLE_LINT.[^10][^2]
+- YAML/JSON/Shell: use consolidated `.yamllint.yaml` for linting and `.yamlfmt` for formatting,
+  with JSONC rules for eslint-plugin-jsonc and shfmt formatting behavior under rules path for
+  consistent enforcement.[^7][^6]
 
 ## Reports and Artifacts
 
-- Enable JSON reporter to capture full run data at report/mega-linter-report.json, and add report/ to .gitignore to avoid committing artifacts generated by CI.[^5][^2]
+- Enable JSON reporter to capture full run data at report/mega-linter-report.json, and add
+  report/ to .gitignore to avoid committing artifacts generated by CI.[^5][^2]
 
 Example .gitignore addition:
 
-```
+```gitignore
 report/
 ```
 
 ## Local Usage
 
-- Developers can run MegaLinter locally via the efrecon/mega-linter-runner for faster execution without downloading Node.js dependencies, or fall back to npx mega-linter-runner.[^11][^3]
+- Developers can run MegaLinter locally via the efrecon/mega-linter-runner for faster
+  execution without downloading Node.js dependencies, or fall back to npx mega-linter-runner.[^11][^3]
 
 Example local runs:
 
 ```bash
 # Fast method (recommended) - uses GHCR, no Node.js deps
-curl -s https://raw.githubusercontent.com/efrecon/mega-linter-runner/main/mega-linter-runner.sh -o /tmp/mega-linter-runner.sh && chmod +x /tmp/mega-linter-runner.sh
+curl -s https://raw.githubusercontent.com/efrecon/mega-linter-runner/main/mega-linter-runner.sh \
+  -o /tmp/mega-linter-runner.sh && chmod +x /tmp/mega-linter-runner.sh
 /tmp/mega-linter-runner.sh --flavor terraform
 
 # Alternative method (slower) - downloads Node.js deps first
@@ -202,9 +224,14 @@ npx mega-linter-runner --flavor terraform
 
 ## Repo-specific Notes
 
-- The filters and paths in the examples above match this repository's structure (infrastructure/, packer/, ansible/, docs/, README.md), ensuring the linter targets Terraform envs/modules, Packer HCL, Ansible playbooks/roles, and all documentation while excluding CI internals and dependency folders.[^1]
+- The filters and paths in the examples above match this repository's structure
+  (infrastructure/, packer/, ansible/, docs/, README.md), ensuring the linter targets Terraform
+  envs/modules, Packer HCL, Ansible playbooks/roles, and all documentation while excluding CI
+  internals and dependency folders.[^1]
 
-If desired, this content can replace the prior linting and link‑check sections in the standards file, and all references to markdownlint-cli2 and alex can be fully removed in favor of the unified MegaLinter configuration shown here.[^4][^2]
+If desired, this content can replace the prior linting and link‑check sections in the
+standards file, and all references to markdownlint-cli2 and alex can be fully removed in favor
+of the unified MegaLinter configuration shown here.[^4][^2]
 
 ## References
 

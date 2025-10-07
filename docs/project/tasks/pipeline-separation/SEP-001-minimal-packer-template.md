@@ -9,7 +9,10 @@ Status: ✅ Complete
 
 ## Objective
 
-Create a minimal Packer template that builds a bare Ubuntu 24.04 golden image using only the Ubuntu installer with NO post-provisioning. This achieves true separation by having Packer only automate the OS installation, leaving ALL configuration (including package installation) to Terraform/Ansible.
+Create a minimal Packer template that builds a bare Ubuntu 24.04 golden image using only
+the Ubuntu installer with NO post-provisioning. This achieves true separation by having Packer
+only automate the OS installation, leaving ALL configuration (including package installation)
+to Terraform/Ansible.
 
 ## Prerequisites
 
@@ -90,8 +93,8 @@ autoinstall:
   storage:
     layout:
       name: direct
-  packages: []  # No additional packages!
-  late-commands: []  # No post-install commands!
+  packages: [] # No additional packages!
+  late-commands: [] # No post-install commands!
   # Let Ubuntu installer handle everything
 ```
 

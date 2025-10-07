@@ -5,8 +5,8 @@
 The pipeline consists of three independent stages that can be run individually or as a complete deployment:
 
 1. **Stage 1: Packer** - Build minimal Ubuntu 24.04 golden image
-2. **Stage 2: Terraform** - Provision VM using Packer template
-3. **Stage 3: Ansible** - Configure VM with roles and playbooks
+1. **Stage 2: Terraform** - Provision VM using Packer template
+1. **Stage 3: Ansible** - Configure VM with roles and playbooks
 
 ## Complete Pipeline Deployment
 
@@ -57,7 +57,7 @@ cd ansible_collections/basher83/automation_server && ansible-playbook --syntax-c
 
 ## File Structure
 
-```
+```text
 scripts/
 ├── deploy-pipeline.sh      # Complete pipeline
 ├── stage-1-packer.sh       # Packer only
@@ -86,9 +86,9 @@ docs/deployment/
 ### Common Issues
 
 1. **Template not found**: Run Stage 1 first or check Proxmox
-2. **Terraform state issues**: Run `terraform plan` to preview changes
-3. **Ansible connectivity**: Check inventory file and SSH access
-4. **Permission errors**: Ensure scripts are executable
+1. **Terraform state issues**: Run `terraform plan` to preview changes
+1. **Ansible connectivity**: Check inventory file and SSH access
+1. **Permission errors**: Ensure scripts are executable
 
 ### Debug Mode
 

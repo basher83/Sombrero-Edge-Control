@@ -1,6 +1,7 @@
 # Ansible Role: Development Tools
 
-Comprehensive development tools installation role based on research-driven approach using community.general + custom tasks for modern tools.
+Comprehensive development tools installation role based on research-driven approach
+using community.general + custom tasks for modern tools.
 
 ## Research Foundation
 
@@ -39,8 +40,8 @@ Installs and configures a comprehensive development environment including:
 
 ```yaml
 devtools_enabled: true
-devtools_user: "{{ ansible_user }}"  # Target user for tools
-devtools_install_path: "/opt/devtools"  # Installation directory
+devtools_user: "{{ ansible_user }}" # Target user for tools
+devtools_install_path: "/opt/devtools" # Installation directory
 ```
 
 ### Standard Tools
@@ -64,7 +65,7 @@ devtools_standard_packages:
 ### Node.js Configuration
 
 ```yaml
-devtools_nodejs_version: "20"  # LTS version
+devtools_nodejs_version: "20" # LTS version
 devtools_npm_global_packages:
   - yarn
   - "@angular/cli"
@@ -121,8 +122,8 @@ devtools_additional_tools:
 ```yaml
 devtools_configure_shell: true
 devtools_shell_additions:
-  - "export PATH=\"/usr/local/bin:$PATH\""
-  - "eval \"$(mise activate bash)\""
+  - 'export PATH="/usr/local/bin:$PATH"'
+  - 'eval "$(mise activate bash)"'
 ```
 
 ### Validation
@@ -376,9 +377,9 @@ This role was built using the research-first approach documented in:
 ### Why This Approach?
 
 1. **Quality**: Uses production-ready community.general for standard tools
-2. **Modern**: Custom implementation for tools without quality collections
-3. **Reliable**: Avoids abandoned or low-quality community collections
-4. **Maintainable**: Hybrid approach balances stability and innovation
+1. **Modern**: Custom implementation for tools without quality collections
+1. **Reliable**: Avoids abandoned or low-quality community collections
+1. **Maintainable**: Hybrid approach balances stability and innovation
 
 ## Compatibility
 
@@ -435,9 +436,9 @@ rm -rf ~/.cache/uv
 ## Contributing
 
 1. Follow the research-first approach
-2. Update validation commands for new tools
-3. Document configuration changes
-4. Test on all supported Ubuntu versions
+1. Update validation commands for new tools
+1. Document configuration changes
+1. Test on all supported Ubuntu versions
 
 ## License
 

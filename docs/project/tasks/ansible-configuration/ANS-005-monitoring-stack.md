@@ -11,7 +11,11 @@ Implementation Date: 2025-09-22
 
 ## Objective
 
-Deploy Netdata real-time monitoring agent on the jump host for comprehensive system and Docker container monitoring. Netdata provides an all-in-one monitoring solution with automatic metrics collection, real-time dashboards, alerts, and zero configuration required. Based on research findings (score: 85/100), the official Netdata Ansible repository is the recommended approach for Ubuntu 24.04 deployment.
+Deploy Netdata real-time monitoring agent on the jump host for comprehensive system and
+Docker container monitoring. Netdata provides an all-in-one monitoring solution with
+automatic metrics collection, real-time dashboards, alerts, and zero configuration
+required. Based on research findings (score: 85/100), the official Netdata Ansible
+repository is the recommended approach for Ubuntu 24.04 deployment.
 
 ## Research Summary
 
@@ -71,20 +75,20 @@ netdata_port: 19999
 netdata_allow_connections_from: "*"
 
 # Performance settings
-netdata_history: 3600  # Seconds of history to keep
-netdata_update_every: 1  # Update interval in seconds
+netdata_history: 3600 # Seconds of history to keep
+netdata_update_every: 1 # Update interval in seconds
 
 # Docker monitoring
 netdata_monitor_docker: true
 netdata_docker_socket: "/var/run/docker.sock"
 
 # Security settings
-netdata_ssl_enabled: false  # Enable in production with proper certs
+netdata_ssl_enabled: false # Enable in production with proper certs
 netdata_ssl_port: 19998
 
 # Cloud integration (optional)
-netdata_claim_token: ""  # Set if using Netdata Cloud
-netdata_claim_rooms: ""  # Room ID for Netdata Cloud
+netdata_claim_token: "" # Set if using Netdata Cloud
+netdata_claim_rooms: "" # Room ID for Netdata Cloud
 
 # Alert configuration
 netdata_alarm_notify_configs:
@@ -146,15 +150,15 @@ Create `ansible_collections/basher83/automation_server/roles/netdata/tasks/main.
       ansible.builtin.lineinfile:
         path: /etc/netdata/netdata.conf
         regexp: '^.*\[plugin:cgroups\]'
-        line: '[plugin:cgroups]'
+        line: "[plugin:cgroups]"
         create: yes
       notify: restart netdata
 
     - name: Enable Docker container names
       ansible.builtin.lineinfile:
         path: /etc/netdata/netdata.conf
-        regexp: '^.*use unified cgroups'
-        line: '    use unified cgroups = yes'
+        regexp: "^.*use unified cgroups"
+        line: "    use unified cgroups = yes"
         insertafter: '\[plugin:cgroups\]'
       notify: restart netdata
 
@@ -229,7 +233,7 @@ Create `ansible_collections/basher83/automation_server/roles/netdata/tasks/firew
       ansible.builtin.lineinfile:
         path: /etc/nftables.conf
         regexp: ".*tcp dport {{ item.port }}.*"
-        line: "    tcp dport {{ item.port }} accept comment \"{{ item.comment | default('Netdata monitoring') }}\""
+        line: '    tcp dport {{ item.port }} accept comment "{{ item.comment | default(''Netdata monitoring'') }}"'
         insertafter: "chain input {"
       loop: "{{ netdata_firewall_rules }}"
       notify: reload nftables
@@ -326,7 +330,7 @@ Create `ansible_collections/basher83/automation_server/playbooks/test-netdata.ym
     - name: Check Docker metrics collection
       ansible.builtin.uri:
         url: "http://localhost:19999/api/v1/data?chart=cgroup_docker"
-        status_code: [200, 404]  # 404 if no containers running
+        status_code: [200, 404] # 404 if no containers running
       register: docker_metrics
 
     - name: Verify system metrics
@@ -359,11 +363,11 @@ Update `ansible_collections/basher83/automation_server/playbooks/site.yml` to in
 
 ```yaml
 # Add to the tasks section:
-    - name: Deploy monitoring solution
-      import_playbook: monitoring.yml
-      tags:
-        - monitoring
-        - netdata
+- name: Deploy monitoring solution
+  import_playbook: monitoring.yml
+  tags:
+    - monitoring
+    - netdata
 ```
 
 ## Success Criteria
@@ -431,11 +435,11 @@ Features available:
 ## Benefits Over Prometheus/Grafana
 
 1. **Simplicity**: Single agent vs complex multi-container stack
-2. **Performance**: 1-second granularity with minimal overhead
-3. **Zero Config**: Works immediately after installation
-4. **Docker Native**: Automatic container detection and naming
-5. **Resource Efficient**: ~2% CPU, 50MB RAM typical usage
-6. **Real-time**: Live streaming metrics, not polling-based
+1. **Performance**: 1-second granularity with minimal overhead
+1. **Zero Config**: Works immediately after installation
+1. **Docker Native**: Automatic container detection and naming
+1. **Resource Efficient**: ~2% CPU, 50MB RAM typical usage
+1. **Real-time**: Live streaming metrics, not polling-based
 
 ## References
 

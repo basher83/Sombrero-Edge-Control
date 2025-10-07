@@ -1,23 +1,27 @@
 # Ansible Role: Docker
 
-A comprehensive Ansible role for installing, configuring, and managing Docker CE on Ubuntu/Debian systems. This role provides flexible installation modes, security hardening, and extensive validation capabilities.
+A comprehensive Ansible role for installing, configuring, and managing Docker CE
+on Ubuntu/Debian systems. This role provides flexible installation modes, security hardening,
+and extensive validation capabilities.
 
 ## Research Phase Summary
 
 Based on research of existing Ansible Docker collections:
 
 1. **geerlingguy.docker** (v7.5.0+): Most mature and widely adopted Docker role
+
    - 4.8K+ stars, actively maintained
    - Comprehensive OS support
    - Production-proven with millions of downloads
    - Used as dependency for actual installation
 
-2. **community.docker** (v3.13.0+): Official collection for Docker management
+1. **community.docker** (v3.13.0+): Official collection for Docker management
+
    - Provides Docker modules for container/image management
    - Used for validation and container operations
    - Maintained by Ansible community
 
-3. **Design Decision**: This role wraps geerlingguy.docker for installation while adding:
+1. **Design Decision**: This role wraps geerlingguy.docker for installation while adding:
    - Project-specific configurations
    - Enhanced security settings
    - Comprehensive validation suite
@@ -49,7 +53,7 @@ ansible-galaxy install -r requirements.yml
 ### Installation Mode
 
 ```yaml
-docker_installation_mode: "install"  # Options: install, validate
+docker_installation_mode: "install" # Options: install, validate
 ```
 
 - `install`: Full Docker installation and configuration
@@ -79,7 +83,7 @@ docker_data_directory: "/var/lib/docker"
 
 ```yaml
 # WARNING: Users in docker group have root-equivalent access
-docker_users_list: []  # List of users to add to docker group
+docker_users_list: [] # List of users to add to docker group
 # Example: ["deploy", "developer"]
 ```
 
@@ -189,7 +193,7 @@ docker_export_summary: false
           userland-proxy: false
         docker_registry_mirrors:
           - "https://mirror.gcr.io"
-        docker_users_list: []  # Don't add users to docker group in prod
+        docker_users_list: [] # Don't add users to docker group in prod
 ```
 
 ### Validation Only Mode
@@ -218,25 +222,25 @@ docker_export_summary: false
 ### Security Best Practices Implemented
 
 1. **User Namespace Remapping**: Isolates container users from host
-2. **Seccomp Profiles**: Restricts system calls available to containers
-3. **No New Privileges**: Prevents privilege escalation
-4. **AppArmor Integration**: Additional MAC layer (on supported systems)
-5. **Content Trust**: Optional image signature verification
-6. **Log Rotation**: Prevents disk exhaustion from container logs
+1. **Seccomp Profiles**: Restricts system calls available to containers
+1. **No New Privileges**: Prevents privilege escalation
+1. **AppArmor Integration**: Additional MAC layer (on supported systems)
+1. **Content Trust**: Optional image signature verification
+1. **Log Rotation**: Prevents disk exhaustion from container logs
 
 ## Task Organization
 
 The role is organized into logical task groups:
 
 1. **main.yml**: Orchestrates all tasks based on mode
-2. **installation.yml**: Prerequisites and dependency setup
-3. **configuration.yml**: Docker daemon configuration
-4. **users.yml**: User and group management
-5. **security.yml**: Security hardening tasks
-6. **validation.yml**: Comprehensive validation suite
-7. **resources.yml**: Resource management and cleanup
-8. **firewall.yml**: Firewall compatibility configuration
-9. **summary.yml**: Installation summary and reporting
+1. **installation.yml**: Prerequisites and dependency setup
+1. **configuration.yml**: Docker daemon configuration
+1. **users.yml**: User and group management
+1. **security.yml**: Security hardening tasks
+1. **validation.yml**: Comprehensive validation suite
+1. **resources.yml**: Resource management and cleanup
+1. **firewall.yml**: Firewall compatibility configuration
+1. **summary.yml**: Installation summary and reporting
 
 ## Validation Tests
 
@@ -266,16 +270,18 @@ Available handlers:
 ### Common Issues
 
 1. **Docker service fails to start**
+
    - Check logs: `journalctl -u docker.service`
    - Verify disk space: `df -h /var/lib/docker`
    - Check daemon.json syntax: `docker --validate`
 
-2. **Permission denied on docker.sock**
+1. **Permission denied on docker.sock**
+
    - Verify socket permissions
    - Check user group membership: `groups username`
    - Restart session after group changes
 
-3. **Network conflicts**
+1. **Network conflicts**
    - Check existing bridge networks
    - Verify IP forwarding: `sysctl net.ipv4.ip_forward`
    - Review iptables rules: `iptables -L`

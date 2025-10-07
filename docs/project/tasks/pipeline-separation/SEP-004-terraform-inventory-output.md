@@ -9,7 +9,10 @@ Status: ✅ Complete
 
 ## Objective
 
-Enhance Terraform outputs to generate a complete Ansible inventory in JSON format, enabling clean handoff between infrastructure provisioning and configuration management. The inventory should include all necessary connection details and metadata for Ansible to configure the VM.
+Enhance Terraform outputs to generate a complete Ansible inventory in JSON format,
+enabling clean handoff between infrastructure provisioning and configuration management.
+The inventory should include all necessary connection details and metadata for Ansible to
+configure the VM.
 
 ## Prerequisites
 

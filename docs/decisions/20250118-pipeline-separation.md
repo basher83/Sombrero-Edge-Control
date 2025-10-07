@@ -29,8 +29,8 @@ We need a clear architectural separation where each tool focuses on its core str
 Chosen option: "Complete Pipeline Separation" - enforce strict boundaries where:
 
 1. **Packer** creates minimal golden images (OS + cloud-init + agent only)
-2. **Terraform** provisions pure infrastructure with minimal cloud-init (SSH only)
-3. **Ansible** handles ALL configuration management as single source of truth
+1. **Terraform** provisions pure infrastructure with minimal cloud-init (SSH only)
+1. **Ansible** handles ALL configuration management as single source of truth
 
 This supersedes previous decisions:
 

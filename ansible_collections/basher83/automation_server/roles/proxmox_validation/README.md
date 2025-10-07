@@ -39,7 +39,7 @@ collections:
 
 ### Python Dependencies
 
-```
+```python
 proxmoxer>=1.3.1
 requests
 ```

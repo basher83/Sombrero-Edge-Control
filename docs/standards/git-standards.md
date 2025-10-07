@@ -2,11 +2,15 @@
 
 ## Purpose
 
-Define version control practices that ensure clean history, meaningful commits, and effective collaboration using space-themed conventions that align with our Mission Control standards.
+Define version control practices that ensure clean history, meaningful commits, and effective
+collaboration using space-themed conventions that align with our Mission Control standards.
 
 ## Background
 
-These git standards were developed to create a consistent, readable, and automated git workflow across all repositories in the basher83 ecosystem. They solve common problems like inconsistent commit messages, unclear branch purposes, and difficult-to-track project history. The space-themed approach makes git operations more engaging while maintaining professional standards.
+These git standards were developed to create a consistent, readable, and automated git workflow
+across all repositories in the basher83 ecosystem. They solve common problems like inconsistent
+commit messages, unclear branch purposes, and difficult-to-track project history. The space-themed
+approach makes git operations more engaging while maintaining professional standards.
 
 ## Standard
 
@@ -104,20 +108,25 @@ All commits follow the space-themed conventional commit format:
 
 ```markdown
 ## 🎯 Mission Objective
+
 What problem does this PR solve?
 
 ## 🚀 Changes Made
+
 - Change 1
 - Change 2
 - Change 3
 
 ## 🧪 Testing
+
 How has this been tested?
 
 ## 📸 Screenshots (if applicable)
+
 Visual evidence of changes
 
 ## 🔗 Related Issues
+
 Closes: #123
 Related: #456
 ```
@@ -178,10 +187,10 @@ Related: #456
 These git practices were chosen over alternatives for several reasons:
 
 1. **Space-themed emojis** provide instant visual recognition of commit types
-2. **Conventional commits** enable automated changelog generation
-3. **Branch naming patterns** make repository navigation intuitive
-4. **Squash merging** keeps main branch history clean while preserving detail in PRs
-5. **Protected branches** prevent accidental damage to critical code
+1. **Conventional commits** enable automated changelog generation
+1. **Branch naming patterns** make repository navigation intuitive
+1. **Squash merging** keeps main branch history clean while preserving detail in PRs
+1. **Protected branches** prevent accidental damage to critical code
 
 ## Examples
 
@@ -256,9 +265,10 @@ git commit -m "🎯 feat(app): add login, fix navigation, update styles"
 These standards may be relaxed in the following scenarios:
 
 1. **Personal experimental branches** - Not intended for merge
-2. **Emergency hotfixes** - When immediate deployment is critical
-3. **Third-party integrations** - When working with external repositories
-4. **Generated commits** - From tools like Renovate or Dependabot (though they should be configured to follow standards where possible)
+1. **Emergency hotfixes** - When immediate deployment is critical
+1. **Third-party integrations** - When working with external repositories
+1. **Generated commits** - From tools like Renovate or Dependabot (though they should be
+   configured to follow standards where possible)
 
 ## Migration
 
@@ -286,10 +296,10 @@ git commit -m "🎯 feat(scope): consolidated feature implementation"
 **Repository-Wide Cleanup:**
 
 1. Document existing commit patterns
-2. Create migration plan for active branches
-3. Update CI/CD to enforce new standards
-4. Train team on new conventions
-5. Use git hooks for automatic validation
+1. Create migration plan for active branches
+1. Update CI/CD to enforce new standards
+1. Train team on new conventions
+1. Use git hooks for automatic validation
 
 ### Git Configuration
 

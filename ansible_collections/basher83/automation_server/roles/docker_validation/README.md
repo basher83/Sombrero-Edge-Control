@@ -1,6 +1,8 @@
 # Docker Validation Role
 
-This role provides comprehensive Docker environment validation for production deployments in the Sombrero Edge Control infrastructure. It replaces manual Docker validation commands with idempotent Ansible tasks covering all aspects of Docker container management.
+This role provides comprehensive Docker environment validation for production deployments
+in the Sombrero Edge Control infrastructure. It replaces manual Docker validation commands
+with idempotent Ansible tasks covering all aspects of Docker container management.
 
 ## Research Background
 
@@ -27,11 +29,11 @@ Research conducted using ansible-research subagent with 100-point scoring system
 This role implements comprehensive Docker validation across six key areas:
 
 1. **Docker Engine Validation** - Daemon health, version compatibility, storage, network
-2. **Container Lifecycle Management** - State validation, resource monitoring, log analysis
-3. **Image Management** - Availability, integrity, security, registry connectivity
-4. **Docker Compose & Stack Validation** - Service health, dependencies, discovery
-5. **Security & Compliance** - Container security, privileges, secrets, runtime policies
-6. **Performance & Resource Monitoring** - Utilization metrics, I/O validation, contention
+1. **Container Lifecycle Management** - State validation, resource monitoring, log analysis
+1. **Image Management** - Availability, integrity, security, registry connectivity
+1. **Docker Compose & Stack Validation** - Service health, dependencies, discovery
+1. **Security & Compliance** - Container security, privileges, secrets, runtime policies
+1. **Performance & Resource Monitoring** - Utilization metrics, I/O validation, contention
 
 ## Features
 

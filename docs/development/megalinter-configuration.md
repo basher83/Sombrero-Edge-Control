@@ -4,7 +4,9 @@ This document covers MegaLinter setup, configuration, and optimizations for the 
 
 ## Overview
 
-[MegaLinter](https://megalinter.io/) is a unified linting tool that aggregates multiple linters for code quality across multiple languages and formats. This project uses MegaLinter to ensure consistent code quality for:
+[MegaLinter](https://megalinter.io/) is a unified linting tool that aggregates multiple
+linters for code quality across multiple languages and formats. This project uses
+MegaLinter to ensure consistent code quality for:
 
 - **Terraform**: `tflint`, `terraform validate`, `terraform fmt`
 - **Ansible**: `ansible-lint`
@@ -33,7 +35,10 @@ This document covers MegaLinter setup, configuration, and optimizations for the 
 
 ### Overview
 
-This project uses a **symlink-based organization strategy** for linter configurations to maintain **backward compatibility** while providing **professional organization**. All linter configuration files are stored in `.github/linters/` with symlinks in the repository root pointing to them.
+This project uses a **symlink-based organization strategy** for linter configurations to
+maintain **backward compatibility** while providing **professional organization**. All linter
+configuration files are stored in `.github/linters/` with symlinks in the repository root
+pointing to them.
 
 ### Benefits
 
@@ -57,9 +62,9 @@ This project uses a **symlink-based organization strategy** for linter configura
 ### How It Works
 
 1. **Tools look for configs** in the root directory (standard locations)
-2. **Symlinks transparently redirect** to `.github/linters/` directory
-3. **Actual files are maintained** in the organized location
-4. **Changes propagate instantly** through the symlink mechanism
+1. **Symlinks transparently redirect** to `.github/linters/` directory
+1. **Actual files are maintained** in the organized location
+1. **Changes propagate instantly** through the symlink mechanism
 
 ### Current Configuration Structure
 
@@ -101,14 +106,14 @@ The project uses a single consolidated YAML linting configuration:
 **Adding New Configurations:**
 
 1. Place actual config file in `.github/linters/`
-2. Create symlink from repository root
-3. Update this documentation
+1. Create symlink from repository root
+1. Update this documentation
 
 **Modifying Configurations:**
 
 1. Edit files directly in `.github/linters/`
-2. Changes automatically apply through symlinks
-3. Test locally before committing
+1. Changes automatically apply through symlinks
+1. Test locally before committing
 
 **Best Practices:**
 
@@ -238,7 +243,7 @@ MegaLinter runs automatically on:
 
 ### Performance Summary
 
-```
+```text
 Before: 20 minutes, always runs all linters
 After: 10-15 minutes with intelligent optimization
 
@@ -275,38 +280,38 @@ Full Mode (main): ~12-15 minutes (comprehensive linting)
 ### Configuration Optimizations
 
 1. **Plugin Caching**: Added Terraform plugin cache configuration
-2. **Security Rules**: Configured terrascan for infrastructure security
-3. **Markdown Standards**: Enforced 120-character line limits
-4. **Code Block Formatting**: Required language specifiers
+1. **Security Rules**: Configured terrascan for infrastructure security
+1. **Markdown Standards**: Enforced 120-character line limits
+1. **Code Block Formatting**: Required language specifiers
 
 ### File Structure Improvements
 
 1. **Linter Rules**: Organized in `.github/linters/` directory
-2. **Backup System**: Automatic backups during fixes
-3. **Error Reduction**: Fixed 44+ markdown issues across 5 files
+1. **Backup System**: Automatic backups during fixes
+1. **Error Reduction**: Fixed 44+ markdown issues across 5 files
 
 ## Known Gotchas
 
 ### Common Issues
 
 1. **Terrascan Installation**: Must use `mise install terrascan` if not available
-2. **Container Architecture**: Apple Silicon requires `linux/amd64` specification
-3. **Plugin Cache**: Ensure `~/.terraform.d/plugin-cache` directory exists
-4. **Environment Variables**: `TF_VAR_*` variables must be available in shell
+1. **Container Architecture**: Apple Silicon requires `linux/amd64` specification
+1. **Plugin Cache**: Ensure `~/.terraform.d/plugin-cache` directory exists
+1. **Environment Variables**: `TF_VAR_*` variables must be available in shell
 
 ### Performance Considerations
 
 1. **Large Files**: Very large files may exceed timeout limits
-2. **Network Issues**: Plugin downloads can be slow on poor connections
-3. **Memory Usage**: Large repositories may require more RAM
-4. **Cache Conflicts**: Clear caches if experiencing unusual errors
+1. **Network Issues**: Plugin downloads can be slow on poor connections
+1. **Memory Usage**: Large repositories may require more RAM
+1. **Cache Conflicts**: Clear caches if experiencing unusual errors
 
 ### Markdown Formatting
 
 1. **Ordered Lists**: Use `1.` for all items (not continuation numbering)
-2. **Code Blocks**: Always specify language (e.g., `bash,`yaml)
-3. **Line Length**: 120 characters maximum for readability
-4. **Table Formatting**: Proper spacing and alignment required
+1. **Code Blocks**: Always specify language (e.g., `bash,`yaml)
+1. **Line Length**: 120 characters maximum for readability
+1. **Table Formatting**: Proper spacing and alignment required
 
 ## Troubleshooting
 
@@ -491,9 +496,9 @@ export MEGALINTER_DOCKER_IMAGE=ghcr.io/oxsecurity/megalinter:v8
 ### Regular Tasks
 
 1. **Update Tools**: `mise install` after configuration changes
-2. **Clear Caches**: `mise run clean` periodically
-3. **Validate Config**: Test after MegaLinter updates
-4. **Review Rules**: Update linter configurations as needed
+1. **Clear Caches**: `mise run clean` periodically
+1. **Validate Config**: Test after MegaLinter updates
+1. **Review Rules**: Update linter configurations as needed
 
 ### Configuration Updates
 

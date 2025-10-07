@@ -9,7 +9,9 @@ Status: ⏸️ Blocked
 
 ## Objective
 
-Install and configure essential development tools on the jump host including Git, tmux, Python tools (uv), Node.js, and other utilities required for DevOps operations. This provides a complete development environment for infrastructure management tasks.
+Install and configure essential development tools on the jump host including Git, tmux,
+Python tools (uv), Node.js, and other utilities required for DevOps operations. This provides
+a complete development environment for infrastructure management tasks.
 
 ## Prerequisites
 
@@ -33,7 +35,7 @@ Create `roles/development_tools/defaults/main.yml`:
 ```yaml
 ---
 # Python configuration
-python_version: "3"  # Use python3 (Ubuntu 24.04 default is 3.12)
+python_version: "3" # Use python3 (Ubuntu 24.04 default is 3.12)
 # Note: For Python 3.11 specifically, add deadsnakes PPA:
 # sudo add-apt-repository ppa:deadsnakes/ppa
 # Then set python_version: "3.11" and use python3.11 package
@@ -44,11 +46,11 @@ python_packages:
   - build-essential
 
 # UV (Python package manager)
-uv_version: "0.4.20"  # Pin to specific version for security and reproducibility
+uv_version: "0.4.20" # Pin to specific version for security and reproducibility
 uv_install_path: /usr/local/bin
 
 # Node.js configuration
-nodejs_version: "20"  # LTS version
+nodejs_version: "20" # LTS version
 npm_global_packages:
   - yarn
   - pnpm
@@ -83,9 +85,9 @@ dev_tools_packages:
 
 # Git configuration
 git_config:
-  - { name: 'init.defaultBranch', value: 'main' }
-  - { name: 'color.ui', value: 'auto' }
-  - { name: 'pull.rebase', value: 'false' }
+  - { name: "init.defaultBranch", value: "main" }
+  - { name: "color.ui", value: "auto" }
+  - { name: "pull.rebase", value: "false" }
 
 # Tmux configuration
 tmux_config_enabled: true
@@ -161,13 +163,13 @@ Create `roles/development_tools/tasks/python.yml`:
       get_url:
         url: "https://github.com/astral-sh/uv/releases/download/{{ uv_version }}/{{ uv_binary }}"
         dest: "/tmp/{{ uv_binary }}"
-        mode: '0644'
+        mode: "0644"
 
     - name: Download UV checksum
       get_url:
         url: "https://github.com/astral-sh/uv/releases/download/{{ uv_version }}/{{ uv_checksum_file }}"
         dest: "/tmp/{{ uv_checksum_file }}"
-        mode: '0644'
+        mode: "0644"
 
     - name: Verify UV checksum
       command: "cd /tmp && sha256sum -c {{ uv_checksum_file }}"
@@ -184,7 +186,7 @@ Create `roles/development_tools/tasks/python.yml`:
       copy:
         src: "/tmp/uv"
         dest: "{{ uv_install_path }}/uv"
-        mode: '0755'
+        mode: "0755"
         remote_src: yes
       become: yes
 
@@ -213,7 +215,7 @@ Create `roles/development_tools/tasks/python.yml`:
     state: directory
     owner: ansible
     group: ansible
-    mode: '0755'
+    mode: "0755"
 
 - name: Install global Python tools with UV
   become_user: ansible
@@ -236,13 +238,13 @@ Create `roles/development_tools/tasks/nodejs.yml`:
   file:
     path: /etc/apt/keyrings
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Install NodeSource GPG key
   get_url:
     url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
     dest: /etc/apt/keyrings/nodesource.gpg
-    mode: '0644'
+    mode: "0644"
 
 - name: Add NodeSource repository
   apt_repository:
@@ -291,13 +293,13 @@ Create `roles/development_tools/tasks/git.yml`:
     value: "{{ item.value }}"
     scope: system
   loop:
-    - { key: 'st', value: 'status' }
-    - { key: 'co', value: 'checkout' }
-    - { key: 'br', value: 'branch' }
-    - { key: 'ci', value: 'commit' }
-    - { key: 'unstage', value: 'reset HEAD --' }
-    - { key: 'last', value: 'log -1 HEAD' }
-    - { key: 'visual', value: '!gitk' }
+    - { key: "st", value: "status" }
+    - { key: "co", value: "checkout" }
+    - { key: "br", value: "branch" }
+    - { key: "ci", value: "commit" }
+    - { key: "unstage", value: "reset HEAD --" }
+    - { key: "last", value: "log -1 HEAD" }
+    - { key: "visual", value: "!gitk" }
 ```
 
 ### 7. **Create Tmux Configuration**
@@ -365,7 +367,7 @@ Create `roles/development_tools/tasks/tmux.yml`:
     dest: /home/ansible/.tmux.conf
     owner: ansible
     group: ansible
-    mode: '0644'
+    mode: "0644"
   when: tmux_config_enabled
 
 - name: Create tmux plugin directory
@@ -374,7 +376,7 @@ Create `roles/development_tools/tasks/tmux.yml`:
     state: directory
     owner: ansible
     group: ansible
-    mode: '0755'
+    mode: "0755"
 
 - name: Install tmux plugin manager
   git:
@@ -416,7 +418,7 @@ Create `roles/development_tools/tasks/main.yml`:
     state: directory
     owner: ansible
     group: ansible
-    mode: '0755'
+    mode: "0755"
   loop:
     - /home/ansible/projects
     - /home/ansible/scripts

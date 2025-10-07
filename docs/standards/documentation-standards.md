@@ -6,7 +6,9 @@ Establish consistent documentation practices that ensure knowledge is preserved,
 
 ## Background
 
-Documentation is not an afterthought—it's a first-class citizen in this repository. We've learned that undocumented systems become unmaintainable, and scattered documentation becomes useless.
+Documentation is not an afterthought—it's a first-class citizen in this repository. We've
+learned that undocumented systems become unmaintainable, and scattered documentation becomes
+useless.
 
 ## Standard
 
@@ -35,11 +37,11 @@ docs/
 ### Placement Rules
 
 1. **One README per directory** - Explains that directory's purpose
-2. **Technical docs in docs/** - Never scatter .md files in code directories
-3. **Service docs stay local** - Service-specific README in service directory
-4. **Standards before implementation** - Document decisions before coding
-5. **AI/Assistant docs belong in resources/** - Tool-specific context files
-6. **Implementation-specific guides in implementation/{service}/** - Group by service
+1. **Technical docs in docs/** - Never scatter .md files in code directories
+1. **Service docs stay local** - Service-specific README in service directory
+1. **Standards before implementation** - Document decisions before coding
+1. **AI/Assistant docs belong in resources/** - Tool-specific context files
+1. **Implementation-specific guides in implementation/{service}/** - Group by service
 
 ### Content Placement Guidelines
 
@@ -89,7 +91,7 @@ Every README must include:
 
 ### Markdown Standards
 
-```markdown
+````markdown
 # Single H1 Title
 
 ## Clear Section Headers
@@ -100,12 +102,14 @@ Every README must include:
 ```text
 # Fenced code blocks with language
 ```
+````
 
 [Descriptive Links](relative/path.md) not [go to documentation](path)
 
 #### Linting Exceptions
 
-When markdown linting rules need to be bypassed for legitimate reasons (e.g., raw terminal output, intentional formatting), use inline disable comments:
+When markdown linting rules need to be bypassed for legitimate reasons (e.g., raw terminal
+output, intentional formatting), use inline disable comments:
 
 ```markdown
 <!-- markdownlint-disable-next-line MD040 -->
@@ -118,7 +122,9 @@ Some raw terminal output without language
 ```
 
 <!-- markdownlint-disable-next-line MD013 -->
-This line is intentionally longer than 80 characters because it contains a very important URL that should not be broken: [https://example.com/very/long/path](https://example.com/very/long/path)
+
+This line is intentionally longer than 80 characters because it contains a very important URL
+that should not be broken: [https://example.com/very/long/path](https://example.com/very/long/path)
 
 <!-- markdownlint-disable MD033 -->
 <details>
@@ -145,16 +151,16 @@ Use consistent tags for tracking tasks, issues, and important notes across both 
 
 #### Tag Types and Usage
 
-| Tag | Purpose | Priority | Example |
-|-----|---------|----------|---------|
-| `TODO` | Future tasks or improvements | Medium | "Add error handling for edge cases" |
-| `FIXME` | Broken code that needs fixing | High | "This breaks when input is null" |
-| `BUG` | Known bugs that need resolution | High | "Returns incorrect value for negative numbers" |
-| `HACK` | Temporary workaround that needs proper solution | Medium | "Using sleep() until proper event system is ready" |
-| `WARNING` | Important cautions for other developers | Info | "Do not modify - external system dependency" |
-| `NOTE` | Important information or context | Info | "This follows RFC-2119 specification" |
-| `DEPRECATED` | Code/docs scheduled for removal | Low | "Use new_function() instead - removal in v2.0" |
-| `SECURITY` | Security-related concerns | Critical | "Validate input to prevent SQL injection" |
+| Tag          | Purpose                                         | Priority | Example                                            |
+| ------------ | ----------------------------------------------- | -------- | -------------------------------------------------- |
+| `TODO`       | Future tasks or improvements                    | Medium   | "Add error handling for edge cases"                |
+| `FIXME`      | Broken code that needs fixing                   | High     | "This breaks when input is null"                   |
+| `BUG`        | Known bugs that need resolution                 | High     | "Returns incorrect value for negative numbers"     |
+| `HACK`       | Temporary workaround that needs proper solution | Medium   | "Using sleep() until proper event system is ready" |
+| `WARNING`    | Important cautions for other developers         | Info     | "Do not modify - external system dependency"       |
+| `NOTE`       | Important information or context                | Info     | "This follows RFC-2119 specification"              |
+| `DEPRECATED` | Code/docs scheduled for removal                 | Low      | "Use new_function() instead - removal in v2.0"     |
+| `SECURITY`   | Security-related concerns                       | Critical | "Validate input to prevent SQL injection"          |
 
 #### Format Standards
 
@@ -255,9 +261,9 @@ rg '(\[|# )(TODO|FIXME|BUG)' --vimgrep
 **Bad Examples:**
 
 ```markdown
-[TODO]: Fix this            # Too vague
-TODO: Add tests             # Missing brackets
-[TODO] Missing colon        # Wrong format
+[TODO]: Fix this # Too vague
+TODO: Add tests # Missing brackets
+[TODO] Missing colon # Wrong format
 ```
 
 ```python
@@ -338,6 +344,7 @@ To meet these standards:
 ## References
 
 <!-- TODO: Create getting-started/repository-structure.md -->
+
 - Repository Structure (see README.md for overview)
 - [Project README](../../README.md)
 - CommonMark Specification

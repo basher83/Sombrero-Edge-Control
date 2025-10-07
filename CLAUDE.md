@@ -4,11 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This is a Packer, Terraform and Ansible-based Infrastructure-as-Code pipeline repository for deploying a centralized jump host VM ("jump-man") on Proxmox. The VM serves as a secure DevOps management point with Docker, development tools, and SSH key-only authentication.
+This is a Packer, Terraform and Ansible-based Infrastructure-as-Code pipeline repository for
+deploying a centralized jump host VM ("jump-man") on Proxmox. The VM serves as a secure DevOps
+management point with Docker, development tools, and SSH key-only authentication.
 
 ## Common Commands
 
-All project commands are managed via mise tasks defined in `.mise.toml`. Use `mise tasks` to see all available commands with descriptions.
+All project commands are managed via mise tasks defined in `.mise.toml`. Use `mise tasks`
+to see all available commands with descriptions.
 
 ### Quick Reference
 
@@ -48,7 +51,8 @@ The infrastructure uses a modular Terraform design:
 
 ### Key Configuration Patterns
 
-1. **Environment Variables**: Managed via mise in `.mise.local.toml` (see `.mise.local.toml.example` for template with all available variables and documentation)
+1. **Environment Variables**: Managed via mise in `.mise.local.toml` (see `.mise.local.toml.example`
+   for template with all available variables and documentation)
 
 1. **VM Specifications**:
 

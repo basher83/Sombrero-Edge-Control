@@ -6,7 +6,8 @@
 
 ## Executive Summary
 
-- **Research scope**: Firewall management roles and collections focusing on iptables, Docker compatibility, and security hardening
+- **Research scope**: Firewall management roles and collections focusing on iptables,
+  Docker compatibility, and security hardening
 - **Key findings**:
   - Limited collections specifically address Docker-iptables interaction properly
   - Most high-quality roles are individual roles rather than collections
@@ -39,7 +40,7 @@
         - "22"
         - "80"
         - "443"
-      firewall_flush_rules_and_chains: false  # CRITICAL for Docker
+      firewall_flush_rules_and_chains: false # CRITICAL for Docker
       firewall_additional_rules:
         - "iptables -A INPUT -i docker0 -j ACCEPT"
   ```
@@ -160,8 +161,8 @@
 ### Recommended Stack for Docker Environment
 
 1. **Primary collection**: mikegleasonjr.firewall - Advanced rule management with Docker compatibility
-2. **Supporting patterns**: Custom Docker bridge handling
-3. **Dependencies**: Standard iptables tools
+1. **Supporting patterns**: Custom Docker bridge handling
+1. **Dependencies**: Standard iptables tools
 
 ### Docker-Compatible Implementation Pattern
 
@@ -197,9 +198,9 @@ firewall_v4_flush_rules:
 ### Implementation Path
 
 1. **Install mikegleasonjr.firewall**: `ansible-galaxy install mikegleasonjr.firewall`
-2. **Configure Docker-aware rules**: Use hierarchical rule system
-3. **Test with existing Docker containers**: Verify connectivity maintained
-4. **Add application-specific rules**: Layer on service-specific ports
+1. **Configure Docker-aware rules**: Use hierarchical rule system
+1. **Test with existing Docker containers**: Verify connectivity maintained
+1. **Add application-specific rules**: Layer on service-specific ports
 
 ## Risk Analysis
 
@@ -268,21 +269,24 @@ firewall_additional_rules:
 The ansible-research agent uses a bias-free scoring system evaluating:
 
 1. **Maintenance & Activity** (25 points)
+
    - Recent commits
    - Issue resolution
    - Active maintainer presence
 
-2. **Community & Adoption** (25 points)
+1. **Community & Adoption** (25 points)
+
    - GitHub stars
    - Fork count
    - Contributors
 
-3. **Code Quality** (25 points)
+1. **Code Quality** (25 points)
+
    - Documentation quality
    - Testing/CI presence
    - Code organization
 
-4. **Feature Completeness** (25 points)
+1. **Feature Completeness** (25 points)
    - Docker compatibility
    - Platform coverage
    - Configuration flexibility
@@ -297,23 +301,29 @@ The ansible-research agent uses a bias-free scoring system evaluating:
 ## Next Steps
 
 1. **Immediate actions**:
+
    - Install and test mikegleasonjr.firewall in development
    - Create Docker-specific rule templates
    - Document rule ordering requirements
 
-2. **Testing recommendations**:
+1. **Testing recommendations**:
+
    - Verify Docker container connectivity after firewall deployment
    - Test container-to-container and container-to-host communication
    - Validate that Docker's published ports work correctly
 
-3. **Documentation needs**:
+1. **Documentation needs**:
    - Create runbook for Docker + firewall troubleshooting
    - Document safe rule modification procedures
    - Establish firewall testing checklist
 
 ## Conclusion
 
-The firewall automation landscape lacks mature collections specifically designed for Docker compatibility. The best approach combines mikegleasonjr.firewall's sophisticated rule management with custom Docker integration patterns. Avoid geerlingguy.firewall's default configuration in Docker environments due to rule flushing behavior, but it remains viable with careful configuration.
+The firewall automation landscape lacks mature collections specifically designed for Docker
+compatibility. The best approach combines mikegleasonjr.firewall's sophisticated rule management
+with custom Docker integration patterns. Avoid geerlingguy.firewall's default configuration in
+Docker environments due to rule flushing behavior, but it remains viable with careful
+configuration.
 
 ## Implementation Result
 

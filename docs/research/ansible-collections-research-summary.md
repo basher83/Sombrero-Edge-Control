@@ -2,19 +2,21 @@
 
 ## Executive Overview
 
-Research completed on 2025-09-18 evaluating Ansible collections for infrastructure automation technologies relevant to the Sombrero Edge Control project.
+Research completed on 2025-09-18 evaluating Ansible collections for infrastructure
+automation technologies relevant to the Sombrero Edge Control project.
 
 ## Top Recommendations
 
 ### Tier 1: Production-Ready Collections (80+ score)
 
 1. **community.docker** (Score: 85/100)
+
    - Official collection with 233 stars, 139 forks
    - Comprehensive Docker/Podman support
    - Active maintenance (last commit: 2025-09-16)
    - Essential for container management on jump host
 
-2. **community.hashi_vault** (Score: 82/100)
+1. **community.hashi_vault** (Score: 82/100)
    - Official collection with 96 stars, 70 forks
    - Robust secrets management capabilities
    - Strong authentication methods support
@@ -22,19 +24,21 @@ Research completed on 2025-09-18 evaluating Ansible collections for infrastructu
 
 ### Tier 2: Good Quality Collections (60-79 score)
 
-3. **community.proxmox** (Score: 72/100)
+1. **community.proxmox** (Score: 72/100)
+
    - New official collection (61 stars, 36 forks)
    - Active development, replacing community.general modules
    - Perfect for existing Proxmox infrastructure
    - VM/LXC provisioning and management
 
-4. **netbox.netbox** (Score: 68/100)
+1. **netbox.netbox** (Score: 68/100)
+
    - Established community collection
    - Comprehensive NetBox API coverage
    - IPAM and DCIM operations
    - Consider if adopting NetBox for network management
 
-5. **wescale.hashistack** (Score: 65/100)
+1. **wescale.hashistack** (Score: 65/100)
    - Complete HashiCorp stack deployment
    - Production-focused implementation
    - Covers Vault, Consul, and Nomad
@@ -51,7 +55,7 @@ collections:
   - name: community.proxmox
     version: ">=1.0.0"
   - name: community.general
-    version: ">=8.0.0"  # For utilities
+    version: ">=8.0.0" # For utilities
 ```
 
 ### Phase 2: Optional Extensions
@@ -60,9 +64,9 @@ collections:
 # Add based on infrastructure needs
 collections:
   - name: community.hashi_vault
-    version: ">=6.0.0"  # If using Vault
+    version: ">=6.0.0" # If using Vault
   - name: netbox.netbox
-    version: ">=3.0.0"  # If using NetBox
+    version: ">=3.0.0" # If using NetBox
 ```
 
 ### Version Pinning Strategy

@@ -9,7 +9,9 @@ Status: ⏸️ Blocked
 
 ## Objective
 
-Validate that the separated pipeline meets performance targets and document benchmarks for each stage. Compare performance metrics before and after the refactor to ensure the changes deliver expected improvements in build time, deployment speed, and maintainability.
+Validate that the separated pipeline meets performance targets and document benchmarks for
+each stage. Compare performance metrics before and after the refactor to ensure the changes
+deliver expected improvements in build time, deployment speed, and maintainability.
 
 ## Prerequisites
 

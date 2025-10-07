@@ -9,8 +9,8 @@ Stage 2 of the infrastructure pipeline: Provision VM infrastructure from a Packe
 **Pipeline Flow:**
 
 1. **Packer** → Creates golden image template (ID: 8024)
-2. **Terraform** → Provisions VM from template with networking (this stage)
-3. **Ansible** → Configures software and services
+1. **Terraform** → Provisions VM from template with networking (this stage)
+1. **Ansible** → Configures software and services
 
 ## Quick Start
 
@@ -51,12 +51,12 @@ terraform output -json ansible_inventory > ../ansible_collections/basher83/autom
 
 ## Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `template_id` | 8024 | Packer-built template ID |
-| `vm_name` | jump-man | VM name |
-| `vm_ip_address` | 192.168.10.250/24 | Static IP with CIDR |
-| `proxmox_node` | lloyd | Target Proxmox node |
+| Variable        | Default           | Description              |
+| --------------- | ----------------- | ------------------------ |
+| `template_id`   | 8024              | Packer-built template ID |
+| `vm_name`       | jump-man          | VM name                  |
+| `vm_ip_address` | 192.168.10.250/24 | Static IP with CIDR      |
+| `proxmox_node`  | lloyd             | Target Proxmox node      |
 
 ## Outputs
 
