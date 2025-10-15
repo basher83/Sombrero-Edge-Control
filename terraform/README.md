@@ -83,6 +83,7 @@ mise run terraform-apply
 - All software configuration handled by Ansible (stage 3)
 
     <!-- BEGIN_TF_DOCS -->
+
 ## Requirements
 
 | Name | Version |
@@ -115,7 +116,7 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_proxmox_insecure"></a> [proxmox\_insecure](#input\_proxmox\_insecure) | Skip TLS verification for Proxmox API (not recommended in production) | `bool` | `false` | no |
 | <a name="input_pve_api_token"></a> [pve\_api\_token](#input\_pve\_api\_token) | Proxmox API token in format 'user@pam!tokenid=uuid' | `string` | n/a | yes |
-| <a name="input_pve_api_url"></a> [pve\_api\_url](#input\_pve\_api\_url) | Proxmox API endpoint URL (e.g., https://proxmox.example.com:8006/api2/json) | `string` | n/a | yes |
+| <a name="input_pve_api_url"></a> [pve\_api\_url](#input\_pve\_api\_url) | Proxmox API endpoint URL (e.g., <https://proxmox.example.com:8006/api2/json>) | `string` | n/a | yes |
 | <a name="input_vm_agent_enabled"></a> [vm\_agent\_enabled](#input\_vm\_agent\_enabled) | QEMU agent enable/disable | `string` | `"true"` | no |
 | <a name="input_vm_agent_timeout"></a> [vm\_agent\_timeout](#input\_vm\_agent\_timeout) | Time to wait for QEMU agent to initialize | `string` | `"15m"` | no |
 | <a name="input_vm_bios"></a> [vm\_bios](#input\_vm\_bios) | ovmf is preferred or seabios | `string` | `"ovmf"` | no |
