@@ -290,18 +290,19 @@ depends = ["fmt", "yaml-fmt"]
 # Generate documentation for all Terraform modules and environments
 [tasks.docs]
 description = "Generate Terraform documentation for all modules and environments"
-run = "./scripts/generate-docs.sh"
+dir = "terraform"
+run = "terraform-docs -c ../.terraform-docs.yml ."
 
 # Verify documentation is up-to-date (CI-friendly)
 [tasks.docs-check]
 description = "Check if Terraform documentation is up-to-date"
 dir = "terraform"
-run = "terraform-docs --config .terraform-docs.yml --output-check ."
+run = "terraform-docs -c ../.terraform-docs.yml --output-check ."
 
-# Pre-commit hook for terraform-docs validation
-[tasks.pre-commit-docs]
-description = "Ensure terraform-docs are up-to-date before commit"
-run = "mise run docs-check"
+[tasks.docs-tfvars]
+description = "Generate variables for tfvars"
+dir = "terraform"
+run = "terraform-docs tfvars hcl . --output-file terraform.tfvars"
 
 # ============================================================================
 # LINTING TASKS
