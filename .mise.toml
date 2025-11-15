@@ -49,7 +49,7 @@ yamllint = "1.37.1"                   # YAML linting
 yamlfmt = "0.17.2"                    # YAML formatting
 shellcheck = "0.11.0"                 # Shell script linting
 markdownlint-cli2 = "0.18.1"          # Markdown linting
-act = "0.2.81"
+act = "0.2.82"
 "pipx:antsibull-changelog" = "latest"
 git-cliff = "2.10.1"
 
