@@ -12,7 +12,7 @@
 **The 3-Stage Pipeline:**
 1. **Packer (Build):** Creates a "golden" Ubuntu 24.04 template (OS + `cloud-init` + `qemu-guest-agent` only).
 2. **Terraform (Provision):** Clones the Packer template to create the VM hardware and networking.
-    - *Output:* Generates `ansible_inventory.json` which links Stage 2 to Stage 3.
+    - *Output:* Generates `inventory.json` which links Stage 2 to Stage 3.
 3. **Ansible (Configure):** Applies software, security hardening, and logic via the `automation_server` collection.
 
 ## 2. Directory Map (Critical)
@@ -45,7 +45,7 @@ ansible-playbook -i ansible_inventory.json playbooks/site.yml
       * **Pre-commit:** Enforced locally (`terraform fmt`, `terraform-docs`).
       * **MegaLinter:** Enforced in CI (`tflint`, `shellcheck`, `yamllint`).
   * **Dependencies:** Managed via **Renovate**.
-  * **Commits:** Follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+  *   **Commits:** Follow [Conventional Commits](https://www.conventionalcommits.org/). Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ## 5. Security & Safety
 
