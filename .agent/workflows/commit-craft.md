@@ -147,9 +147,13 @@ Commit succeeds. Proceed to verification.
 
 **Phase 1: Auto-fix (run first)**
 
-Attempt to run relevant auto-fixers (e.g., `mise run lint:fix` or `uv run ruff check --fix .` depending on project).
+Attempt to run project auto-fixers:
 
-Re-stage affected files and retry commit. This handles ~40+ auto-fixable rules.
+```bash
+mise run fmt-all
+```
+
+Re-stage affected files and retry commit. This handles formatting and auto-fixable rules.
 
 **Phase 2: Evaluate remaining violations**
 
@@ -168,7 +172,7 @@ If commit still fails, check violation types:
 **Manual fix for MD013:**
 
 1. Read the file to understand context
-2. Use Edit tool to wrap lines at logical points
+2. Use `replace_file_content` tool to wrap lines at logical points
 3. Preserve URLs, code blocks, tables intact
 4. Re-stage and retry commit
 
