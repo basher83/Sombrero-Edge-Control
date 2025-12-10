@@ -1,4 +1,4 @@
-# Mise configuration for Lunar Module - Terraform module repository
+# Mise configuration for Sombrero-Edge-Control - Terraform module repository
 # This file manages tool versions and task automation for the project
 
 # ============================================================================
@@ -18,6 +18,9 @@ show_tools = true
 show_env = false
 truncate = true
 
+[env]
+_.python.venv = { path = ".venv", create = true }  # create the venv if it doesn't exist
+
 # ============================================================================
 # TOOL VERSIONS
 # ============================================================================
@@ -25,34 +28,29 @@ truncate = true
 [tools]
 # Core tools
 packer = "1.14.2"
-terraform = "1.13.3"                # Pin to Terraform >=1.10 for Ephemeral Resources support
+terraform = "1.13.3"  # Pin to Terraform >=1.10 for Ephemeral Resources support
 ansible-core = "2.19.1"
 "pipx:ansible-dev-tools" = "latest"
 uv = "0.8.22"
 python = "3.13.7"
-
-terraform-docs = "0.20.0" # Documentation generation
-tflint = "0.59.1"         # Terraform linting
-
+terraform-docs = "0.20.0"  # Documentation generation
+tflint = "0.59.1"  # Terraform linting
 # File search and manipulation
 rg = "14.1.1"  # ripgrep - fast search
 fd = "10.2.0"  # Modern find alternative
-eza = "0.23.0" # Modern ls alternative
-
+eza = "0.23.0"  # Modern ls alternative
 # Security and verification
-cosign = "2.6.0"     # Container signing and verification
-pre-commit = "4.3.0" # Git hook framework
-terrascan = "1.19.9" # Infrastructure security scanning
-
+cosign = "2.6.0"  # Container signing and verification
+pre-commit = "4.3.0"  # Git hook framework
+terrascan = "1.19.9"  # Infrastructure security scanning
 # Linting and formatting tools
-yamllint = "1.37.1"                   # YAML linting
-yamlfmt = "0.17.2"                    # YAML formatting
-shellcheck = "0.11.0"                 # Shell script linting
-markdownlint-cli2 = "0.18.1"          # Markdown linting
+yamllint = "1.37.1"  # YAML linting
+yamlfmt = "0.17.2"  # YAML formatting
+shellcheck = "0.11.0"  # Shell script linting
+markdownlint-cli2 = "0.18.1"  # Markdown linting
 act = "0.2.81"
 "pipx:antsibull-changelog" = "latest"
 git-cliff = "2.10.1"
-
 
 # ============================================================================
 # PACKER TASKS
@@ -83,12 +81,10 @@ description = "Build VM template with Packer"
 dir = "packer"
 run = "packer build ubuntu-server-numbat-docker.pkr.hcl"
 
-
 [tasks.packer-build-debug]
 description = "Build VM template with Packer in debug mode"
 dir = "packer"
 run = "PACKER_LOG=1 packer build -debug ubuntu-server-numbat-docker.pkr.hcl"
-
 
 # ============================================================================
 # SETUP & INITIALIZATION TASKS
@@ -374,7 +370,6 @@ description = "Output Ansible inventory JSON"
 dir = "terraform"
 run = "terraform output -json ansible_inventory > ../ansible_collections/basher83/automation_server/inventory/inventory.json && echo '✅ Inventory exported to ansible_collections/basher83/automation_server/inventory/inventory.json'"
 
-
 # ============================================================================
 # COMPOSITE VALIDATION TASKS
 # ============================================================================
@@ -412,7 +407,6 @@ run = "mise tasks"
 # ============================================================================
 # DEPLOYMENT PIPELINE TASKS (PACKER → TERRAFORM → ANSIBLE)
 # ============================================================================
-
 
 # Deploy infrastructure with Terraform
 [tasks.deploy-terraform]
