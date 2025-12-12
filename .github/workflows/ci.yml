@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -66,9 +66,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v5
+        uses: terraform-linters/setup-tflint@v6
         with:
           tflint_version: v0.58.1
       - name: Show TFLint version
@@ -95,7 +95,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.ref || github.ref }}
       - name: Check terraform-docs
@@ -114,7 +114,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
@@ -141,7 +141,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@2.0.0
         with:
@@ -155,9 +155,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run markdownlint
-        uses: DavidAnson/markdownlint-cli2-action@v20
+        uses: DavidAnson/markdownlint-cli2-action@v22
         with:
           globs: "**/*.md"
         continue-on-error: true # Don't fail CI on markdown issues
@@ -167,7 +167,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Full history for scanning
       - name: Install Infisical CLI
@@ -195,13 +195,13 @@ jobs:
           fi
       - name: Upload SARIF results
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: infisical-results.sarif
           category: secret-scanning
       - name: Upload scan results as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: infisical-scan-results
           path: infisical-results.sarif
@@ -212,7 +212,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run KICS scan
         uses: checkmarx/kics-github-action@v2.1.15
         with:
@@ -227,13 +227,13 @@ jobs:
           disable_secrets: false
       - name: Upload SARIF results
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: kics-results/results.sarif
           category: infrastructure-security
       - name: Upload KICS results as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: kics-scan-results
           path: kics-results/
