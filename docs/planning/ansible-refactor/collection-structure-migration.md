@@ -91,31 +91,31 @@ ansible_collections/
 ### ✅ Completed
 
 1. Collection structure created at `ansible_collections/basher83/automation_server/`
-2. galaxy.yml configured with metadata
-3. All roles available in collection format
-4. Playbooks use FQCN (Fully Qualified Collection Names)
+1. galaxy.yml configured with metadata
+1. All roles available in collection format
+1. Playbooks use FQCN (Fully Qualified Collection Names)
 
 ### 🚧 In Progress
 
 1. Removing duplicate `ansible/` directory
-2. Updating all mise tasks to use collection
-3. Finalizing dynamic inventory from Terraform
-3. Migrate inventory structure
-4. Update variable references
+1. Updating all mise tasks to use collection
+1. Finalizing dynamic inventory from Terraform
+1. Migrate inventory structure
+1. Update variable references
 
 ### Phase 3: Validation (Week 3)
 
 1. Run comprehensive ansible-lint checks
-2. Execute all playbooks in test environment
-3. Validate Terraform → Ansible integration
-4. Update CI/CD pipelines
+1. Execute all playbooks in test environment
+1. Validate Terraform → Ansible integration
+1. Update CI/CD pipelines
 
 ### Phase 4: Cutover (Week 4)
 
 1. Archive old ansible/ directory
-2. Update all documentation
-3. Update mise tasks
-4. Deploy to production
+1. Update all documentation
+1. Update mise tasks
+1. Deploy to production
 
 ## Technical Requirements
 
@@ -188,11 +188,11 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 ## Success Criteria
 
 1. ✓ Zero ansible-lint errors or warnings
-2. ✓ All existing playbooks functional
-3. ✓ Terraform integration maintained
-4. ✓ CI/CD pipelines updated and passing
-5. ✓ Documentation complete
-6. ✓ Team trained on new structure
+1. ✓ All existing playbooks functional
+1. ✓ Terraform integration maintained
+1. ✓ CI/CD pipelines updated and passing
+1. ✓ Documentation complete
+1. ✓ Team trained on new structure
 
 ## Implementation Checklist
 
@@ -218,6 +218,6 @@ repository: https://github.com/basher83/Sombrero-Edge-Control
 ## Next Steps
 
 1. Review and approve this proposal
-2. Create formal ADR
-3. Begin Phase 1 implementation
-4. Set up tracking for migration progress
+1. Create formal ADR
+1. Begin Phase 1 implementation
+1. Set up tracking for migration progress

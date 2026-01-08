@@ -251,10 +251,10 @@ ANSIBLE_TIMEOUT = "30"
 ## Best Practices
 
 1. **Tool Versions**: Always pin tool versions in `.mise.toml` for consistency
-2. **Python Packages**: Use `uv` for Python package management, not system pip
-3. **Task Dependencies**: Use `depends` in mise tasks to ensure tools are available
-4. **Environment Isolation**: Keep Python packages in `.venv` to avoid conflicts
-5. **Documentation**: Add `description` to all mise tasks for clarity
+1. **Python Packages**: Use `uv` for Python package management, not system pip
+1. **Task Dependencies**: Use `depends` in mise tasks to ensure tools are available
+1. **Environment Isolation**: Keep Python packages in `.venv` to avoid conflicts
+1. **Documentation**: Add `description` to all mise tasks for clarity
 
 ## Migration Checklist
 
@@ -316,7 +316,7 @@ mise tasks --verbose
 ## Next Steps
 
 1. Review and approve mise integration approach
-2. Update `.mise.toml` with new tools
-3. Test all tasks in development environment
-4. Document in main README
-5. Create team training materials
+1. Update `.mise.toml` with new tools
+1. Test all tasks in development environment
+1. Document in main README
+1. Create team training materials

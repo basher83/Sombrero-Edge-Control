@@ -50,9 +50,9 @@ Our ADRs serve to:
 ADRs follow this collaborative workflow:
 
 1. **Draft** → Initial proposal and context gathering
-2. **Proposed** → Open for review and discussion
-3. **Accepted** → Decision implemented and documented
-4. **Deprecated/Superseded** → When better alternatives emerge
+1. **Proposed** → Open for review and discussion
+1. **Accepted** → Decision implemented and documented
+1. **Deprecated/Superseded** → When better alternatives emerge
 
 ## 🛠️ How to Use This Knowledge Base
 

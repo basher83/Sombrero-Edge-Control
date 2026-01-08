@@ -8,10 +8,10 @@ while maintaining operational continuity.
 ## Migration Principles
 
 1. **Zero Downtime**: Production operations continue uninterrupted
-2. **Incremental Adoption**: Migrate component by component
-3. **Rollback Ready**: Keep legacy scripts operational during transition
-4. **Parallel Validation**: Run both approaches for verification
-5. **Feature Flagging**: Environment-based switching between implementations
+1. **Incremental Adoption**: Migrate component by component
+1. **Rollback Ready**: Keep legacy scripts operational during transition
+1. **Parallel Validation**: Run both approaches for verification
+1. **Feature Flagging**: Environment-based switching between implementations
 
 ## Current State Inventory
 
@@ -45,9 +45,9 @@ ssh root@proxmox-host "qm list"
 **Actions**:
 
 1. Create role directory structure
-2. Implement basic role templates
-3. Set up Molecule testing framework
-4. Create development inventory
+1. Implement basic role templates
+1. Set up Molecule testing framework
+1. Create development inventory
 
 **Deliverables**:
 
@@ -92,11 +92,11 @@ run_test "Docker service running" "ssh $SSH_OPTS $JUMP_HOST_USER@$JUMP_HOST_IP '
 **Migration Steps**:
 
 1. Implement vm_smoke_tests role
-2. Create playbook wrapper
-3. Add mise task for Ansible version
-4. Run both versions in parallel
-5. Compare results
-6. Deprecate shell script
+1. Create playbook wrapper
+1. Add mise task for Ansible version
+1. Run both versions in parallel
+1. Compare results
+1. Deprecate shell script
 
 #### 2.2 Proxmox Validation Migration
 
@@ -121,9 +121,9 @@ ssh root@proxmox-host "qm list | grep 1001"
 **Migration Steps**:
 
 1. Implement proxmox_validation role
-2. Use Proxmox API modules
-3. Test against development Proxmox
-4. Update runbook documentation
+1. Use Proxmox API modules
+1. Test against development Proxmox
+1. Update runbook documentation
 
 ### Phase 3: Integration Updates (Week 3)
 
@@ -189,11 +189,11 @@ fi
 **Strategy**: Section-by-section replacement
 
 1. **Environment Setup**: No changes (local only)
-2. **Stage 1 (Packer)**: Replace verification commands
-3. **Stage 2 (Terraform)**: Remove SSH tests
-4. **Stage 3 (Ansible)**: Already uses Ansible
-5. **Verification**: Replace with playbook calls
-6. **Troubleshooting**: Update to reference diagnostic playbooks
+1. **Stage 1 (Packer)**: Replace verification commands
+1. **Stage 2 (Terraform)**: Remove SSH tests
+1. **Stage 3 (Ansible)**: Already uses Ansible
+1. **Verification**: Replace with playbook calls
+1. **Troubleshooting**: Update to reference diagnostic playbooks
 
 ### Phase 4: Validation & Cutover (Week 4)
 
@@ -401,7 +401,7 @@ archive/
 ## Next Steps
 
 1. Review and approve migration strategy
-2. Set up development environment
-3. Begin Phase 1 implementation
-4. Schedule team training sessions
-5. Create migration tracking dashboard
+1. Set up development environment
+1. Begin Phase 1 implementation
+1. Schedule team training sessions
+1. Create migration tracking dashboard
