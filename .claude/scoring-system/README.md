@@ -83,10 +83,10 @@ Collections are classified into four tiers:
 ### Bias Elimination Techniques
 
 1. **Binary/Threshold Scoring**: Features either exist or don't (no linear scaling)
-2. **Logarithmic Scaling**: Diminishing returns on large numbers
-3. **Category-Relative Evaluation**: Compare within peer groups
-4. **Technical Focus**: 60% of score from code quality
-5. **Unique Value Recognition**: Bonus points for novel solutions
+1. **Logarithmic Scaling**: Diminishing returns on large numbers
+1. **Category-Relative Evaluation**: Compare within peer groups
+1. **Technical Focus**: 60% of score from code quality
+1. **Unique Value Recognition**: Bonus points for novel solutions
 
 ### Example Impact
 
@@ -161,10 +161,10 @@ Use `evaluation-examples.yaml` as test cases when modifying the system.
 ## Benefits
 
 1. **Fair evaluation** of all collection types
-2. **Quality-focused** rather than popularity-focused
-3. **Transparent** scoring with clear criteria
-4. **Maintainable** with separated configuration
-5. **Extensible** for new categories and criteria
+1. **Quality-focused** rather than popularity-focused
+1. **Transparent** scoring with clear criteria
+1. **Maintainable** with separated configuration
+1. **Extensible** for new categories and criteria
 
 ## Version History
 
@@ -177,9 +177,9 @@ This scoring system is **intentionally specialized for Ansible collections**. Wh
 ### Why Specialized?
 
 1. **Tool-specific patterns matter**: Ansible's idempotency patterns are fundamentally different from Terraform's state management
-2. **Accuracy over abstraction**: Specialized scorer achieves 95% accuracy vs 70% for generic
-3. **Simplicity wins**: One folder contains everything you need to understand
-4. **Easier maintenance**: Changes don't ripple across unrelated tools
+1. **Accuracy over abstraction**: Specialized scorer achieves 95% accuracy vs 70% for generic
+1. **Simplicity wins**: One folder contains everything you need to understand
+1. **Easier maintenance**: Changes don't ripple across unrelated tools
 
 ### If You Need Terraform Scoring
 

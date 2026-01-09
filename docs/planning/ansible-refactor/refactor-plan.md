@@ -11,9 +11,9 @@ This document outlines the comprehensive plan to refactor the Sombrero Edge Cont
 The current deployment runbook violates the principle of using Ansible as the single orchestration layer:
 
 1. **Direct SSH Commands**: Multiple `ssh ansible@192.168.10.250` commands throughout the runbook
-2. **Shell-based Testing**: Smoke tests use bash scripts with SSH instead of Ansible modules
-3. **Manual Verification**: Ping tests and curl commands that should be Ansible tasks
-4. **Inconsistent Patterns**: Mix of automation approaches reduces maintainability
+1. **Shell-based Testing**: Smoke tests use bash scripts with SSH instead of Ansible modules
+1. **Manual Verification**: Ping tests and curl commands that should be Ansible tasks
+1. **Inconsistent Patterns**: Mix of automation approaches reduces maintainability
 
 ### Current Architecture
 
@@ -36,10 +36,10 @@ Packer (Build) → Terraform (Deploy) → Mixed (SSH + Ansible) → Manual Verif
 Following the **Decoupled Dynamic Inventory Pattern** with these core tenets:
 
 1. **Ansible Roles First**: All operations structured as reusable, testable roles
-2. **Zero Direct SSH**: No SSH commands after environment setup
-3. **Idempotent Operations**: Every task safely repeatable
-4. **Single Orchestration Layer**: Ansible handles ALL remote operations
-5. **Clear Separation**: Packer builds, Terraform provisions, Ansible configures
+1. **Zero Direct SSH**: No SSH commands after environment setup
+1. **Idempotent Operations**: Every task safely repeatable
+1. **Single Orchestration Layer**: Ansible handles ALL remote operations
+1. **Clear Separation**: Packer builds, Terraform provisions, Ansible configures
 
 ### Target Architecture
 
@@ -73,8 +73,8 @@ Packer (Build) → Terraform (Deploy) → Ansible Only (Configure/Validate/Opera
 Before creating any role, invoke the **ansible-research subagent** to:
 
 1. **Discover existing collections** that solve similar problems
-2. **Evaluate quality** using the 100-point scoring system
-3. **Determine integration strategy**:
+1. **Evaluate quality** using the 100-point scoring system
+1. **Determine integration strategy**:
    - Use existing collection (Tier 1: 80-100 points)
    - Reference for patterns (Tier 2: 60-79 points)
    - Build custom with learnings (Tier 3 or below)
@@ -101,20 +101,20 @@ Example research invocations:
    - Validate template existence and metadata
    - Check node availability and resources
 
-2. **terraform_outputs**
+1. **terraform_outputs**
    - Parse Terraform state/outputs
    - Generate dynamic inventory
    - Validate infrastructure provisioning
 
 #### Validation Roles
 
-3. **vm_smoke_tests**
+1. **vm_smoke_tests**
    - Infrastructure validation (network, DNS, hostname)
    - Service validation (Docker, QEMU agent)
    - Security validation (firewall, SSH config)
    - Package installation verification
 
-4. **docker_validation**
+1. **docker_validation**
    - Docker service health
    - Container runtime tests
    - Network configuration
@@ -122,13 +122,13 @@ Example research invocations:
 
 #### Operational Roles
 
-5. **vm_diagnostics**
+1. **vm_diagnostics**
    - Log collection
    - Service status reporting
    - Network troubleshooting
    - Performance metrics
 
-6. **vm_lifecycle**
+1. **vm_lifecycle**
    - Safe rollback procedures
    - State cleanup
    - Emergency recovery
@@ -193,11 +193,11 @@ ansible/playbooks/
    """
    ```
 
-2. **GitHub Actions**:
+1. **GitHub Actions**:
    - Update CI/CD to use Ansible playbooks
    - Add Ansible role testing with Molecule
 
-3. **Documentation**:
+1. **Documentation**:
    - Update RUNBOOK.md to remove all SSH commands
    - Create role usage documentation
    - Update troubleshooting guides
@@ -210,10 +210,10 @@ ansible/playbooks/
 **Activities**:
 
 1. Deprecate shell-based scripts
-2. Parallel run for validation
-3. Performance comparison
-4. Full regression testing
-5. Documentation updates
+1. Parallel run for validation
+1. Performance comparison
+1. Full regression testing
+1. Documentation updates
 
 ## Success Criteria
 
@@ -247,15 +247,15 @@ ansible/playbooks/
    - **Risk**: Team unfamiliar with Ansible roles
    - **Mitigation**: Comprehensive documentation and examples
 
-2. **Migration Complexity**
+1. **Migration Complexity**
    - **Risk**: Parallel maintenance during transition
    - **Mitigation**: Phased approach with fallback options
 
-3. **Performance Impact**
+1. **Performance Impact**
    - **Risk**: Ansible overhead vs direct SSH
    - **Mitigation**: Optimize with facts caching, parallel execution
 
-4. **Testing Coverage**
+1. **Testing Coverage**
    - **Risk**: Missing edge cases in role conversion
    - **Mitigation**: Comprehensive Molecule test suite
 
@@ -308,9 +308,9 @@ uv pip install molecule[docker]>=4.0 ansible-lint>=6.22.2 pytest-testinfra
 If the refactor encounters critical issues:
 
 1. **Preserve Current State**: Keep all existing scripts operational
-2. **Feature Flag**: Environment variable to choose implementation
-3. **Gradual Rollback**: Revert role by role if needed
-4. **Documentation**: Clear instructions for using legacy approach
+1. **Feature Flag**: Environment variable to choose implementation
+1. **Gradual Rollback**: Revert role by role if needed
+1. **Documentation**: Clear instructions for using legacy approach
 
 ## Communication Plan
 
@@ -323,9 +323,9 @@ If the refactor encounters critical issues:
 ### Communication Strategy
 
 1. **Weekly Updates**: Progress against plan
-2. **Demo Sessions**: Show new capabilities
-3. **Documentation**: Comprehensive guides
-4. **Training**: Hands-on sessions
+1. **Demo Sessions**: Show new capabilities
+1. **Documentation**: Comprehensive guides
+1. **Training**: Hands-on sessions
 
 ## Appendix
 
@@ -371,6 +371,6 @@ ansible-playbook -i inventory/production playbooks/smoke-test.yml --tags docker
 ## Next Steps
 
 1. Review and provide feedback on this plan
-2. Adjust timeline and scope based on feedback
-3. Create detailed role specifications
-4. Begin Phase 2 implementation upon approval
+1. Adjust timeline and scope based on feedback
+1. Create detailed role specifications
+1. Begin Phase 2 implementation upon approval

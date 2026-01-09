@@ -19,12 +19,12 @@ Chosen option: "Infrastructure-focused configuration with selective automation",
    - Security patches applied automatically for GitHub Actions
    - Less time spent on routine dependency management
 
-2. **Better Organization**
+1. **Better Organization**
    - Related updates grouped together (Ansible collections, GitHub Actions)
    - Clear dependency dashboard for tracking all updates
    - Semantic commit messages for changelog generation
 
-3. **Improved Stability**
+1. **Improved Stability**
    - Major updates require explicit approval
    - Infrastructure tools (Terraform, Packer, Ansible) pinned for consistency
    - Scheduled updates during low-activity periods (early Mondays)
@@ -35,7 +35,7 @@ Chosen option: "Infrastructure-focused configuration with selective automation",
    - More complex configuration to maintain
    - Requires understanding of Renovate's DSL
 
-2. **Monitoring Requirements**
+1. **Monitoring Requirements**
    - Need to monitor auto-merge behavior
    - May require fine-tuning based on actual patterns
 
@@ -53,16 +53,16 @@ The enhanced configuration includes:
 ### Package Rules
 
 1. **Terraform Providers** - Auto-merge patches only
-2. **Ansible Collections** - Group all collection updates
-3. **Infrastructure Tools** - Pin versions in mise for stability
-4. **GitHub Actions** - Auto-merge patches and minor updates
-5. **Proxmox Provider** - Require approval for major updates
+1. **Ansible Collections** - Group all collection updates
+1. **Infrastructure Tools** - Pin versions in mise for stability
+1. **GitHub Actions** - Auto-merge patches and minor updates
+1. **Proxmox Provider** - Require approval for major updates
 
 ### Custom Managers
 
 1. **Mise Tools** - Regex manager for `.mise.toml` versions
-2. **Packer Plugins** - Custom extraction from `.pkr.hcl` files
-3. **Ansible Galaxy** - Parse `requirements.yml` for collections
+1. **Packer Plugins** - Custom extraction from `.pkr.hcl` files
+1. **Ansible Galaxy** - Parse `requirements.yml` for collections
 
 ### Configuration Features
 

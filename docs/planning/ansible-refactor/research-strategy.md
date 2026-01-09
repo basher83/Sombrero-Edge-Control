@@ -33,17 +33,17 @@ Collections are evaluated on four dimensions (25 points each):
    - Star count and community interest
    - Release frequency and versioning
 
-2. **Code Quality** (25 points)
+1. **Code Quality** (25 points)
    - Testing infrastructure (Molecule, CI/CD)
    - Documentation completeness
    - Code organization and standards
 
-3. **Module Implementation** (25 points)
+1. **Module Implementation** (25 points)
    - Idempotency patterns
    - Error handling
    - Input validation
 
-4. **Community Engagement** (25 points)
+1. **Community Engagement** (25 points)
    - Contributor count
    - Issue response times
    - Pull request activity
@@ -262,10 +262,10 @@ Here's a complete example for the docker_validation role:
 ## Benefits of Research-First Approach
 
 1. **Time Savings**: Don't rebuild existing solutions
-2. **Quality**: Leverage battle-tested code
-3. **Learning**: Understand community patterns
-4. **Maintenance**: Reduce custom code burden
-5. **Standards**: Follow established practices
+1. **Quality**: Leverage battle-tested code
+1. **Learning**: Understand community patterns
+1. **Maintenance**: Reduce custom code burden
+1. **Standards**: Follow established practices
 
 ## Red Flags to Watch For
 
@@ -345,7 +345,7 @@ Research is successful when:
 ## Next Steps
 
 1. Begin research for each role using ansible-research subagent
-2. Document findings in research-results.md
-3. Update role specifications with research outcomes
-4. Proceed with implementation based on research
-5. Credit and reference sources appropriately
+1. Document findings in research-results.md
+1. Update role specifications with research outcomes
+1. Proceed with implementation based on research
+1. Credit and reference sources appropriately

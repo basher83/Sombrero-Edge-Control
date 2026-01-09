@@ -23,13 +23,13 @@ organization, and aligns with modern Ansible development practices.
    - Enforcement of naming conventions
    - Cleaner validation reports
 
-2. **Improved Code Organization**
+1. **Improved Code Organization**
    - Self-contained, distributable unit
    - Clear namespace (basher83.automation_server)
    - Versioned releases possible
    - Plugin development support
 
-3. **Better Testing & CI/CD**
+1. **Better Testing & CI/CD**
    - Standardized test structure
    - Molecule tests per role
    - Collection-level testing
@@ -42,7 +42,7 @@ organization, and aligns with modern Ansible development practices.
    - All playbooks need FQCN updates
    - Team training required
 
-2. **Short-term Disruption**
+1. **Short-term Disruption**
    - Parallel structures during migration
    - CI/CD pipeline updates needed
    - Documentation updates required
@@ -66,16 +66,16 @@ ansible_collections/
 ### Key Changes Required
 
 1. **Namespace Introduction**: All roles referenced as `basher83.automation_server.role_name`
-2. **Galaxy Metadata**: Define collection version, dependencies, and requirements
-3. **FQCN Usage**: Update all playbook role references to use Fully Qualified Collection Names
-4. **Directory Migration**: Move from `ansible/` to `ansible_collections/basher83/automation_server/`
+1. **Galaxy Metadata**: Define collection version, dependencies, and requirements
+1. **FQCN Usage**: Update all playbook role references to use Fully Qualified Collection Names
+1. **Directory Migration**: Move from `ansible/` to `ansible_collections/basher83/automation_server/`
 
 ### Migration Phases
 
 1. **Phase 1**: Create parallel structure and galaxy.yml
-2. **Phase 2**: Migrate roles and update imports
-3. **Phase 3**: Validate with ansible-lint and testing
-4. **Phase 4**: Cut over and archive old structure
+1. **Phase 2**: Migrate roles and update imports
+1. **Phase 3**: Validate with ansible-lint and testing
+1. **Phase 4**: Cut over and archive old structure
 
 ## Links
 
