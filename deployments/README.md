@@ -394,9 +394,9 @@ mise run deployment-metrics
 ## 🎯 **Next Steps**
 
 1. **Start Using**: Try `mise run deployment-start` for your next deployment
-2. **Explore Analytics**: Run `mise run deployment-metrics` to see insights
-3. **Customize**: Modify templates in `deployment-checklist.md`
-4. **Contribute**: Add more analytics features as needed
+1. **Explore Analytics**: Run `mise run deployment-metrics` to see insights
+1. **Customize**: Modify templates in `deployment-checklist.md`
+1. **Contribute**: Add more analytics features as needed
 
 ---
 

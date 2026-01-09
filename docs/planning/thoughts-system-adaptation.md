@@ -256,15 +256,15 @@ When troubleshooting, check:
 ## Benefits Summary
 
 1. **Separation of Concerns**: Keep operational knowledge separate from infrastructure code
-2. **Knowledge Retention**: Preserve troubleshooting and deployment history
-3. **Team Learning**: Share insights without cluttering main repository
-4. **AI Enhancement**: Provide rich context for AI-assisted operations
-5. **Compliance**: Keep sensitive operational details out of public repositories
+1. **Knowledge Retention**: Preserve troubleshooting and deployment history
+1. **Team Learning**: Share insights without cluttering main repository
+1. **AI Enhancement**: Provide rich context for AI-assisted operations
+1. **Compliance**: Keep sensitive operational details out of public repositories
 
 ## Next Steps
 
 1. Create basic thoughts directory structure
-2. Add git hooks for protection
-3. Document in project README
-4. Create mise tasks for thoughts management
-5. Integrate with deployment workflows
+1. Add git hooks for protection
+1. Document in project README
+1. Create mise tasks for thoughts management
+1. Integrate with deployment workflows

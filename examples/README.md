@@ -43,19 +43,19 @@ Monitoring system integration example:
 ## How to Use These Examples
 
 1. **Learning**: Study the documented examples to understand best practices and patterns
-2. **Reference**: Use code snippets as templates for your own implementations
-3. **Testing**: Adapt examples to test new concepts in your development environment
-4. **Contributing**: Add new examples following the established patterns and documentation standards
+1. **Reference**: Use code snippets as templates for your own implementations
+1. **Testing**: Adapt examples to test new concepts in your development environment
+1. **Contributing**: Add new examples following the established patterns and documentation standards
 
 ## Contributing Examples
 
 When adding new examples to this directory:
 
 1. **Document Thoroughly**: Include comprehensive comments and documentation
-2. **Follow Conventions**: Maintain consistency with existing examples
-3. **Test Your Code**: Ensure examples work as documented
-4. **Provide Context**: Explain the use case and when to apply the example
-5. **Update This README**: Add descriptions of new examples to keep this overview current
+1. **Follow Conventions**: Maintain consistency with existing examples
+1. **Test Your Code**: Ensure examples work as documented
+1. **Provide Context**: Explain the use case and when to apply the example
+1. **Update This README**: Add descriptions of new examples to keep this overview current
 
 ## Best Practices Demonstrated
 

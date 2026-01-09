@@ -117,14 +117,14 @@ The MegaLinter workflow runs automatically on:
    docker info
    ```
 
-2. **Permission Issues**
+1. **Permission Issues**
 
    ```bash
    # Make script executable
    chmod +x scripts/test-megalinter.sh
    ```
 
-3. **Missing Dependencies**
+1. **Missing Dependencies**
 
    ```bash
    # Install mega-linter-runner
@@ -146,9 +146,9 @@ mega-linter-runner --help
 ## Next Steps
 
 1. **Test Locally**: Run `./scripts/test-megalinter.sh` to validate setup
-2. **Update CI**: The new workflow will replace individual linter jobs
-3. **Monitor Results**: Check GitHub Actions and Security tab for reports
-4. **Fine-tune Rules**: Adjust configurations based on findings
+1. **Update CI**: The new workflow will replace individual linter jobs
+1. **Monitor Results**: Check GitHub Actions and Security tab for reports
+1. **Fine-tune Rules**: Adjust configurations based on findings
 
 ## Related Documentation
 

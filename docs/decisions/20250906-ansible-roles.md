@@ -9,9 +9,9 @@
 The current Sombrero Edge Control deployment pipeline uses a mixed approach for remote operations:
 
 1. Direct SSH commands scattered throughout the runbook and scripts
-2. Shell scripts for smoke testing and validation
-3. Ansible playbooks for some configuration tasks
-4. Manual verification steps using ping and curl
+1. Shell scripts for smoke testing and validation
+1. Ansible playbooks for some configuration tasks
+1. Manual verification steps using ping and curl
 
 This mixed approach violates the principle documented in our Terraform + Ansible Integration Guide that Ansible should be the single orchestration layer for all remote operations after environment setup.
 
@@ -27,25 +27,25 @@ Chosen option: "Ansible Role-First Architecture", because we need a consistent, 
    - Consistent patterns across all tasks
    - Reusable components
 
-2. **Better Testing**
+1. **Better Testing**
 
    - Molecule tests for each role
    - Idempotency verification
    - CI/CD integration
 
-3. **Enhanced Security**
+1. **Enhanced Security**
 
    - Centralized credential management
    - Ansible Vault for secrets
    - Consistent access patterns
 
-4. **Operational Benefits**
+1. **Operational Benefits**
 
    - Easier debugging with consistent tooling
    - Better error messages and handling
    - Ansible's extensive module library
 
-5. **Team Efficiency**
+1. **Team Efficiency**
    - Single tool to learn and master
    - Clear separation of concerns
    - Better documentation patterns
@@ -58,13 +58,13 @@ Chosen option: "Ansible Role-First Architecture", because we need a consistent, 
    - Understanding of Molecule testing
    - YAML syntax proficiency
 
-2. **Initial Development Effort**
+1. **Initial Development Effort**
 
    - Time to create and test all roles
    - Migration from existing scripts
    - Documentation updates
 
-3. **Potential Performance Impact**
+1. **Potential Performance Impact**
    - Ansible overhead vs direct SSH
    - Fact gathering time
    - Module execution overhead

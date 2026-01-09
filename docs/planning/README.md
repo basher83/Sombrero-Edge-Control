@@ -31,9 +31,9 @@ Long-term architectural decisions and their rationale.
 This planning documentation serves to:
 
 1. **Document Strategic Decisions** - Capture the "why" behind major architectural changes
-2. **Plan Complex Refactors** - Break down large changes into manageable phases
-3. **Facilitate Collaboration** - Provide a space for iterative planning and feedback
-4. **Track Progress** - Monitor implementation against planned objectives
+1. **Plan Complex Refactors** - Break down large changes into manageable phases
+1. **Facilitate Collaboration** - Provide a space for iterative planning and feedback
+1. **Track Progress** - Monitor implementation against planned objectives
 
 ## Current Status
 
@@ -57,10 +57,10 @@ This planning documentation serves to:
 ## Process
 
 1. **Proposal** - Document the proposed change with rationale
-2. **Review** - Gather feedback and iterate on the plan
-3. **Approval** - Finalize the plan with stakeholder agreement
-4. **Implementation** - Execute in defined phases
-5. **Validation** - Verify against success criteria
+1. **Review** - Gather feedback and iterate on the plan
+1. **Approval** - Finalize the plan with stakeholder agreement
+1. **Implementation** - Execute in defined phases
+1. **Validation** - Verify against success criteria
 
 ## Contributing
 
