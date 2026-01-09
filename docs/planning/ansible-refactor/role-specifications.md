@@ -20,21 +20,21 @@ Before implementing any role, use the **ansible-research subagent** to discover 
    # Example: "analyze community.docker collection"
    ```
 
-2. **Quality Assessment**: Evaluate found collections for:
+1. **Quality Assessment**: Evaluate found collections for:
 
    - Repository health (activity, releases, contributors)
    - Code quality (testing, CI/CD, documentation)
    - Module implementation patterns
    - Community engagement
 
-3. **Integration Analysis**: Determine if we should:
+1. **Integration Analysis**: Determine if we should:
 
    - Use existing collection as dependency
    - Fork and customize collection
    - Use as reference for our implementation
    - Build from scratch (only if no suitable options)
 
-4. **Document Findings**: Record in role README:
+1. **Document Findings**: Record in role README:
 
    ```markdown
    ## Research Findings
@@ -538,9 +538,9 @@ verifier:
 ### Test Scenarios
 
 1. **Default**: Basic functionality
-2. **Failure**: Error handling and recovery
-3. **Idempotency**: Multiple runs produce same result
-4. **Performance**: Execution time benchmarks
+1. **Failure**: Error handling and recovery
+1. **Idempotency**: Multiple runs produce same result
+1. **Performance**: Execution time benchmarks
 
 ---
 
@@ -577,18 +577,18 @@ dependencies:
 All roles implement:
 
 1. **Graceful Failures**: Clear error messages with context
-2. **Fact Registration**: Set `role_name_failed` on errors
-3. **Rollback Capability**: Undo changes on failure where possible
-4. **Logging**: Detailed output for debugging
+1. **Fact Registration**: Set `role_name_failed` on errors
+1. **Rollback Capability**: Undo changes on failure where possible
+1. **Logging**: Detailed output for debugging
 
 ---
 
 ## Performance Considerations
 
 1. **Fact Gathering**: Minimize with `gather_facts: false` where possible
-2. **Parallel Execution**: Use `strategy: free` for independent tasks
-3. **Caching**: Implement fact caching for repeated runs
-4. **Conditional Execution**: Skip unnecessary tasks with `when` clauses
+1. **Parallel Execution**: Use `strategy: free` for independent tasks
+1. **Caching**: Implement fact caching for repeated runs
+1. **Conditional Execution**: Skip unnecessary tasks with `when` clauses
 
 ---
 
@@ -597,16 +597,16 @@ All roles implement:
 Each role must include:
 
 1. **README.md**: Usage examples and variable documentation
-2. **CHANGELOG.md**: Version history
-3. **LICENSE**: Licensing information
-4. **requirements.yml**: External dependencies
+1. **CHANGELOG.md**: Version history
+1. **LICENSE**: Licensing information
+1. **requirements.yml**: External dependencies
 
 ---
 
 ## Next Steps
 
 1. Review and approve specifications
-2. Create role scaffolding using `ansible-galaxy init`
-3. Implement core functionality
-4. Add Molecule tests
-5. Document usage patterns
+1. Create role scaffolding using `ansible-galaxy init`
+1. Implement core functionality
+1. Add Molecule tests
+1. Document usage patterns

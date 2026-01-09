@@ -7,9 +7,9 @@ This document outlines the refactoring strategy to achieve true independence bet
 ## Current State Problems
 
 1. **Tool Coupling**: Cloud-init scripts in Terraform perform configuration that belongs in Ansible
-2. **Duplicate Code**: Ansible roles exist in both `ansible/` and `ansible_collections/` directories
-3. **Complex Dependencies**: Packer builds include configuration that should be environment-specific
-4. **Testing Challenges**: Tools cannot be validated independently due to tight coupling
+1. **Duplicate Code**: Ansible roles exist in both `ansible/` and `ansible_collections/` directories
+1. **Complex Dependencies**: Packer builds include configuration that should be environment-specific
+1. **Testing Challenges**: Tools cannot be validated independently due to tight coupling
 
 ## Target Architecture
 
@@ -191,23 +191,23 @@ project_path: ../../../infrastructure/environments/production
 ### Step 1: Simplify Packer Builds
 
 1. Remove Ansible provisioner from Packer
-2. Remove package installations except qemu-guest-agent
-3. Create new minimal template build
-4. Test template creation independently
+1. Remove package installations except qemu-guest-agent
+1. Create new minimal template build
+1. Test template creation independently
 
 ### Step 2: Minimize Cloud-init
 
 1. Create minimal cloud-init template
-2. Remove all package installations
-3. Remove script references
-4. Update Terraform to use minimal template
+1. Remove all package installations
+1. Remove script references
+1. Update Terraform to use minimal template
 
 ### Step 3: Consolidate Ansible
 
 1. Complete migration to `ansible_collections/basher83/automation_server/`
-2. Move all configuration logic from cloud-init to Ansible roles
-3. Create comprehensive playbooks for each configuration domain
-4. Delete duplicate `ansible/` directory
+1. Move all configuration logic from cloud-init to Ansible roles
+1. Create comprehensive playbooks for each configuration domain
+1. Delete duplicate `ansible/` directory
 
 ### Step 4: Create Pipeline Tasks
 
@@ -339,10 +339,10 @@ ansible-playbook -i inventory/static.yml playbooks/docker.yml --tags docker
 ## Success Criteria
 
 1. **Independence**: Each tool can run without the others
-2. **Speed**: Terraform + Ansible deployment time < 60 seconds (excluding Packer build)
-3. **Reliability**: Zero-downtime deployments
-4. **Maintainability**: Clear separation of concerns
-5. **Testability**: >80% test coverage for each component
+1. **Speed**: Terraform + Ansible deployment time < 60 seconds (excluding Packer build)
+1. **Reliability**: Zero-downtime deployments
+1. **Maintainability**: Clear separation of concerns
+1. **Testability**: >80% test coverage for each component
 
 ## Risk Mitigation
 

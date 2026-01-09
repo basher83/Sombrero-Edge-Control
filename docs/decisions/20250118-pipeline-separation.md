@@ -92,28 +92,28 @@ Move all configuration into Packer, creating role-specific images.
 ### Phase 1: Packer Minimization (Week 1)
 
 1. Remove Docker and development tools from Packer
-2. Create new minimal template with only OS + cloud-init + qemu-guest-agent
-3. Document what belongs in golden image vs configuration
+1. Create new minimal template with only OS + cloud-init + qemu-guest-agent
+1. Document what belongs in golden image vs configuration
 
 ### Phase 2: Terraform Simplification (Week 2)
 
 1. Replace complex cloud-init with minimal SSH-only configuration
-2. Remove script file references (docker-install.sh, firewall-setup.sh)
-3. Enhance Terraform outputs for Ansible inventory generation
+1. Remove script file references (docker-install.sh, firewall-setup.sh)
+1. Enhance Terraform outputs for Ansible inventory generation
 
 ### Phase 3: Ansible Consolidation (Weeks 3-4)
 
 1. Migrate to single collection structure (basher83.automation_server)
-2. Create comprehensive playbooks for all configuration
-3. Implement roles for Docker, security, development tools
-4. Remove duplicate ansible/ directory
+1. Create comprehensive playbooks for all configuration
+1. Implement roles for Docker, security, development tools
+1. Remove duplicate ansible/ directory
 
 ### Phase 4: Pipeline Integration (Week 5)
 
 1. Create mise tasks for three-stage deployment
-2. Implement handoff mechanisms (template ID, inventory JSON)
-3. Add independent validation for each stage
-4. Document complete pipeline flow
+1. Implement handoff mechanisms (template ID, inventory JSON)
+1. Add independent validation for each stage
+1. Document complete pipeline flow
 
 ## Validation Criteria
 
