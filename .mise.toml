@@ -45,7 +45,7 @@ pre-commit = "4.3.0"  # Git hook framework
 terrascan = "1.19.9"  # Infrastructure security scanning
 # Linting and formatting tools
 yamlfmt = "0.17.2"                    # YAML formatting
-act = "0.2.82"
+act = "0.2.84"
 yamllint = "1.37.1"  # YAML linting
 shellcheck = "0.11.0"  # Shell script linting
 markdownlint-cli2 = "0.18.1"  # Markdown linting
