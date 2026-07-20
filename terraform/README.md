@@ -87,7 +87,7 @@ mise run terraform-apply
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ------ | --------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
 | <a name="requirement_local"></a> [local](#requirement\_local) | >= 2.0 |
 | <a name="requirement_proxmox"></a> [proxmox](#requirement\_proxmox) | >= 0.73.2 |
@@ -113,7 +113,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ------ | ------------- | ------ | --------- | :--------: |
 | <a name="input_proxmox_insecure"></a> [proxmox\_insecure](#input\_proxmox\_insecure) | Skip TLS verification for Proxmox API (not recommended in production) | `bool` | `false` | no |
 | <a name="input_pve_api_token"></a> [pve\_api\_token](#input\_pve\_api\_token) | Proxmox API token in format 'user@pam!tokenid=uuid' | `string` | n/a | yes |
 | <a name="input_pve_api_url"></a> [pve\_api\_url](#input\_pve\_api\_url) | Proxmox API endpoint URL (e.g., <https://proxmox.example.com:8006/api2/json>) | `string` | n/a | yes |
@@ -154,7 +154,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ------ | ------------- |
 | <a name="output_ansible_inventory"></a> [ansible\_inventory](#output\_ansible\_inventory) | Ansible inventory in JSON format |
 | <a name="output_ssh_command"></a> [ssh\_command](#output\_ssh\_command) | SSH command to connect to the VM |
 | <a name="output_vm_id"></a> [vm\_id](#output\_vm\_id) | Proxmox VM ID |
