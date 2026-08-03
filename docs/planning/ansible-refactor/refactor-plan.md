@@ -332,7 +332,7 @@ If the refactor encounters critical issues:
 ### A. File Mapping
 
 | Current File | Target Role | Notes |
-|--------------|------------|-------|
+| -------------- | ------------ | ------- |
 | scripts/smoke-test.sh | vm_smoke_tests | Full conversion to Ansible |
 | Direct SSH in RUNBOOK.md | Various roles | Replace with playbook calls |
 | scripts/restart-vm-ssh.sh | vm_diagnostics | Troubleshooting role |

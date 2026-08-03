@@ -57,7 +57,7 @@ provisioner "shell" {
 All application-level software and configuration:
 
 | Component | Previous Location | New Location | Rationale |
-|-----------|------------------|--------------|-----------|
+| ----------- | ------------------ | -------------- | ----------- |
 | Docker CE | cloud-init/Packer | Ansible docker role | Environment-specific config |
 | Development tools | cloud-init | Ansible development-tools role | Version management |
 | Firewall rules | cloud-init | Ansible firewall role | Security policies |
@@ -137,7 +137,7 @@ Post-build validation ensures:
 ### Build Time Targets
 
 | Stage | Target Time | Current Time |
-|-------|------------|--------------|
+| ------- | ------------ | -------------- |
 | OS Installation | 5 minutes | TBD |
 | Package Installation | 1 minute | TBD |
 | Template Conversion | 30 seconds | TBD |
@@ -146,7 +146,7 @@ Post-build validation ensures:
 ### Image Size Targets
 
 | Component | Target Size | Current Size |
-|-----------|------------|--------------|
+| ----------- | ------------ | -------------- |
 | Base OS | 1.5 GB | TBD |
 | cloud-init + agent | 100 MB | TBD |
 | **Total Image Size** | **< 2 GB** | TBD |
