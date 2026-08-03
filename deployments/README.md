@@ -24,7 +24,7 @@ graph TB
 ### **Pipeline Stages**
 
 | Stage | Tool | Purpose | Outputs |
-|-------|------|---------|----------|
+| ------- | ------ | --------- | ---------- |
 | 🏗️ **Build** | Packer + Ansible | Create comprehensive golden image | Template ID, Pre-installed tooling |
 | 🚀 **Deploy** | Terraform | Provision infrastructure | VM IP, SSH keys, inventory data |
 | ⚙️ **Configure** | Ansible | Instance-specific setup | Service status, final configuration |
@@ -207,7 +207,7 @@ mise run deploy-rollback
 ### **Common Issues**
 
 | Issue | Stage | Solution |
-|-------|-------|----------|
+| ------- | ------- | ---------- |
 | Template not found | Terraform | Run `mise run deploy-packer` first |
 | SSH connection fails | Ansible | Check VM is running and SSH keys |
 | Output files missing | Any | Run `mise run deploy-init` |

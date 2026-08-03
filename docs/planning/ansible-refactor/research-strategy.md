@@ -86,7 +86,7 @@ For promising collections found:
 Based on quality scores, decide the approach:
 
 | Score | Decision | Action |
-|-------|----------|--------|
+| ------- | ---------- | -------- |
 | 80-100 | Use directly | Add as dependency in requirements.yml |
 | 60-79 | Use with caution | Test thoroughly, may fork if needed |
 | 40-59 | Reference only | Study patterns, build custom |

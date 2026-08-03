@@ -18,7 +18,7 @@ while maintaining operational continuity.
 ### Shell Scripts to Migrate
 
 | Script/Command | Location | Criticality | Migration Priority |
-|----------------|----------|-------------|-------------------|
+| ---------------- | ---------- | ------------- | ------------------- |
 | smoke-test.sh | scripts/ | High | 1 |
 | Direct SSH in RUNBOOK | deployments/RUNBOOK.md | High | 2 |
 | restart-vm-ssh.sh | scripts/ | Medium | 3 |
@@ -292,7 +292,7 @@ run = "ansible-playbook playbooks/validate.yml"  # Keep Ansible
 ### Quantitative Metrics
 
 | Metric | Current Baseline | Target | Acceptable Range |
-|--------|-----------------|--------|------------------|
+| -------- | ----------------- | -------- | ------------------ |
 | Smoke test duration | 45 seconds | 30 seconds | 25-40 seconds |
 | Lines of code | 500 (shell) | 300 (Ansible) | 250-350 |
 | Test coverage | 60% | 90% | 85-95% |
@@ -370,7 +370,7 @@ molecule --version
 ## Appendix A: Command Mapping
 
 | Shell Command | Ansible Equivalent |
-|---------------|-------------------|
+| --------------- | ------------------- |
 | `ssh user@host 'command'` | `ansible host -m command -a 'command'` |
 | `ssh user@host 'systemctl status service'` | `ansible host -m systemd -a 'name=service'` |
 | `ping host` | `ansible host -m ping` |

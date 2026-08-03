@@ -394,7 +394,7 @@ chmod +x /usr/local/bin/health-check.sh
 ### Common Issues and Solutions
 
 | Issue | Possible Cause | Solution |
-|-------|---------------|----------|
+| ------- | --------------- | ---------- |
 | SSH connection timeout | Network misconfiguration | Check security groups, firewall rules |
 | Docker not running | Cloud-init failure | Review `/var/log/cloud-init-output.log` |
 | QEMU agent not responding | Service not started | Run `systemctl restart qemu-guest-agent` |
